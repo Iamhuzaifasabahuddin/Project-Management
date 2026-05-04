@@ -1,0 +1,16 @@
+<h2>Workspaces</h2>
+
+{% for workspace in workspaces %}
+    <h3>{{ workspace.name }}</h3>
+
+    <ul>
+        {% for m in memberships %}
+            {% if m.workspace.id == workspace.id %}
+                <li>
+                    {{ m.user.username }} — {{ m.role }}
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+
+{% endfor %}

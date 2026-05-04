@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+
+</head>
+<body>
+
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <h2>Login</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if error %}
+                <p style="color: #e05c5c;">{{ error }}</p>
+            {% endif %}
+
+            <p>
+                <label for="username">Username</label>
+                <input id="username" type="text" name="username" required>
+            </p>
+
+            <p>
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" required>
+            </p>
+
+            <button type="submit">Login</button>
+        </form>
+
+        <p>
+            Don't have an account?
+            <a href="{% url 'register' %}">Sign Up</a>
+        </p>
+
+    </div>
+</div>
+
+</body>
+</html>

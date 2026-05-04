@@ -1,0 +1,13 @@
+<h2>Dashboard</h2>
+
+<p>Welcome {{ request.user.username }}</p>
+
+<a href="{% url 'logout' %}">Logout</a>
+<a href="{% url 'workspace_list' %}">workspace_list</a>
+
+<a href="{% url 'create_workspace' %}">create_workspace</a>
+<a href="{% url 'assign_role' %}">assign_role</a>
+
+{% for w in workspaces %}
+    <h3>{{ w.name }}</h3>
+{% endfor %}
