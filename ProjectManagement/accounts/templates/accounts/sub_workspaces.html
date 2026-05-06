@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sub Workspaces</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .workspace-card {
+            background: #ffffff;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .workspace-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .empty {
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 8px;
+            color: #856404;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            background: #007bff;
+            color: white;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Sub Workspaces</h1>
+
+    {% if sub_workspaces %}
+        {% for workspace in sub_workspaces %}
+            <div class="workspace-card">
+                <div class="workspace-name">
+                    {{ workspace.name }}
+                </div>
+
+                <a class="btn" href="{% url 'workspace_detail' workspace.id %}">
+                    Open
+                </a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty">
+            No sub-workspaces found.
+        </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

@@ -1,16 +1,129 @@
-<h2>Workspaces</h2>
+<!DOCTYPE html>
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
 
-{% for workspace in workspaces %}
-    <h3>{{ workspace.name }}</h3>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Workspaces</title>
 
-    <ul>
-        {% for m in memberships %}
-            {% if m.workspace.id == workspace.id %}
-                <li>
-                    {{ m.user.username }} — {{ m.role }}
-                </li>
-            {% endif %}
+    <style>
+        body {
+            background: #f5f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .workspace-card {
+            border: none;
+            border-radius: 14px;
+            background: #ffffff;
+        }
+
+        .member-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        .member-item {
+            padding: 6px 0;
+            border-bottom: 1px solid #f1f1f1;
+            font-size: 0.9rem;
+        }
+
+        .member-item:last-child {
+            border-bottom: none;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .badge-role {
+            font-size: 0.75rem;
+            border-radius: 8px;
+            padding: 0.25rem 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container py-5">
+
+    <div class="mb-4">
+        <h3 class="fw-semibold">Workspaces</h3>
+        <p class="muted mb-0">Overview of all workspaces and members</p>
+    </div>
+
+    <div class="row g-3">
+
+        {% for workspace in workspaces %}
+        <div class="col-lg-6">
+
+            <div class="card workspace-card shadow-sm p-3">
+
+                <div class="card-body">
+
+                    <h5 class="fw-semibold mb-1">
+
+                        <a href="{% url 'children_workspaces' workspace.id %}">{{ workspace.name }}</a>
+
+                    </h5>
+
+                    <p class="muted small mb-3">
+                        Parent: {{ workspace.parent.name|default:"None" }}
+                    </p>
+
+
+                    <div>
+                        <h6 class="fw-medium mb-2">Members</h6>
+
+                        <ul class="member-list">
+
+                            {% for m in memberships %}
+                                {% if m.workspace.id == workspace.id %}
+
+                                    <li class="member-item d-flex justify-content-between align-items-center">
+
+                                        <span>
+                                            {{ m.user.username }}
+                                        </span>
+
+                                        {% if m.role == "admin" %}
+                                            <span class="badge bg-dark badge-role">Admin</span>
+                                        {% elif m.role == "member" %}
+                                            <span class="badge bg-secondary badge-role">Member</span>
+                                        {% endif %}
+
+                                    </li>
+
+                                {% endif %}
+                            {% endfor %}
+
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% empty %}
+
+        <div class="col-12">
+            <div class="alert alert-light border">
+                No workspaces available.
+            </div>
+        </div>
+
         {% endfor %}
-    </ul>
 
-{% endfor %}
+    </div>
+
+</div>
+
+</body>
+</html>

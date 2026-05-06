@@ -3,15 +3,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Access Denied</title>
+    <title>Unauthorized</title>
+    <meta name="robots" content="noindex">
     <link rel="stylesheet" href="{% static 'errors.css' %}">
 </head>
 <body>
 
 <div class="box">
-    <h1>403 - Access Denied</h1>
-    <p>You don’t have permission to access this page.</p>
+    <h1>401 - Unauthorized</h1>
+    <p>You need to log in to access this page.</p>
 
+    <a href="/login/">Login</a>
+    <br><br>
     <a href="/">Go Home</a>
 </div>
 

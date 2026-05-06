@@ -1,24 +1,59 @@
 <!DOCTYPE html>
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
 {% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
-        <link rel="stylesheet" href="{% static 'style.css' %}">
-
+    <link rel="stylesheet" href="{% static 'register.css' %}">
 </head>
+
 <body>
-<div class="auth-wrapper">
-    <div class="auth-card">
-        <h2>Sign Up</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Sign Up</button>
-        </form>
-        <p>Already have an account? <a href="{% url 'login' %}">Log in</a></p>
+
+<div class="container auth-wrapper d-flex align-items-center justify-content-center">
+
+    <div class="col-lg-5 col-md-7 col-sm-10">
+
+        <div class="text-center mb-4">
+            <h2 class="title">Create your account</h2>
+            <p class="subtitle">Start managing your projects efficiently</p>
+        </div>
+
+        <div class="card shadow-sm auth-card p-2 p-md-5">
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+
+                <div class="mb-3">
+                    {% bootstrap_form form %}
+                </div>
+
+                <div class="d-grid mt-3">
+                    <button type="submit" class="btn btn-primary">
+                        Create account
+                    </button>
+                </div>
+            </form>
+
+            <div class="text-center my-3 text-muted small">
+                Already have an account?
+            </div>
+
+            <div class="text-center">
+                <a href="{% url 'login' %}" class="fw-medium text-dark">
+                    Sign in instead
+                </a>
+            </div>
+
+        </div>
+
     </div>
+
 </div>
+
 </body>
 </html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Post</title>
+
+    <style>
+        body {
+            background: #f5f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .page-wrapper {
+            min-height: 100vh;
+        }
+
+        .card-modern {
+            border-radius: 16px;
+            border: none;
+            background: #ffffff;
+        }
+
+        .form-control,
+        .form-select,
+        textarea {
+            border-radius: 10px !important;
+            padding: 0.75rem !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        textarea:focus {
+            border-color: #111827;
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            border-radius: 10px;
+            padding: 0.75rem;
+            background: #111827;
+            border: none;
+            font-weight: 500;
+        }
+
+        .btn-primary:hover {
+            background: #000000;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .back-link {
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #111827;
+            text-decoration: underline;
+        }
+
+        .errorlist {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+            padding-left: 0;
+            list-style: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container page-wrapper d-flex align-items-center justify-content-center py-5">
+
+    <div class="col-lg-6 col-md-8 col-sm-12">
+
+        <!-- Header -->
+        <div class="mb-4 text-center">
+            <h3 class="fw-semibold mb-1">Create Post</h3>
+            <p class="muted mb-0">Workspace: <strong>{{ workspace.name }}</strong></p>
+        </div>
+
+        <!-- Card -->
+        <div class="card card-modern shadow-sm p-4 p-md-5">
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Fields -->
+                <div class="d-grid gap-3">
+
+                    {% for field in form %}
+                        <div>
+
+                            <label class="form-label fw-medium">
+                                {{ field.label }}
+                            </label>
+
+                            {{ field }}
+
+                            {% if field.errors %}
+                                {{ field.errors }}
+                            {% endif %}
+
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+                <!-- Submit -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Publish Post
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+
+        <!-- Back -->
+        <div class="text-center mt-3">
+            <a href="{% url 'workspace_detail' workspace.id %}" class="back-link">
+                ← Back to Workspace
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

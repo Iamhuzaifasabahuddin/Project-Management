@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Post Detail</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+        }
+
+        .meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .file-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .file-link:hover {
+            text-decoration: underline;
+        }
+
+        .comment {
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        textarea, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Post -->
+    <div class="card">
+        <h1>{{ post.title }}</h1>
+
+        <p class="meta">
+            By {{ post.author.username }} on {{ post.created_at }}
+        </p>
+
+        <p>{{ post.content }}</p>
+
+        {% if post.file %}
+            <a class="file-link" href="{{ post.file.url }}" target="_blank">
+                📎 Download {{ post.file.name|cut:"uploads/" }}
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Comments -->
+    <div class="card">
+        <h2>Comments</h2>
+
+        {% for comment in comments %}
+            <div class="comment">
+                <p>{{ comment.content }}</p>
+
+                <p class="meta">
+                    By {{ comment.author.username }} on {{ comment.created_at }}
+                </p>
+
+                {% if comment.file %}
+                    <a class="file-link" href="{{ comment.file.url }}" target="_blank">
+                        📎 {{ comment.file.name|cut:"uploads/" }}
+                    </a>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>No comments yet.</p>
+        {% endfor %}
+    </div>
+
+    <!-- Add Comment -->
+    <div class="card">
+        <h3>Add Comment</h3>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Add Comment</button>
+        </form>
+    </div>
+
+    <a class="back-link" href="{% url 'workspace_detail' post.workspace.id %}">
+        ← Back to Workspace
+    </a>
+
+</div>
+
+</body>
+</html>

@@ -1,7 +1,108 @@
-<h2>Assign Role</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign Role</title>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Assign</button>
-</form>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-card {
+            width: 100%;
+            max-width: 450px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: #4a90e2;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 12px;
+            background: #4a90e2;
+            border: none;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-submit:hover {
+            background: #357abd;
+        }
+
+        .errorlist {
+            color: red;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="form-card">
+    <h2 class="form-title">Assign Role</h2>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            {{ form.user.label_tag }}
+            {{ form.user }}
+            {{ form.user.errors }}
+        </div>
+
+        <div class="form-group">
+            {{ form.workspace.label_tag }}
+            {{ form.workspace }}
+            {{ form.workspace.errors }}
+        </div>
+
+        <div class="form-group">
+            {{ form.role.label_tag }}
+            {{ form.role }}
+            {{ form.role.errors }}
+        </div>
+
+        <button type="submit" class="btn-submit">Assign</button>
+    </form>
+</div>
+
+
+</body>
+</html>
