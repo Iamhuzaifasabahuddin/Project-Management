@@ -14,121 +14,90 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        .page-wrapper {
-            min-height: 100vh;
-        }
-
-        .card-modern {
-            border-radius: 16px;
-            border: none;
+        .navbar-custom {
             background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        .form-control,
-        .form-select,
-        textarea {
-            border-radius: 10px !important;
-            padding: 0.75rem !important;
-        }
-
-        .form-control:focus,
-        .form-select:focus,
-        textarea:focus {
-            border-color: #111827;
-            box-shadow: none;
-        }
-
-        .btn-primary {
-            border-radius: 10px;
-            padding: 0.75rem;
-            background: #111827;
+        .editor-card {
             border: none;
-            font-weight: 500;
-        }
-
-        .btn-primary:hover {
-            background: #000000;
+            border-radius: 16px;
+            background: #ffffff;
         }
 
         .muted {
             color: #6b7280;
         }
 
-        .back-link {
-            color: #6b7280;
-            text-decoration: none;
-        }
-
-        .back-link:hover {
-            color: #111827;
-            text-decoration: underline;
-        }
-
-        .errorlist {
-            color: #dc3545;
-            font-size: 0.85rem;
-            margin-top: 0.25rem;
-            padding-left: 0;
-            list-style: none;
+        .workspace-pill {
+            display: inline-block;
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
         }
     </style>
 </head>
 
 <body>
 
-<div class="container page-wrapper d-flex align-items-center justify-content-center py-5">
+<!-- NAVBAR -->
+<nav class="navbar navbar-custom px-4 py-3">
+    <div class="container-fluid">
+
+        <div>
+            <h5 class="mb-0 fw-semibold">Create Post</h5>
+            <small class="muted">Publish content in your workspace</small>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                Dashboard
+            </a>
+
+            <a href="{% url 'workspace_detail' workspace.id %}" class="btn btn-outline-secondary btn-sm">
+                Workspace
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="container py-5 d-flex justify-content-center">
 
     <div class="col-lg-6 col-md-8 col-sm-12">
 
-        <!-- Header -->
-        <div class="mb-4 text-center">
-            <h3 class="fw-semibold mb-1">Create Post</h3>
-            <p class="muted mb-0">Workspace: <strong>{{ workspace.name }}</strong></p>
+        <!-- HEADER -->
+        <div class="text-center mb-4">
+            <h3 class="fw-semibold mb-1">Create New Post</h3>
+            <p class="muted mb-1">Publish content inside your workspace</p>
+
+            <div class="workspace-pill">
+                {{ workspace.name }}
+            </div>
         </div>
 
-        <!-- Card -->
-        <div class="card card-modern shadow-sm p-4 p-md-5">
+        <!-- CARD -->
+        <div class="card editor-card shadow-sm p-4 p-md-5">
 
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" novalidate>
                 {% csrf_token %}
 
-                <!-- Fields -->
-                <div class="d-grid gap-3">
+                <!-- FORM -->
+                {% bootstrap_form form %}
 
-                    {% for field in form %}
-                        <div>
-
-                            <label class="form-label fw-medium">
-                                {{ field.label }}
-                            </label>
-
-                            {{ field }}
-
-                            {% if field.errors %}
-                                {{ field.errors }}
-                            {% endif %}
-
-                        </div>
-                    {% endfor %}
-
-                </div>
-
-                <!-- Submit -->
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary w-100">
-                        Publish Post
-                    </button>
-                </div>
+                <!-- SUBMIT -->
+                <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold mt-3">
+                    Publish Post
+                </button>
 
             </form>
 
-        </div>
-
-        <!-- Back -->
-        <div class="text-center mt-3">
-            <a href="{% url 'workspace_detail' workspace.id %}" class="back-link">
-                ← Back to Workspace
-            </a>
         </div>
 
     </div>

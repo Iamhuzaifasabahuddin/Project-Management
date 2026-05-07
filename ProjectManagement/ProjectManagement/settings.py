@@ -14,7 +14,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-SITE_ID=1
+SITE_ID=2
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -143,3 +143,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Login configuration
 LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = 'dashboard'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "themirageconnect@gmail.com"
+EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
+
+DOMAIN = '127.0.0.1:8000'

@@ -27,7 +27,13 @@
         <!-- Card -->
         <div class="card auth-card shadow-sm border-0">
             <div class="card-body p-4 p-md-5">
-
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} py-2 small mb-3">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
                 <h4 class="text-center mb-3 fw-semibold">Welcome back</h4>
 
                 <p class="text-center small text-muted">
@@ -46,7 +52,7 @@
                                class="form-control"
                                id="username"
                                placeholder="Username or email" required>
-                        <label for="username">Username or email</label>
+                        <label for="username">Username</label>
                     </div>
 
                     <!-- Password -->
@@ -60,15 +66,15 @@
 
                     <!-- Alerts -->
                     {% if error %}
-                        <div class="alert alert-danger mt-3 py-2 small">
-                            {{ error }}
-                        </div>
+                    <div class="alert alert-danger mt-3 py-2 small">
+                        {{ error }}
+                    </div>
                     {% endif %}
 
                     {% if message %}
-                        <div class="alert alert-success mt-3 py-2 small">
-                            {{ message }}
-                        </div>
+                    <div class="alert alert-success mt-3 py-2 small">
+                        {{ message }}
+                    </div>
                     {% endif %}
 
                     <!-- Remember + Forgot -->
@@ -78,8 +84,7 @@
                             <label class="form-check-label">Remember me</label>
                         </div>
 
-                        <a href="#" class="small text-muted text-decoration-none"
-                           data-bs-toggle="modal" data-bs-target="#passwordResetModal">
+                        <a href="{% url 'password_reset' %}" class="small text-muted text-decoration-none">
                             Forgot password?
                         </a>
                     </div>
@@ -91,20 +96,20 @@
                 </form>
 
                 <!-- Divider -->
-<!--                <div class="divider my-4 small">OR</div>-->
+                <!--                <div class="divider my-4 small">OR</div>-->
 
-<!--                &lt;!&ndash; OAuth &ndash;&gt;-->
-<!--                <div class="d-grid gap-2">-->
-<!--                    <a href="/oauth2/authorization/google"-->
-<!--                       class="btn btn-outline-dark d-flex justify-content-center align-items-center gap-2">-->
-<!--                        Continue with Google-->
-<!--                    </a>-->
+                <!--                &lt;!&ndash; OAuth &ndash;&gt;-->
+                <!--                <div class="d-grid gap-2">-->
+                <!--                    <a href="/oauth2/authorization/google"-->
+                <!--                       class="btn btn-outline-dark d-flex justify-content-center align-items-center gap-2">-->
+                <!--                        Continue with Google-->
+                <!--                    </a>-->
 
-<!--                    <a href="/oauth2/authorization/github"-->
-<!--                       class="btn btn-outline-dark d-flex justify-content-center align-items-center gap-2">-->
-<!--                        Continue with GitHub-->
-<!--                    </a>-->
-<!--                </div>-->
+                <!--                    <a href="/oauth2/authorization/github"-->
+                <!--                       class="btn btn-outline-dark d-flex justify-content-center align-items-center gap-2">-->
+                <!--                        Continue with GitHub-->
+                <!--                    </a>-->
+                <!--                </div>-->
 
             </div>
         </div>

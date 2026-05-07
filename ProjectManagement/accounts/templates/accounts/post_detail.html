@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,10 +10,13 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-            margin: 0;
-            padding: 20px;
+            background: #f5f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .container {
@@ -19,26 +26,21 @@
 
         .card {
             background: #fff;
+            border-radius: 12px;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin-bottom: 20px;
-        }
-
-        h1, h2, h3 {
-            margin-top: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
         }
 
         .meta {
-            color: #666;
+            color: #6b7280;
             font-size: 14px;
-            margin-bottom: 10px;
         }
 
         .file-link {
             display: inline-block;
-            margin-top: 8px;
-            color: #007bff;
+            margin-top: 10px;
+            color: #111827;
             text-decoration: none;
         }
 
@@ -48,54 +50,62 @@
 
         .comment {
             border-top: 1px solid #eee;
-            padding-top: 10px;
-            margin-top: 10px;
-        }
-
-        textarea, input[type="file"] {
-            width: 100%;
-            padding: 10px;
-            margin-top: 8px;
-            margin-bottom: 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            background: #007bff;
-            color: white;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #0056b3;
+            padding-top: 12px;
+            margin-top: 12px;
         }
 
         .back-link {
-            display: inline-block;
-            margin-top: 10px;
+            color: #6b7280;
             text-decoration: none;
-            color: #333;
+            font-size: 14px;
         }
 
         .back-link:hover {
+            color: #111827;
             text-decoration: underline;
+        }
+
+        .muted {
+            color: #6b7280;
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
+<!-- NAVBAR -->
+<nav class="navbar navbar-custom px-4 py-3">
+    <div class="container-fluid">
 
-    <!-- Post -->
+        <div>
+            <h5 class="mb-0 fw-semibold">Post Detail</h5>
+            <small class="muted">View and manage comments</small>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                Dashboard
+            </a>
+
+            <a href="{% url 'workspace_detail' post.workspace.id %}" class="btn btn-outline-secondary btn-sm">
+                Workspace
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="container py-4">
+
+    <!-- POST -->
     <div class="card">
         <h1>{{ post.title }}</h1>
 
         <p class="meta">
-            By {{ post.author.username }} on {{ post.created_at }}
+            By {{ post.author.username }} · {{ post.created_at }}
         </p>
 
         <p>{{ post.content }}</p>
@@ -107,7 +117,7 @@
         {% endif %}
     </div>
 
-    <!-- Comments -->
+    <!-- COMMENTS -->
     <div class="card">
         <h2>Comments</h2>
 
@@ -116,34 +126,41 @@
                 <p>{{ comment.content }}</p>
 
                 <p class="meta">
-                    By {{ comment.author.username }} on {{ comment.created_at }}
+                    By {{ comment.author.username }} · {{ comment.created_at }}
                 </p>
 
                 {% if comment.file %}
                     <a class="file-link" href="{{ comment.file.url }}" target="_blank">
-                        📎 {{ comment.file.name|cut:"uploads/" }}
+                        📎 Download {{ comment.file.name|cut:"uploads/" }}
                     </a>
                 {% endif %}
             </div>
         {% empty %}
-            <p>No comments yet.</p>
+            <p class="meta">No comments yet.</p>
         {% endfor %}
     </div>
 
-    <!-- Add Comment -->
+    <!-- ADD COMMENT -->
     <div class="card">
         <h3>Add Comment</h3>
 
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">Add Comment</button>
+
+            {% bootstrap_form form %}
+
+            <button type="submit" class="btn btn-dark w-100 mt-3">
+                Add Comment
+            </button>
         </form>
     </div>
 
-    <a class="back-link" href="{% url 'workspace_detail' post.workspace.id %}">
-        ← Back to Workspace
-    </a>
+    <!-- BACK -->
+    <div class="text-center">
+        <a class="back-link" href="{% url 'workspace_detail' post.workspace.id %}">
+            ← Back to Workspace
+        </a>
+    </div>
 
 </div>
 

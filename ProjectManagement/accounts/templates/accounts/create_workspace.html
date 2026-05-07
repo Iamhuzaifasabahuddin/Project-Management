@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,98 +10,101 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background: #f5f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        .workspace-form {
-            width: 100%;
-            max-width: 420px;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        .form-title {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            outline: none;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            border-color: #4a90e2;
-        }
-
-        .errorlist {
-            color: red;
-            font-size: 13px;
-            margin-top: 5px;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background: #4a90e2;
+        .form-card {
+            border-radius: 14px;
             border: none;
-            color: #fff;
-            border-radius: 6px;
-            cursor: pointer;
         }
 
-        .btn-submit:hover {
-            background: #357abd;
+        .muted {
+            color: #6b7280;
+        }
+
+        .form-wrapper {
+            max-width: 520px;
+            margin: auto;
         }
     </style>
 </head>
 
 <body>
 
-<form method="post" class="workspace-form">
-    {% csrf_token %}
+<!-- NAVBAR -->
+<nav class="navbar navbar-custom px-4 py-3">
+    <div class="container-fluid">
 
-    <h2 class="form-title">Create Workspace</h2>
+        <div>
+            <h5 class="mb-0 fw-semibold">Create Workspace</h5>
+            <small class="muted">Set up a new workspace</small>
+        </div>
 
-    <div class="form-group">
-        {{ form.name.label_tag }}
-        {{ form.name }}
-        {{ form.name.errors }}
+        <div class="d-flex gap-2">
+
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                Dashboard
+            </a>
+
+            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">
+                Workspaces
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="container py-5">
+
+    <div class="form-wrapper">
+
+        <div class="card form-card shadow-sm p-4">
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+
+                <!-- TITLE -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Workspace Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.name.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- PARENT -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Parent Workspace</label>
+                    {{ form.parent }}
+                    {% if form.parent.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ form.parent.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- BUTTON -->
+                <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold">
+                    Create Workspace
+                </button>
+
+            </form>
+
+        </div>
+
     </div>
 
-    <div class="form-group">
-        {{ form.parent.label_tag }}
-        {{ form.parent }}
-        {{ form.parent.errors }}
-    </div>
-
-    <button type="submit" class="btn-submit">
-        Create Workspace
-    </button>
-</form>
+</div>
 
 </body>
 </html>

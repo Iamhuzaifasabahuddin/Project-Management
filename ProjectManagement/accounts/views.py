@@ -1,73 +1,133 @@
 # accounts/views.py
-import pprint
 
+from allauth.account.forms import default_token_generator
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
 from .forms import RegisterForm, WorkspaceForm, RoleAssignForm, PostForm, CommentForm
 from .models import Workspace, Membership, Post, Comment
 
+def send_custom_email(user, subject, template, context):
+    html_content = render_to_string(template, context)
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body="Please use an HTML-compatible email viewer.",
+        from_email=settings.EMAIL_HOST_USER,
+        to=[user.email],
+    )
+
+    email.attach_alternative(html_content, "text/html")
+    email.send()
 
 def register_view(request):
     """
-    Handle user registration.
-
-    Creates a new user using RegisterForm.
-    On successful registration, logs the user in and redirects to dashboard.
+    Handle user registration with email verification.
     """
     if request.method == 'POST':
         form = RegisterForm(request.POST)
+
         if form.is_valid():
-            user = form.save()
+            user = form.save(commit=False)
+
+            user.is_active = False
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
             user.save()
 
-            login(request, user)
-            messages.success(request, f"Account created successfully! Welcome {user.first_name}!")
-            return redirect('dashboard')
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
 
-        return render(request, 'accounts/register.html', {'form': form})
+            activation_link = request.build_absolute_uri(
+                f"/activate/{uid}/{token}/"
+            )
+
+            send_custom_email(
+                user=user,
+                subject="Verify your Hexz account",
+                template="emails/verify_account.html",
+                context={
+                    "name": user.first_name,
+                    "activation_link": activation_link,
+                }
+            )
+
+            messages.success(
+                request,
+                "Account created! Check your email to verify your account."
+            )
+
+            return redirect('login')
+
     else:
         form = RegisterForm()
+
     return render(request, 'accounts/register.html', {'form': form})
 
 
-def login_view(request):
-    """
-    Authenticate and log in a user.
+def activate_account(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
 
-    Validates username and password.
-    On success, redirects to dashboard.
-    On failure, returns login page with error message.
-    """
+    if user and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, "Account activated successfully. You can now log in.")
+        return redirect('login')
+
+    return render(request, "accounts/activation_failed.html")
+
+
+
+
+def login_view(request):
     error = None
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        user = authenticate(request, username=username, password=password)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            user = None
 
         if user:
-            login(request, user)
-            print("User logged in")
-            return redirect('dashboard')
+            if not user.check_password(password):
+                error = "Invalid username or password."
+
+            elif not user.is_active:
+                error = "Please verify your email before logging in."
+
+            else:
+                login(request, user)
+                return redirect('dashboard')
+
         else:
             error = "Invalid username or password."
-    return render(request, 'accounts/login.html', {'error': error})
 
+    return render(request, 'accounts/login.html', {'error': error})
 
 @login_required
 def dashboard_view(request):
     """
     Handle user dashboard.
     """
-    workspaces = Workspace.objects.filter(membership__user=request.user)
+    workspaces = Workspace.objects.filter(membership__user=request.user, parent__isnull=True)
 
     memberships = Membership.objects.filter(user=request.user)
-
 
     is_admin = memberships.filter(role="admin").exists()
 
@@ -77,6 +137,7 @@ def dashboard_view(request):
     }
 
     return render(request, "accounts/dashboard.html", context)
+
 
 def logout_view(request):
     """
@@ -131,7 +192,6 @@ def create_workspace(request):
                     "Only superuser can create main workspaces"
                 )
 
-        # ✅ Create workspace
         workspace = form.save(commit=False)
         workspace.owner = request.user
         workspace.save()
@@ -152,6 +212,7 @@ def create_workspace(request):
     return render(request, 'accounts/create_workspace.html', {
         'form': form
     })
+
 
 @login_required
 def assign_role(request):
@@ -180,14 +241,17 @@ def workspace_list(request):
     Superusers see all workspaces and membership mappings.
     """
     workspaces = Workspace.objects.filter(parent__isnull=True)
-
+    is_admin = request.user.is_superuser or Membership.objects.filter(
+        user=request.user,
+        role='admin'
+    ).exists()
     memberships = Membership.objects.select_related('user', 'workspace')
 
     return render(request, 'accounts/workspace_list.html', {
         'workspaces': workspaces,
-        'memberships': memberships
+        'memberships': memberships,
+        "is_admin": is_admin
     })
-
 
 
 @login_required
@@ -199,12 +263,12 @@ def workspace_detail(request, workspace_id):
     membership = Membership.objects.filter(user=request.user, workspace=workspace).first()
     if not membership:
         raise PermissionDenied("You are not a member of this workspace")
-    posts = workspace.posts.all().order_by('-created_at')
+    posts = Post.objects.filter(workspace=workspace).order_by('-created_at')
     return render(request, 'accounts/workspace_detail.html', {'workspace': workspace, 'posts': posts})
+
 
 @login_required
 def children_workspaces(request, workspace_id):
-
     sub_workspaces = Workspace.objects.filter(
         parent_id=workspace_id,
         membership__user=request.user
@@ -213,6 +277,8 @@ def children_workspaces(request, workspace_id):
     return render(request, 'accounts/sub_workspaces.html', {
         'sub_workspaces': sub_workspaces
     })
+
+
 @login_required
 def create_post(request, workspace_id):
     """
@@ -242,7 +308,6 @@ def post_detail(request, post_id):
     if not membership:
         raise PermissionDenied("You are not a member of this workspace")
     comments = Comment.objects.filter(post=post).order_by('-created_at')
-    # comments = post.comments().all().order_by('created_at')
     form = CommentForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         comment = form.save(commit=False)

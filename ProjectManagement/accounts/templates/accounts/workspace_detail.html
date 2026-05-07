@@ -14,6 +14,11 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
         .workspace-header {
             background: #ffffff;
             border-radius: 14px;
@@ -40,19 +45,40 @@
         .muted {
             color: #6b7280;
         }
-
-        .btn-primary {
-            border-radius: 10px;
-        }
-
-        .btn-outline-secondary {
-            border-radius: 10px;
-        }
     </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
+<nav class="navbar navbar-custom px-4 py-3">
+    <div class="container-fluid">
+
+        <div>
+            <h5 class="mb-0 fw-semibold">Workspace</h5>
+            <small class="muted">{{ workspace.name }}</small>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                Dashboard
+            </a>
+
+            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">
+                Workspaces
+            </a>
+
+            <a href="{% url 'create_post' workspace.id %}" class="btn btn-dark btn-sm">
+                + Create Post
+            </a>
+
+        </div>
+
+    </div>
+</nav>
+
+<!-- CONTENT -->
 <div class="container py-5">
 
     <!-- WORKSPACE HEADER -->
@@ -65,24 +91,21 @@
         {% if workspace.parent %}
             <p class="muted mb-3">
                 Sub-workspace of
-                <a href="{% url 'workspace_detail' workspace.parent.id %}" class="fw-medium">
+                <a href="{% url 'workspace_detail' workspace.parent.id %}" class="fw-medium text-dark">
                     {{ workspace.parent.name }}
                 </a>
             </p>
         {% endif %}
 
-        <a href="{% url 'create_post' workspace.id %}" class="btn btn-dark btn-sm">
-            + Create Post
-        </a>
-
     </div>
 
-    <!-- POSTS -->
+    <!-- POSTS HEADER -->
     <div class="mb-3">
         <h4 class="fw-semibold">Posts</h4>
         <p class="muted mb-0">All content in this workspace</p>
     </div>
 
+    <!-- POSTS GRID -->
     <div class="row g-3">
 
         {% for post in posts %}
