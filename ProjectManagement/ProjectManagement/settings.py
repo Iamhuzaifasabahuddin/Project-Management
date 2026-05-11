@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
+import cloudinary
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_ID=2
@@ -46,6 +48,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
 'bootstrap5',
+    'cloudinary',
+    'cloudinary_storage',
+    'storages'
 ]
 
 MIDDLEWARE = [
@@ -154,4 +159,26 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "themirageconnect@gmail.com"
 EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
 
-DOMAIN = '127.0.0.1:8000'
+# DOMAIN = '127.0.0.1:8000'
+
+
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+#
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': 'dyczgg4if',
+#     'API_KEY': '473393663333598',
+#     'API_SECRET': 'QA-geG0kTwcEuM7QPQ8xee2-Af8',
+# }
+
+# DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# AWS_ACCESS_KEY_ID = "your_access_key"
+# AWS_SECRET_ACCESS_KEY = "your_secret_key"
+#
+# AWS_STORAGE_BUCKET_NAME = "your_bucket_name"
+# AWS_S3_ENDPOINT_URL = "https://<account_id>.r2.cloudflarestorage.com"
+#
+# AWS_S3_REGION_NAME = "auto"
+# AWS_DEFAULT_ACL = None
+#
+# AWS_QUERYSTRING_AUTH = False
+# AWS_S3_FILE_OVERWRITE = False

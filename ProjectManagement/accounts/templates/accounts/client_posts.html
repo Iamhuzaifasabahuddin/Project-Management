@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+{% load bootstrap5 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ client.name }} - Posts</title>
+
+    <style>
+        body {
+            background: #f5f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .header-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .post-card {
+            background: #fff;
+            border-radius: 14px;
+            border: none;
+            transition: 0.2s ease;
+        }
+
+        .post-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        a { text-decoration: none; }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-light bg-white border-bottom px-4 py-3">
+    <div>
+        <h5 class="mb-0">Client Posts</h5>
+        <small class="muted">{{ client.name }}</small>
+    </div>
+
+    <div class="d-flex gap-2">
+
+        <a href="{% url 'client_details' client.workspace.id %}"
+           class="btn btn-outline-secondary btn-sm">
+            Back to Workspace
+        </a>
+
+        <a href="{% url 'create_post' client.id %}"
+           class="btn btn-dark btn-sm">
+            + New Post
+        </a>
+
+    </div>
+</nav>
+
+<!-- CONTENT -->
+<div class="container py-5">
+
+    <!-- CLIENT HEADER -->
+    <div class="header-card mb-4">
+
+        <h3 class="fw-semibold mb-1">{{ client.name }}</h3>
+
+        <p class="muted mb-1">
+            {{ client.email }} • {{ client.number }}
+        </p>
+
+        <p class="muted mb-0">
+            Workspace: {{ client.workspace.name }}
+        </p>
+
+    </div>
+
+    <!-- POSTS LIST -->
+    <h4 class="fw-semibold mb-3">Posts</h4>
+
+    <div class="row g-3">
+
+        {% for post in posts %}
+        <div class="col-lg-6">
+
+            <div class="card post-card p-3 shadow-sm">
+
+                <h5 class="fw-semibold mb-2">
+                    <a href="{% url 'post_detail' post.id %}" class="text-dark">
+                        {{ post.title }}
+                    </a>
+                </h5>
+
+                <p class="muted small mb-2">
+                    By {{ post.author.username }} • {{ post.created_at }}
+                </p>
+
+                <p class="mb-3">
+                    {{ post.content|truncatewords:25 }}
+                </p>
+
+                {% if post.file %}
+                <a href="{{ post.file.url }}" class="btn btn-outline-secondary btn-sm">
+                    Download File
+                </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-light border">
+                No posts found for this client.
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</body>
+</html>

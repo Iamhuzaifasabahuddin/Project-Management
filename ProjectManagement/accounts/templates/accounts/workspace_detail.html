@@ -78,34 +78,55 @@
     </div>
 </nav>
 
+<!-- TOASTS -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+    {% if messages %}
+    {% for message in messages %}
+
+    <div class="toast  align-items-center
+    text-white bg-dark
+    border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-light text-dark">
+            <strong class="me-auto">Notification</strong>
+            <small>Just Now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            {{ message }}
+        </div>
+    </div>
+
+    {% endfor %}
+    {% endif %}
+
+</div>
+
 <!-- CONTENT -->
 <div class="container py-5">
 
     <!-- WORKSPACE HEADER -->
     <div class="workspace-header mb-4">
 
-        <h2 class="fw-semibold mb-2">
-            {{ workspace.name }}
-        </h2>
+        <h2 class="fw-semibold mb-2">{{ workspace.name }}</h2>
 
         {% if workspace.parent %}
-            <p class="muted mb-3">
-                Sub-workspace of
-                <a href="{% url 'workspace_detail' workspace.parent.id %}" class="fw-medium text-dark">
-                    {{ workspace.parent.name }}
-                </a>
-            </p>
+        <p class="muted mb-3">
+            Sub-workspace of
+            <a href="{% url 'workspace_detail' workspace.parent.id %}" class="fw-medium text-dark">
+                {{ workspace.parent.name }}
+            </a>
+        </p>
         {% endif %}
 
     </div>
 
-    <!-- POSTS HEADER -->
+    <!-- POSTS -->
     <div class="mb-3">
         <h4 class="fw-semibold">Posts</h4>
         <p class="muted mb-0">All content in this workspace</p>
     </div>
 
-    <!-- POSTS GRID -->
     <div class="row g-3">
 
         {% for post in posts %}
@@ -126,9 +147,18 @@
                     </p>
 
                     {% if post.file %}
-                        <a href="{{ post.file.url }}" class="btn btn-outline-secondary btn-sm">
-                            Download File
-                        </a>
+                    <a href="{{ post.file.url }}" class="btn btn-outline-secondary btn-sm">
+                        Download File
+                    </a>
+                    {% endif %}
+
+                    <!-- DELETE BUTTON -->
+                    {% if request.user == post.author or request.user.is_superuser %}
+                    <button class="btn btn-outline-danger btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal{{ post.id }}">
+                        Delete
+                    </button>
                     {% endif %}
 
                 </div>
@@ -137,8 +167,43 @@
 
         </div>
 
-        {% empty %}
+        <!-- DELETE MODAL -->
+        {% if request.user == post.author or request.user.is_superuser %}
+        <div class="modal fade" id="deleteModal{{ post.id }}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
 
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Delete Post</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        Are you sure you want to delete
+                        <strong>{{ post.title }}</strong>?
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button class="btn btn-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <a href="{% url 'delete_post' workspace.id post.id %}"
+                           class="btn btn-danger">
+                            Yes, Delete
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        {% endif %}
+
+        {% empty %}
         <div class="col-12">
             <div class="alert alert-light border">
                 No posts yet in this workspace.
@@ -148,8 +213,17 @@
         {% endfor %}
 
     </div>
-
 </div>
+
+<!-- TOAST SCRIPT -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const toastList = document.querySelectorAll('.toast');
+        toastList.forEach(toastEl => {
+            new bootstrap.Toast(toastEl, { delay: 4000 }).show();
+        });
+    });
+</script>
 
 </body>
 </html>
