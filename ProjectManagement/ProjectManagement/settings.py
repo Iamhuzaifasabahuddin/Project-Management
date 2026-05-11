@@ -48,9 +48,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
 'bootstrap5',
-    'cloudinary',
-    'cloudinary_storage',
-    'storages'
+    'Posts',
+    'workspaces'
 ]
 
 MIDDLEWARE = [
