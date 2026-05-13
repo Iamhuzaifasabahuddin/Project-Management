@@ -48,6 +48,10 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
+    def outstanding(self):
+        net = self.total_amount - self.amount_paid
+        return net if net > 0 else 0
+
 
 # ─────────────────────────────────────────────
 # MEMBERSHIP

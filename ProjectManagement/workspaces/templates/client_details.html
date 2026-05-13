@@ -67,10 +67,11 @@
             <a href="{% url 'client_list' workspace.id %}" class="btn btn-outline-secondary btn-sm">
                 All Clients
             </a>
+            {% if is_admin or request.user.is_superuser %}
             <a href="{% url 'create_client' workspace.id %}" class="btn btn-dark btn-sm">
                 + Add Client
             </a>
-
+            {% endif %}
 
         </div>
 
@@ -93,7 +94,7 @@
 
     <div class="row g-3 mb-5">
 
-        {% for client in workspace.clients.all %}
+        {% for client in clients %}
         <div class="col-lg-4">
 
             <div class="card card-ui p-3 shadow-sm">
@@ -107,10 +108,30 @@
                 <p class="muted small mb-2">
                     {{ client.email }} • {{ client.number }}
                 </p>
+                <p class="muted small mb-2">
+                    {{ client.paid|yesno:"Paid,Pending" }} • {{ client.outstanding }}
+                    {% if client.assigned_to.all %}
+                    • Assigned to:
+                    {% for user in client.assigned_to.all %}
+                    <span class="badge bg-secondary">{{ user.username }}</span>
+                    {% endfor %}
+                    {% else %}
+                    • Not assigned
+                    {% endif %}
+                </p>
 
                 <a href="{% url 'create_post' client.id %}" class="btn btn-outline-dark btn-sm">
                     + Add Post
                 </a>
+                <a href="{% url 'view_client' client.id %}" class="btn btn-outline-dark btn-sm">
+                    Preview Details
+                </a>
+                {% if is_admin or request.user.is_superuser %}
+
+                <a href="{% url 'create_post' client.id %}" class="btn btn-outline-dark btn-sm">
+                    + Add Post
+                </a>
+                {% endif %}
 
             </div>
 

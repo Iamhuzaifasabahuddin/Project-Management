@@ -49,9 +49,20 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.github',
 'bootstrap5',
     'Posts',
-    'workspaces'
+    'workspaces',
+    'django_select2'
 ]
+SELECT2_APPS = {
+    'data_url': '/select2/',
+}
 
+# Cache configuration for Select2 (improves performance)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

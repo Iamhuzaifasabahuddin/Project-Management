@@ -10,8 +10,9 @@ urlpatterns = [
     path('workspaces/create/', views.create_workspace, name='create_workspace'),
     path('roles/assign/', views.assign_role, name='assign_role'),
     path('workspaces/<int:workspace_id>/', views.workspace_detail, name='workspace_detail'),
-    path('clients/<int:workspace_id>/', views.client_detail, name='client_details'),
+    path('workspace/<int:workspace_id>/clients', views.client_detail, name='client_details'),
     path('clients/<int:client_id>/posts', views.client_posts, name='client_posts'),
-    path('workspaces/clients/<int:workspace_id>', views.client_list, name='client_list'),
-    path('workspaces/add_client/<int:workspace_id>', views.create_clients, name='create_client'),
+    path('workspace/<int:workspace_id>/clients/list', views.client_list, name='client_list'),
+    path('client/<int:client_id>', views.view_client_details, name='view_client'),
+    path('workspaces/<int:workspace_id>/add client', views.create_clients, name='create_client'),
 ]

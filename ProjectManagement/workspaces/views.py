@@ -8,8 +8,11 @@ from workspaces.forms import WorkspaceForm, RoleAssignForm, ClientForm
 from workspaces.models import Workspace, Membership, Client
 
 
-# Create your views here.
-
+# =========================
+# HELPER
+# =========================
+def role_checker(user, workspace, role):
+    return Membership.objects.filter(user=user, workspace=workspace, role=role).exists()
 # =========================
 # DASHBOARD
 # =========================
@@ -67,9 +70,7 @@ def workspace_list(request):
     return render(request, "workspace_list.html", {
         "workspaces": Workspace.objects.all(),
         "memberships": Membership.objects.select_related("user", "workspace"),
-        "is_admin": request.user.is_superuser or Membership.objects.filter(
-            user=request.user, role="admin"
-        ).exists(),
+        "is_admin": role_checker(request.user, None, "admin") or request.user.is_superuser,
     })
 
 
@@ -120,20 +121,23 @@ def create_clients(request, workspace_id):
         client = form.save(commit=False)
         client.workspace = workspace
         client.save()
+        form.save_m2m()
         return redirect("client_details", workspace_id=workspace.id)
 
     return render(request, "create_client.html", {
         "form": form,
         "workspace": workspace,
+        "is_admin": role_checker(request.user, workspace, "admin"),
     })
 
 
 @login_required
 def client_list(request, workspace_id):
     workspace = get_object_or_404(Workspace, id=workspace_id)
+    clients = Client.objects.filter(workspace=workspace, assigned_to=request.user)
 
     return render(request, "client_list.html", {
-        "clients": Client.objects.filter(workspace=workspace),
+        "clients": clients,
         "workspace": workspace,
     })
 
@@ -141,16 +145,22 @@ def client_list(request, workspace_id):
 @login_required
 def client_detail(request, workspace_id):
     workspace = get_object_or_404(Workspace, id=workspace_id)
-
     if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
         raise PermissionDenied("Not a member")
 
     return render(request, "client_details.html", {
         "workspace": workspace,
-        "clients": Client.objects.filter(workspace=workspace),
+        "clients": Client.objects.filter(workspace=workspace, assigned_to=request.user)
+,
+        "is_admin": role_checker(request.user, workspace, "admin"),
     })
 
-
+@login_required
+def view_client_details(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    return render(request, "view_client_details.html", {
+        "client": client,
+    })
 @login_required
 def client_posts(request, client_id):
     client = get_object_or_404(Client, id=client_id)

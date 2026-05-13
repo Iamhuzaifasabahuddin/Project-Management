@@ -1,44 +1,79 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load bootstrap5 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
 {% load static %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-    <link rel="stylesheet" href="{% static 'register.css' %}">
-</head>
 
-<body>
+{% block title %}Create Client{% endblock %}
 
-<div class="container auth-wrapper d-flex align-items-center justify-content-center">
+{% block extra_css %}
 
-    <div class="col-lg-5 col-md-7 col-sm-10">
+{{ form.media.css }}
+{% endblock %}
 
-        <div class="text-center mb-4">
-            <h2 class="title">Create your account</h2>
-            <p class="subtitle">Start managing your projects efficiently</p>
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-custom px-4 py-3">
+    <div class="container-fluid">
+
+        <!-- LEFT -->
+        <div>
+            <h5 class="mb-0 fw-semibold">Workspace</h5>
+            <small class="muted">{{ workspace.name }}</small>
         </div>
 
-        <div class="card shadow-sm auth-card p-2 p-md-5">
+        <!-- TOGGLER (mobile) -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- RIGHT -->
+        <div class="collapse navbar-collapse justify-content-end" id="topNav">
+
+            <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+
+                <a href="{% url 'client_details' workspace.id %}" class="btn btn-primary btn-sm">
+                    Go Back
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                    Dashboard
+                </a>
+
+                <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">
+                    Workspaces
+                </a>
+
+                <a href="{% url 'client_list' workspace.id %}" class="btn btn-outline-secondary btn-sm">
+                    Clients
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+</nav>
+<div class="container auth-wrapper d-flex align-items-center justify-content-center mt-4 mb-4" style="min-height: 100vh;">
+
+    <div class="col-lg-6 col-md-8 col-sm-10">
+
+        <!-- HEADER -->
+        <div class="text-center mb-4">
+            <h2 class="title">Create Client</h2>
+            <p class="subtitle">Add a new client to workspace <strong>{{ workspace.name }}</strong></p>
+        </div>
+
+        <!-- CARD -->
+        <div class="card shadow-sm auth-card p-4 p-md-5">
 
             <form method="POST" novalidate>
                 {% csrf_token %}
 
+                {% bootstrap_form form %}
 
-                <div class="mb-3">
-                    {% bootstrap_form form %}
-                </div>
-
-                <div class="d-grid mt-3">
-                    <button type="submit" class="btn btn-primary">
-                        Create client
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-dark">
+                        Save Client
                     </button>
                 </div>
-            </form>
 
+            </form>
 
         </div>
 
@@ -46,6 +81,5 @@
 
 </div>
 
-</body>
+{% endblock %}
 
-</html>

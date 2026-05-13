@@ -38,15 +38,23 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
 
-        a { text-decoration: none; }
-
         .muted { color: #6b7280; }
+
+        .label {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
     </style>
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-custom px-4 py-3">
     <div class="container-fluid">
 
@@ -56,7 +64,6 @@
         </div>
 
         <div class="d-flex gap-2">
-
             <a href="{% url 'client_details' workspace.id %}" class="btn btn-outline-secondary btn-sm">
                 Workspace
             </a>
@@ -64,44 +71,93 @@
             <a href="{% url 'create_client' workspace.id %}" class="btn btn-dark btn-sm">
                 + Add Client
             </a>
-
         </div>
 
     </div>
 </nav>
 
-<!-- CONTENT -->
 <div class="container py-5">
 
-    <!-- HEADER -->
     <div class="page-header mb-4">
         <h2 class="fw-semibold mb-2">All Clients</h2>
-        <p class="muted mb-0">Manage clients in this workspace</p>
+        <p class="muted mb-0">Full client overview including billing and assignment details</p>
     </div>
 
-    <!-- CLIENT CARDS -->
     <div class="row g-3">
 
         {% for client in clients %}
         <div class="col-lg-4 col-md-6">
 
-            <div class="card card-ui p-3 shadow-sm">
+            <div class="card card-ui p-4">
 
-                <h5 class="fw-semibold mb-2">
-                    <a href="{% url 'client_posts' client.id %}" class="text-dark">
-                        {{ client.name }}
-                    </a>
+                <!-- NAME -->
+                <h5 class="fw-semibold mb-3">
+                    {{ client.name }}
                 </h5>
 
-                <p class="muted small mb-1">
-                    {{ client.email }}
-                </p>
+                <!-- CONTACT INFO -->
+                <div class="mb-3">
+                    <div class="label">Email</div>
+                    <div class="value">{{ client.email }}</div>
 
-                <p class="muted small mb-3">
-                    {{ client.number }}
-                </p>
+                    <div class="label">Phone</div>
+                    <div class="value">{{ client.number }}</div>
 
-                <div class="d-flex gap-2">
+                    <div class="label">Address</div>
+                    <div class="value">{{ client.address }}</div>
+                </div>
+
+                <hr>
+
+                <!-- PAYMENT INFO -->
+                <div class="mb-3">
+                    <div class="label">Payment Status</div>
+                    <div class="value">
+                        {% if client.paid %}
+                            <span class="text-success fw-semibold">Paid</span>
+                        {% else %}
+                            <span class="text-warning fw-semibold">Pending</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="label">Payment Type</div>
+                    <div class="value">{{ client.paid_type }}</div>
+
+                    <div class="label">Amount Paid</div>
+                    <div class="value">${{ client.amount_paid }}</div>
+
+                    <div class="label">Total Amount</div>
+                    <div class="value">${{ client.total_amount }}</div>
+
+                    <div class="label">Outstanding</div>
+                    <div class="value text-danger">
+                        ${{ client.outstanding }}
+                    </div>
+
+                    <div class="label">Payment Date</div>
+                    <div class="value">
+                        {{ client.payment_date|default:"Not set" }}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ASSIGNED USERS -->
+                <div class="mb-3">
+                    <div class="label">Assigned To</div>
+                    <div class="value">
+                        {% for user in client.assigned_to.all %}
+                            <span class="badge bg-dark me-1">{{ user.username }}</span>
+                        {% empty %}
+                            <span class="muted">No users assigned</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <!-- ACTIONS -->
+                <div class="d-flex gap-2 mt-3">
 
                     <a href="{% url 'client_posts' client.id %}"
                        class="btn btn-outline-dark btn-sm">
