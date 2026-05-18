@@ -52,10 +52,8 @@ def create_post(request, client_id):
                         file=uploaded_file
                     )
 
-            # Prepare file list for notification
             file_names = ', '.join([f.name for f in uploaded_files]) if uploaded_files else 'None'
 
-            # Create Slack message
             message = f"""
 *New Post Created*
 
