@@ -19,54 +19,41 @@
             border-bottom: 1px solid #e5e7eb;
         }
 
-        .container {
-            max-width: 800px;
+        .main-container {
+            max-width: 900px;
             margin: auto;
         }
 
-        .card {
-            background: #fff;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
+        .custom-card {
+            background: #ffffff;
+            border: none;
+            border-radius: 16px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-        }
-
-        .meta {
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .file-link {
-            display: inline-block;
-            margin-top: 10px;
-            color: #111827;
-            text-decoration: none;
-        }
-
-        .file-link:hover {
-            text-decoration: underline;
-        }
-
-        .comment {
-            border-top: 1px solid #eee;
-            padding-top: 12px;
-            margin-top: 12px;
-        }
-
-        .back-link {
-            color: #6b7280;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .back-link:hover {
-            color: #111827;
-            text-decoration: underline;
         }
 
         .muted {
             color: #6b7280;
+        }
+
+        .file-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            background: #fafafa;
+        }
+
+        .comment-card {
+            border: 1px solid #ececec;
+            border-radius: 12px;
+        }
+
+        textarea {
+            min-height: 130px;
+        }
+
+        .post-content {
+            white-space: pre-wrap;
+            line-height: 1.7;
         }
     </style>
 </head>
@@ -79,13 +66,21 @@
 
         <div>
             <h5 class="mb-0 fw-semibold">Post Detail</h5>
-            <small class="muted">View and manage comments</small>
+            <small class="muted">
+                View and manage comments
+            </small>
         </div>
 
         <div class="d-flex gap-2">
 
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <a href="{% url 'dashboard' %}" 
+               class="btn btn-outline-secondary btn-sm">
                 Dashboard
+            </a>
+
+            <a href="{% url 'client_details' post.client.workspace.id %}" 
+               class="btn btn-outline-secondary btn-sm">
+                Back
             </a>
 
         </div>
@@ -94,65 +89,216 @@
 </nav>
 
 <!-- CONTENT -->
-<div class="container py-4">
+<div class="container py-5 main-container">
 
-    <!-- POST -->
-    <div class="card">
-        <h1>{{ post.title }}</h1>
+    <!-- POST CARD -->
+    <div class="card custom-card mb-4 p-4 p-md-5">
 
-        <p class="meta">
-            By {{ post.author.username }} · {{ post.created_at }}
-        </p>
+        <h2 class="fw-bold mb-3">
+            {{ post.title }}
+        </h2>
 
-        <p>{{ post.content }}</p>
+        <!-- META -->
+        <div class="mb-4 muted">
+            <small>
+                Posted by 
+                <strong>{{ post.author.username }}</strong>
+                ·
+                {{ post.created_at|date:"M d, Y H:i" }}
 
-        {% if post.file %}
-            <a class="file-link" href="{{ post.file.url }}" target="_blank">
-                📎 Download {{ post.file.name|cut:"uploads/" }}
-            </a>
+                {% if post.updated_at != post.created_at %}
+                    · Edited {{ post.updated_at|date:"M d, Y H:i" }}
+                {% endif %}
+            </small>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="post-content mb-4">
+            {{ post.content|linebreaks }}
+        </div>
+
+        <!-- POST FILES -->
+        {% if post_files %}
+            <div class="mt-4">
+
+                <h6 class="fw-semibold mb-3">
+                    Attached Files ({{ post_files.count }})
+                </h6>
+
+                <div class="d-flex flex-column gap-3">
+
+                    {% for file in post_files %}
+                        <div class="file-box d-flex justify-content-between align-items-center">
+
+                            <div>
+                                <a href="{{ file.file.url }}" 
+                                   target="_blank"
+                                   class="text-decoration-none fw-semibold">
+                                    📎 {{ file.file.name|truncatechars:50 }}
+                                </a>
+
+                                <small class="muted d-block mt-1">
+                                    Uploaded {{ file.uploaded_at|date:"M d, Y H:i" }}
+                                </small>
+                            </div>
+
+
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
         {% endif %}
+
     </div>
 
     <!-- COMMENTS -->
-    <div class="card">
-        <h2>Comments</h2>
+    <div class="card custom-card mb-4 p-4">
 
-        {% for comment in comments %}
-            <div class="comment">
-                <p>{{ comment.content }}</p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-semibold mb-0">
+                Comments
+            </h4>
 
-                <p class="meta">
-                    By {{ comment.author.username }} · {{ comment.created_at }}
-                </p>
+            <span class="badge bg-dark">
+                {{ comments.count }}
+            </span>
+        </div>
 
-                {% if comment.file %}
-                    <a class="file-link" href="{{ comment.file.url }}" target="_blank">
-                        📎 Download {{ comment.file.name|cut:"uploads/" }}
-                    </a>
-                {% endif %}
+        {% if comments %}
+
+            <div class="d-flex flex-column gap-3">
+
+                {% for comment in comments %}
+
+                    <div class="comment-card p-3">
+
+                        <!-- COMMENT HEADER -->
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+
+                            <div>
+                                <h6 class="fw-semibold mb-1">
+                                    {{ comment.author.username }}
+                                </h6>
+
+                                <small class="muted">
+                                    {{ comment.created_at|date:"M d, Y H:i" }}
+                                </small>
+                            </div>
+
+                        </div>
+
+                        <!-- COMMENT CONTENT -->
+                        <div class="mb-3">
+                            {{ comment.content|linebreaks }}
+                        </div>
+
+                        <!-- COMMENT FILES -->
+                        {% if comment.files.all %}
+
+                            <div class="d-flex flex-column gap-2">
+
+                                {% for file in comment.files.all %}
+
+                                    <div class="file-box d-flex justify-content-between align-items-center">
+
+                                        <a href="{{ file.file.url }}"
+                                           target="_blank"
+                                           class="text-decoration-none text-truncate">
+                                            📎 {{ file.file.name|truncatechars:35 }}
+                                        </a>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
             </div>
-        {% empty %}
-            <p class="meta">No comments yet.</p>
-        {% endfor %}
+
+        {% else %}
+
+            <p class="muted mb-0">
+                No comments yet.
+            </p>
+
+        {% endif %}
+
     </div>
 
     <!-- ADD COMMENT -->
-    <div class="card">
-        <h3>Add Comment</h3>
+    <div class="card custom-card p-4 p-md-5">
+
+        <h4 class="fw-semibold mb-4">
+            Add Comment
+        </h4>
 
         <form method="post" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
 
-            {% bootstrap_form form %}
+            <!-- COMMENT FIELD -->
+            <div class="mb-4">
 
-            <button type="submit" class="btn btn-dark w-100 mt-3">
-                Add Comment
-            </button>
+                <label for="{{ form.content.id_for_label }}" 
+                       class="form-label fw-semibold">
+                    Your Comment *
+                </label>
+
+                {{ form.content }}
+
+                {% if form.content.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.content.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+            <!-- FILE UPLOAD -->
+            <div class="mb-4">
+
+                <label for="files" class="form-label fw-semibold">
+                    Attach Files
+                </label>
+
+                <input
+                    type="file"
+                    id="files"
+                    name="files"
+                    multiple
+                    class="form-control"
+                    accept="*/*"
+                >
+
+                <small class="text-muted d-block mt-2">
+                    You can upload multiple files at once.
+                </small>
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="d-flex gap-2">
+
+                <button type="submit" 
+                        class="btn btn-dark px-4">
+                    Post Comment
+                </button>
+
+                <a href="{% url 'client_details' post.client.workspace.id %}"
+                   class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+
+            </div>
+
         </form>
-    </div>
-
-    <!-- BACK -->
-    <div class="text-center">
 
     </div>
 

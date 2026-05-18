@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 {% load bootstrap5 %}
 {% bootstrap_css %}
-{% bootstrap_javascript %}
 
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Workspace</title>
+
+    <!-- BOOTSTRAP -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
 
     <style>
         body {
@@ -38,37 +42,60 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.08);
         }
 
-        a { text-decoration: none; }
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+        }
 
-        .muted { color: #6b7280; }
+        .muted {
+            color: #6b7280;
+        }
+
+        a {
+            text-decoration: none;
+        }
     </style>
+
 </head>
 
 <body>
+{% bootstrap_javascript %}
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-custom px-4 py-3">
+
     <div class="container-fluid">
 
         <div>
-            <h5 class="mb-0 fw-semibold">Workspace</h5>
-            <small class="muted">{{ workspace.name }}</small>
+            <h5 class="mb-0 fw-semibold">
+                Workspace
+            </h5>
+
+            <small class="muted">
+                {{ workspace.name }}
+            </small>
         </div>
 
         <div class="d-flex gap-2">
 
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+            <a href="{% url 'dashboard' %}"
+               class="btn btn-outline-secondary btn-sm">
                 Dashboard
             </a>
 
-            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">
+            <a href="{% url 'workspace_list' %}"
+               class="btn btn-outline-secondary btn-sm">
                 Workspaces
             </a>
-            <a href="{% url 'client_list' workspace.id %}" class="btn btn-outline-secondary btn-sm">
+
+            <a href="{% url 'client_list' workspace.id %}"
+               class="btn btn-outline-secondary btn-sm">
                 All Clients
             </a>
+
             {% if is_admin or request.user.is_superuser %}
-            <a href="{% url 'create_client' workspace.id %}" class="btn btn-dark btn-sm">
+            <a href="{% url 'create_client' workspace.id %}"
+               class="btn btn-dark btn-sm">
                 + Add Client
             </a>
             {% endif %}
@@ -76,6 +103,7 @@
         </div>
 
     </div>
+
 </nav>
 
 <!-- CONTENT -->
@@ -83,110 +111,327 @@
 
     <!-- HEADER -->
     <div class="workspace-header mb-4">
-        <h2 class="fw-semibold mb-2">{{ workspace.name }}</h2>
-        <p class="muted mb-0">Workspace overview: clients and activity</p>
+
+        <h2 class="fw-semibold mb-2">
+            {{ workspace.name }}
+        </h2>
+
+        <p class="muted mb-0">
+            Workspace overview: clients and activity
+        </p>
+
     </div>
 
     <!-- CLIENTS -->
     <div class="mb-3">
-        <h4 class="fw-semibold">Clients</h4>
+        <h4 class="fw-semibold">
+            Clients
+        </h4>
     </div>
 
     <div class="row g-3 mb-5">
 
         {% for client in clients %}
+
         <div class="col-lg-4">
 
-            <div class="card card-ui p-3 shadow-sm">
+            <!-- CLIENT CARD -->
+            <div class="card card-ui p-3 shadow-sm h-100">
 
                 <h5 class="fw-semibold">
-                    <a href="{% url 'client_posts' client.id %}" class="text-dark">
+
+                    <a href="{% url 'client_posts' client.id %}"
+                       class="text-dark">
                         {{ client.name }}
                     </a>
+
                 </h5>
 
                 <p class="muted small mb-2">
                     {{ client.email }} • {{ client.number }}
                 </p>
-                <p class="muted small mb-2">
-                    {{ client.paid|yesno:"Paid,Pending" }} • {{ client.outstanding }}
+
+                <p class="muted small mb-3">
+
+                    {{ client.paid|yesno:"Paid,Pending" }}
+                    • ${{ client.outstanding }}
+
                     {% if client.assigned_to.all %}
                     • Assigned to:
+
                     {% for user in client.assigned_to.all %}
-                    <span class="badge bg-secondary">{{ user.username }}</span>
+                    <span class="badge bg-secondary">
+                                {{ user.username }}
+                            </span>
                     {% endfor %}
+
                     {% else %}
                     • Not assigned
                     {% endif %}
+
                 </p>
 
-                <a href="{% url 'create_post' client.id %}" class="btn btn-outline-dark btn-sm">
-                    + Add Post
-                </a>
-                <a href="{% url 'view_client' client.id %}" class="btn btn-outline-dark btn-sm">
-                    Preview Details
-                </a>
-                {% if is_admin or request.user.is_superuser %}
+                <div class="d-flex flex-wrap gap-2">
 
-                <a href="{% url 'create_post' client.id %}" class="btn btn-outline-dark btn-sm">
-                    + Add Post
-                </a>
-                {% endif %}
+                    <a href="{% url 'create_post' client.id %}"
+                       class="btn btn-outline-dark btn-sm">
+                        + Add Post
+                    </a>
+
+                    <!-- MODAL BUTTON -->
+                    <button type="button"
+                            class="btn btn-dark btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#clientModal{{ client.id }}">
+
+                        Preview Details
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- MODAL -->
+        <div class="modal fade"
+             id="clientModal{{ client.id }}"
+             tabindex="-1"
+             aria-hidden="true">
+
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+
+                <div class="modal-content">
+
+                    <!-- HEADER -->
+                    <div class="modal-header border-bottom px-4 py-3">
+
+                        <div>
+
+                            <h4 class="fw-semibold mb-1">
+                                {{ client.name }}
+                            </h4>
+
+                            <small class="text-muted">
+                                {{ client.workspace.name }}
+                            </small>
+
+                        </div>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal">
+                        </button>
+
+                    </div>
+
+                    <!-- BODY -->
+                    <div class="modal-body p-4">
+
+                        <!-- TOP -->
+                        <div class="card card-ui p-4 mb-4">
+
+                            <h3 class="fw-semibold mb-1">
+                                {{ client.name }}
+                            </h3>
+
+                            <p class="muted mb-0">
+                                Client profile overview
+                            </p>
+
+                        </div>
+
+                        <div class="row g-4">
+
+                            <!-- LEFT -->
+                            <div class="col-lg-6">
+
+                                <!-- CONTACT -->
+                                <div class="card card-ui p-4 mb-4">
+
+                                    <div class="fw-semibold mb-3">
+                                        Contact Information
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Email
+                                    </div>
+
+                                    <div class="fw-medium mb-3">
+                                        {{ client.email }}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Phone
+                                    </div>
+
+                                    <div class="fw-medium mb-3">
+                                        {{ client.number }}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Address
+                                    </div>
+
+                                    <div class="fw-medium">
+                                        {{ client.address|default:"Not provided" }}
+                                    </div>
+
+                                </div>
+
+                                <!-- WORKSPACE -->
+                                <div class="card card-ui p-4">
+
+                                    <div class="fw-semibold mb-3">
+                                        Workspace
+                                    </div>
+
+                                    <div class="fw-medium">
+                                        {{ client.workspace.name }}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            <!-- RIGHT -->
+                            <div class="col-lg-6">
+
+                                <!-- PAYMENT -->
+                                <div class="card card-ui p-4 mb-4">
+
+                                    <div class="fw-semibold mb-3">
+                                        Payment Details
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Status
+                                    </div>
+
+                                    <div class="mb-3">
+
+                                        {% if client.paid %}
+                                        <span class="badge bg-success">
+                                                Paid
+                                            </span>
+                                        {% else %}
+                                        <span class="badge bg-warning text-dark">
+                                                Pending
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Payment Type
+                                    </div>
+
+                                    <div class="fw-medium mb-3">
+                                        {{ client.paid_type }}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Amount Paid
+                                    </div>
+
+                                    <div class="fw-medium mb-3">
+                                        ${{ client.amount_paid }}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Total Amount
+                                    </div>
+
+                                    <div class="fw-medium mb-3">
+                                        ${{ client.total_amount }}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        Outstanding
+                                    </div>
+
+                                    {% if client.outstanding >= 0 %}
+                                    <div class="fw-medium text-success mb-3">
+                                        ${{ client.outstanding }}
+                                    </div>
+                                    {% else %}
+                                    <div class="fw-medium text-danger mb-3">
+                                        ${{ client.outstanding }}
+                                    </div>
+                                    {% endif %}
+                                    <div class="text-muted small">
+                                        Payment Date
+                                    </div>
+
+                                    <div class="fw-medium">
+                                        {{ client.payment_date|default:"Not set" }}
+                                    </div>
+
+                                </div>
+
+                                <!-- ASSIGNED USERS -->
+                                <div class="card card-ui p-4">
+
+                                    <div class="fw-semibold mb-3">
+                                        Assigned Users
+                                    </div>
+
+                                    {% for user in client.assigned_to.all %}
+
+                                    <span class="badge bg-dark me-1 mb-1">
+                                            {{ user.username }}
+                                        </span>
+
+                                    {% empty %}
+
+                                    <p class="muted mb-0">
+                                        No users assigned
+                                    </p>
+
+                                    {% endfor %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer border-top px-4 py-3">
+
+                        <a href="{% url 'client_posts' client.id %}"
+                           class="btn btn-dark">
+                            Open Client
+                        </a>
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+                            Close
+                        </button>
+
+                    </div>
+
+                </div>
 
             </div>
 
         </div>
 
         {% empty %}
+
         <div class="col-12">
+
             <div class="alert alert-light border">
                 No clients found in this workspace.
             </div>
+
         </div>
+
         {% endfor %}
-
-    </div>
-
-    <!-- POSTS -->
-    <div class="mb-3">
-        <h4 class="fw-semibold">Recent Posts</h4>
-    </div>
-
-    <div class="row g-3">
-
-        {% if posts %}
-        {% for post in posts %}
-        <div class="col-lg-6">
-
-            <div class="card card-ui p-3 shadow-sm">
-
-                <h5 class="fw-semibold mb-2">
-                    <a href="{% url 'post_detail' post.id %}" class="text-dark">
-                        {{ post.title }}
-                    </a>
-                </h5>
-
-                <p class="muted small mb-2">
-                    {{ post.client.name }} • {{ post.author.username }} • {{ post.created_at }}
-                </p>
-
-                {% if post.file %}
-                <a href="{{ post.file.url }}" class="btn btn-outline-secondary btn-sm">
-                    Download File
-                </a>
-                {% endif %}
-
-            </div>
-
-        </div>
-        {% endfor %}
-        {% else %}
-        <div class="col-12">
-            <div class="alert alert-light border">
-                No posts yet in this workspace.
-            </div>
-        </div>
-        {% endif %}
 
     </div>
 
