@@ -7,44 +7,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
+    <title>Sign Up - Project Management</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <link rel="stylesheet" href="{% static 'register.css' %}">
+
+    <style>
+        body {
+            background: #f5f7fb;
+        }
+
+        .auth-wrapper {
+            min-height: 100vh;
+        }
+
+        .auth-card {
+            border: none;
+            border-radius: 18px;
+        }
+
+        .title {
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #6c757d;
+        }
+
+        .password-toggle {
+            cursor: pointer;
+        }
+
+        .form-control,
+        .input-group-text {
+            height: 50px;
+        }
+
+        .btn-primary {
+            height: 50px;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container auth-wrapper d-flex align-items-center justify-content-center">
+<div class="container-fluid auth-wrapper d-flex align-items-center justify-content-center py-5">
 
-    <div class="col-lg-5 col-md-7 col-sm-10">
+    <!-- Increased Width -->
+    <div class="col-xl-8 col-lg-9 col-md-11">
 
         <div class="text-center mb-4">
             <h2 class="title">Create your account</h2>
             <p class="subtitle">Start managing your projects efficiently</p>
         </div>
 
-        <div class="card shadow-sm auth-card p-2 p-md-5">
+        <div class="card shadow auth-card p-4 p-md-5">
 
             <form method="POST" novalidate>
                 {% csrf_token %}
 
+                <!-- First Name + Last Name -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">
+                            <i class="fas fa-user"></i> First Name
+                        </label>
 
-                <div class="mb-3">
-                    {% bootstrap_form form %}
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-pen"></i>
+                            </span>
+
+                            <input
+                                    type="text"
+                                    class="form-control"
+                                    id="id_first_name"
+                                    name="first_name"
+                                    placeholder="Enter first name"
+                                    {% if form.first_name.value %}
+                                    value="{{ form.first_name.value }}"
+                                    {% endif %}
+                            >
+                        </div>
+
+                        {% if form.first_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.first_name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">
+                            <i class="fas fa-user"></i> Last Name
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-pen"></i>
+                            </span>
+
+                            <input
+                                    type="text"
+                                    class="form-control"
+                                    id="id_last_name"
+                                    name="last_name"
+                                    placeholder="Enter last name"
+                                    {% if form.last_name.value %}
+                                    value="{{ form.last_name.value }}"
+                                    {% endif %}
+                            >
+                        </div>
+
+                        {% if form.last_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.last_name.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <div class="d-grid mt-3">
+                <!-- Username + Email -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_username" class="form-label">
+                            <i class="fas fa-at"></i> Username
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">@</span>
+
+                            <input
+                                    type="text"
+                                    class="form-control"
+                                    id="id_username"
+                                    name="username"
+                                    placeholder="Username"
+                                    {% if form.username.value %}
+                                    value="{{ form.username.value }}"
+                                    {% endif %}
+                            >
+                        </div>
+
+                        {% if form.username.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.username.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="id_email" class="form-label">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </label>
+
+                        <div class="input-group">
+                            <input
+                                    type="text"
+                                    class="form-control"
+                                    id="id_email"
+                                    name="email"
+                                    placeholder="your email"
+                                    {% if form.email.value %}
+                                    value="{{ form.email.value|cut:'@topsoftdigitals.pk' }}"
+                                    {% endif %}
+                            >
+                            <span class="input-group-text">
+    @topsoftdigitals.pk
+</span>
+                        </div>
+
+                        {% if form.email.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.email.errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Password + Confirm Password -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password1" class="form-label">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-key"></i>
+                            </span>
+
+                            <input
+                                    type="password"
+                                    class="form-control"
+                                    id="id_password1"
+                                    name="password1"
+                                    placeholder="Enter password"
+                            >
+
+                            <span
+                                    class="input-group-text password-toggle"
+                                    onclick="togglePassword('id_password1', this)"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+
+                        {% if form.password1.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.password1.errors %}
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="id_password2" class="form-label">
+                            <i class="fas fa-lock"></i> Confirm Password
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-key"></i>
+                            </span>
+
+                            <input
+                                    type="password"
+                                    class="form-control"
+                                    id="id_password2"
+                                    name="password2"
+                                    placeholder="Confirm password"
+                            >
+
+                            <span
+                                    class="input-group-text password-toggle"
+                                    onclick="togglePassword('id_password2', this)"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
+
+                        {% if form.password2.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.password2.errors %}
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Other Dynamic Fields -->
+                <div class="row">
+                    {% for field in form %}
+                    {% if field.name not in 'first_name,last_name,username,email,password1,password2' %}
+                    <div class="col-md-6 mb-3">
+
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in field.errors %}
+                            {{ error }}<br>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                <!-- Submit -->
+                <div class="d-grid mt-4">
                     <button type="submit" class="btn btn-primary">
-                        Create account
+                        <i class="fas fa-user-check"></i>
+                        Create Account
                     </button>
                 </div>
+
             </form>
 
-            <div class="text-center my-3 text-muted small">
+            <div class="text-center my-4 text-muted small">
+                <i class="fas fa-arrow-right"></i>
                 Already have an account?
             </div>
 
             <div class="text-center">
-                <a href="{% url 'login' %}" class="fw-medium text-dark">
+                <a href="{% url 'login' %}" class="fw-semibold text-decoration-none">
+                    <i class="fas fa-sign-in-alt"></i>
                     Sign in instead
                 </a>
             </div>
@@ -55,6 +323,23 @@
 
 </div>
 
-</body>
+<script>
+    function togglePassword(fieldId, element) {
 
+        const field = document.getElementById(fieldId);
+        const icon = element.querySelector('i');
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            field.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
+
+</body>
 </html>

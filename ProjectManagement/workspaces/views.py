@@ -153,6 +153,7 @@ def client_detail(request, workspace_id):
         "clients": Client.objects.filter(workspace=workspace, assigned_to=request.user)
 ,
         "is_admin": role_checker(request.user, workspace, "admin"),
+        "is_member": role_checker(request.user, workspace, "member"),
     })
 
 @login_required

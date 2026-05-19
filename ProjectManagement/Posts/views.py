@@ -11,7 +11,8 @@ from script import send_dm_by_email, upload_file_to_slack
 
 # Create your views here.
 
-
+def role_checker(user, workspace, role):
+    return Membership.objects.filter(user=user, workspace=workspace, role=role).exists()
 # =========================
 # POSTS + COMMENTS
 # =========================
@@ -80,8 +81,8 @@ def create_post(request, client_id):
                     )
 
         return redirect(
-            "client_details",
-            workspace_id=workspace.id
+            "client_posts",
+            client_id=client_id
         )
 
     return render(request, "create_post.html", {
@@ -147,52 +148,14 @@ def post_detail(request, post_id):
         "form": form,
     })
 
-
 @login_required
-def delete_post_file(request, file_id):
-    """
-    Delete a specific file from a post.
-    """
-    post_file = get_object_or_404(PostFile, id=file_id)
-    post_id = post_file.post.id
-
-    # Check permissions
-    if not Membership.objects.filter(
-            user=request.user,
-            workspace=post_file.post.client.workspace
-    ).exists():
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    client = post.client
+    is_admin = role_checker(request.user, post.client.workspace, "admin") or request.user
+    is_author = post.author == request.user
+    if not is_admin:
         raise PermissionDenied("Not allowed")
+    post.delete()
+    return redirect("client_posts", client_id=client.id)
 
-    # Only author or admin can delete
-    if request.user != post_file.post.author:
-        raise PermissionDenied("You can only delete your own files")
-
-    # Delete the file
-    post_file.delete()
-
-    return redirect("post_detail", post_id=post_id)
-
-
-@login_required
-def delete_comment_file(request, file_id):
-    """
-    Delete a specific file from a comment.
-    """
-    comment_file = get_object_or_404(CommentFile, id=file_id)
-    post_id = comment_file.comment.post.id
-
-    # Check permissions
-    if not Membership.objects.filter(
-            user=request.user,
-            workspace=comment_file.comment.post.client.workspace
-    ).exists():
-        raise PermissionDenied("Not allowed")
-
-    # Only comment author can delete
-    if request.user != comment_file.comment.author:
-        raise PermissionDenied("You can only delete your own files")
-
-    # Delete the file
-    comment_file.delete()
-
-    return redirect("post_detail", post_id=post_id)

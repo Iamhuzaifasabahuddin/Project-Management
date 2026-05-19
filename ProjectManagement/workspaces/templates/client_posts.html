@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 {% load bootstrap5 %}
 {% bootstrap_css %}
-{% bootstrap_javascript %}
 
 <html lang="en">
 <head>
@@ -37,11 +36,14 @@
             color: #6b7280;
         }
 
-        a { text-decoration: none; }
+        a {
+            text-decoration: none;
+        }
     </style>
 </head>
 
 <body>
+{% bootstrap_javascript %}
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-light bg-white border-bottom px-4 py-3">
@@ -68,27 +70,35 @@
 <!-- CONTENT -->
 <div class="container py-5">
 
-    <!-- CLIENT HEADER -->
+    <!-- HEADER -->
     <div class="header-card mb-4">
 
-        <h3 class="fw-semibold mb-1">{{ client.name }}</h3>
+        <h3 class="fw-semibold mb-1">
+            {{ client.name }}
+        </h3>
 
         <p class="muted mb-1">
-            {{ client.email }} • {{ client.number }}
+            {{ client.email  }} • {{ client.number }}
+        </p>
+        <p class="muted mb-1">
+            Amount: <strong>${{ client.amount_paid }}</strong> • Paid: <strong>{{ client.paid }}</strong> • Payment Date: <strong>{{ client.payment_date| date:"d M, Y" }}</strong> • <strong>{{ client.paid_type | capfirst }}</strong>
         </p>
 
         <p class="muted mb-0">
-            Workspace: {{ client.workspace.name }}
+            Workspace: <strong>{{ client.workspace.name }}</strong>
         </p>
 
     </div>
 
-    <!-- POSTS LIST -->
-    <h4 class="fw-semibold mb-3">Posts</h4>
+    <!-- POSTS -->
+    <h4 class="fw-semibold mb-3">
+        Posts
+    </h4>
 
     <div class="row g-3">
 
         {% for post in posts %}
+
         <div class="col-lg-6">
 
             <div class="card post-card p-3 shadow-sm">
@@ -107,22 +117,85 @@
                     {{ post.content|truncatewords:25 }}
                 </p>
 
-                {% if post.file %}
-                <a href="{{ post.file.url }}" class="btn btn-outline-secondary btn-sm">
-                    Download File
-                </a>
-                {% endif %}
+                <!-- ACTIONS -->
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+
+                    {% if post.file %}
+                        <a href="{{ post.file.url }}"
+                           class="btn btn-outline-secondary btn-sm">
+                            Download File
+                        </a>
+                    {% endif %}
+
+                    {% if is_admin or is_member or request.user.is_superuser %}
+
+                        <!-- DELETE BUTTON -->
+                        <button type="button"
+                                class="btn btn-outline-danger btn-sm ms-auto"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal{{ post.id }}">
+                            Delete Post
+                        </button>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- DELETE MODAL -->
+        <div class="modal fade"
+             id="deleteModal{{ post.id }}"
+             tabindex="-1"
+             aria-hidden="true">
+
+            <div class="modal-dialog modal-dialog-centered">
+
+                <div class="modal-content">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirm Deletion</h5>
+                        <button type="button" class="btn-close"
+                                data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        Are you sure you want to delete
+                        <strong>{{ post.title }}</strong>?
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+
+                        <a href="{% url 'delete_post' post.id %}"
+                           class="btn btn-danger">
+                            Yes, Delete
+                        </a>
+
+                    </div>
+
+                </div>
 
             </div>
 
         </div>
 
         {% empty %}
+
         <div class="col-12">
             <div class="alert alert-light border">
                 No posts found for this client.
             </div>
         </div>
+
         {% endfor %}
 
     </div>

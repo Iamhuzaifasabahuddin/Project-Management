@@ -5,29 +5,43 @@ from django.contrib.auth.forms import UserCreationForm
 
 from .models import User
 
+
 class RegisterForm(UserCreationForm):
+
     first_name = forms.CharField(required=True)
     last_name = forms.CharField(required=True)
-    email = forms.EmailField(required=True)
+
+    # user enters ONLY username part
+    email = forms.CharField(required=True)
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'username', 'email', 'password1', 'password2']
+        fields = [
+            'first_name',
+            'last_name',
+            'username',
+            'email',
+            'password1',
+            'password2'
+        ]
 
     def clean_email(self):
-        ALLOWED_DOMAIN = "topsoftdigitals.pk"
-        email = self.cleaned_data.get("email", "").strip().lower()
 
-        if not email.endswith(f"@{ALLOWED_DOMAIN}"):
+        ALLOWED_DOMAIN = "topsoftdigitals.pk"
+
+        email_part = self.cleaned_data.get("email", "").strip().lower()
+
+        # prevent user typing full email
+        if "@" in email_part:
             raise forms.ValidationError(
-                f"Only @{ALLOWED_DOMAIN} email addresses are allowed."
+                "Only enter the email username, not the domain."
             )
 
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("This email is already registered.")
+        full_email = f"{email_part}@{ALLOWED_DOMAIN}"
 
-        return email
+        if User.objects.filter(email=full_email).exists():
+            raise forms.ValidationError(
+                "This email is already registered."
+            )
 
-
-
-
+        return full_email
