@@ -25,6 +25,7 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('', include('Posts.urls')),
     path('', include('workspaces.urls')),
+    path('', include('Teams.urls')),
     path("select2/", include("django_select2.urls")),
 ]
 

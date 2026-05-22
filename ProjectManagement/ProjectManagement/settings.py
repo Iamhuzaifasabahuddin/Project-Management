@@ -47,9 +47,10 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'allauth.socialaccount.providers.github',
-'bootstrap5',
+    'bootstrap5',
     'Posts',
     'workspaces',
+    'Teams',
     'django_select2'
 ]
 SELECT2_APPS = {
@@ -192,3 +193,51 @@ EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
 #
 # AWS_QUERYSTRING_AUTH = False
 # AWS_S3_FILE_OVERWRITE = False
+
+# ===========================
+
+# Celery broker - using Redis (recommended for production)
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+# Celery result backend - store task results
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Task serialization
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Task execution settings
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes (warning before hard limit)
+
+# Retry settings
+CELERY_TASK_MAX_RETRIES = 3
+CELERY_TASK_DEFAULT_RETRY_DELAY = 60  # 60 seconds between retries
+
+# Result backend settings
+CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
+
+# Optional: Task routing for different workers
+CELERY_TASK_ROUTES = {
+    'posts.tasks.send_post_email_task': {'queue': 'email'},
+    'posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
+    'posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
+}
+
+# Optional: Task rate limiting
+CELERY_TASK_RATE_LIMIT = {
+    'posts.tasks.send_post_email_task': '100/m',  # 100 tasks per minute
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}

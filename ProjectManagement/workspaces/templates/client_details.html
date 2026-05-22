@@ -140,7 +140,7 @@
 
                 <h5 class="fw-semibold">
 
-                    <a href="{% url 'client_posts' client.id %}"
+                    <a href="{% url 'client_teams' client.id %}"
                        class="text-dark">
                         {{ client.name }}
                     </a>
@@ -154,29 +154,24 @@
                 <p class="muted small mb-3">
 
                     {{ client.paid|yesno:"Paid,Pending" }}
-                    • ${{ client.outstanding }}
+                    • ${{ client.amount_paid }}
 
-                    {% if client.assigned_to.all %}
-                    • Assigned to:
+<!--                    {% if client.assigned_to.all %}-->
+<!--                    • Assigned to:-->
 
-                    {% for user in client.assigned_to.all %}
-                    <span class="badge bg-secondary">
-                                {{ user.username }}
-                            </span>
-                    {% endfor %}
+<!--                    {% for user in client.assigned_to.all %}-->
+<!--                    <span class="badge bg-secondary">-->
+<!--                                {{ user.username }}-->
+<!--                            </span>-->
+<!--                    {% endfor %}-->
 
-                    {% else %}
-                    • Not assigned
-                    {% endif %}
+<!--                    {% else %}-->
+<!--                    • Not assigned-->
+<!--                    {% endif %}-->
 
                 </p>
 
                 <div class="d-flex flex-wrap gap-2">
-
-                    <a href="{% url 'create_post' client.id %}"
-                       class="btn btn-outline-dark btn-sm">
-                        + Add Post
-                    </a>
 
                     <!-- MODAL BUTTON -->
                     <button type="button"
@@ -187,6 +182,10 @@
                         Preview Details
 
                     </button>
+                    <a href="{% url 'client_teams' client.id %}"
+                       class="btn btn-primary btn-sm">
+                        Open Client
+                    </a>
 
                 </div>
 
@@ -402,7 +401,7 @@
                     <!-- FOOTER -->
                     <div class="modal-footer border-top px-4 py-3">
 
-                        <a href="{% url 'client_posts' client.id %}"
+                        <a href="{% url 'client_teams' client.id %}"
                            class="btn btn-dark">
                             Open Client
                         </a>

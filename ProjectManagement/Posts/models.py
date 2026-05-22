@@ -2,6 +2,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+import Teams
+from Teams.models import Team
 from workspaces.models import Client
 
 
@@ -10,15 +12,17 @@ from workspaces.models import Client
 # ─────────────────────────────────────────────
 
 class Post(models.Model):
-    client = models.ForeignKey(
-        Client,
+    team = models.ForeignKey(
+        Team,
         on_delete=models.CASCADE,
-        related_name='posts',
-        null=True,
-        blank=True
+        related_name="posts"
     )
 
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="posts"
+    )
 
     title = models.CharField(max_length=255)
     content = models.TextField()
@@ -26,11 +30,11 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return self.title
-
-    class Meta:
-        ordering = ['-created_at']
 
 
 class PostFile(models.Model):

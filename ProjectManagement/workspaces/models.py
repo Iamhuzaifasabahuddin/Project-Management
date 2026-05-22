@@ -61,7 +61,13 @@ class Membership(models.Model):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
         ('manager', 'Manager'),
-        ('member', 'Member'),
+        ('project manager', 'Project Manager'),
+        ('marketing', 'Marketing'),
+        ('designer', 'Designer'),
+        ('developer', 'Developer'),
+        ('editor', 'Editor'),
+        ('publisher', 'Publisher'),
+
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -77,4 +83,4 @@ class Membership(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user} - {self.workspace} ({self.role})"
+        return f"{self.role}"

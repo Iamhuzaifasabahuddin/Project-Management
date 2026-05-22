@@ -54,6 +54,11 @@
 
     <div class="d-flex gap-2">
 
+        <a href="{% url 'client_teams' client.id %}"
+           class="btn btn-primary btn-sm">
+            Go Back To Teams
+        </a>
+
         <a href="{% url 'client_details' client.workspace.id %}"
            class="btn btn-outline-secondary btn-sm">
             Back to Workspace
