@@ -78,7 +78,7 @@
                 Dashboard
             </a>
 
-            <a href="{% url 'team_posts' post.team.id %}"
+            <a href="{% url 'team_posts' post.task.id %}"
                class="btn btn-outline-secondary btn-sm">
                 Back
             </a>
@@ -291,7 +291,7 @@
                     Post Comment
                 </button>
 
-                <a href="{% url 'team_posts' post.team.id %}"
+                <a href="{% url 'team_posts' post.task.id %}"
                    class="btn btn-outline-secondary">
                     Cancel
                 </a>

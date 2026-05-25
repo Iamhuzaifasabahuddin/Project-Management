@@ -199,7 +199,6 @@ class TeamMembersForm(forms.Form):
         self.team = team
         self.workspace = workspace
 
-        # 1. Base Queryset (Users in Workspace)
         if workspace:
             workspace_user_ids = Membership.objects.filter(
                 workspace=workspace
@@ -208,18 +207,18 @@ class TeamMembersForm(forms.Form):
         else:
             qs = User.objects.all()
 
-        # 2. Dynamic Filtering based on Action
-        # We check self.data (POST) or default to 'add'
-        action = (self.data.get('action') or 'add') if self.data else 'add'
+        action = 'add'
+        if self.data:
+            action = self.data.get('action', 'add')
+        elif self.initial:
+            action = self.initial.get('action', 'add')
 
         if team:
             if action == 'add':
-                # SHOW ONLY NON-MEMBERS
                 qs = qs.exclude(id__in=team.members.all())
             elif action == 'remove':
-                # SHOW ONLY CURRENT MEMBERS
                 qs = qs.filter(id__in=team.members.all())
-            # For 'replace', we show all workspace users
+
 
         self.fields['members'].queryset = qs.order_by('first_name', 'last_name', 'username')
         self.fields['members'].label_from_instance = self._user_label

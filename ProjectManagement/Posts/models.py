@@ -2,20 +2,44 @@
 from django.contrib.auth.models import User
 from django.db import models
 
-import Teams
 from Teams.models import Team
 from workspaces.models import Client
-
-
 # ─────────────────────────────────────────────
-# CLIENT POSTS (UPDATED)
+#  TASKS
 # ─────────────────────────────────────────────
 
-class Post(models.Model):
+class Task(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
     team = models.ForeignKey(
         Team,
         on_delete=models.CASCADE,
-        related_name="posts"
+        related_name="tasks"
+    )
+    assigned_to = models.ManyToManyField(
+        User,
+        related_name="assigned_tasks",
+        blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.team.name} - {self.name}"
+
+
+# ─────────────────────────────────────────────
+#  POSTS (UPDATED)
+# ─────────────────────────────────────────────
+
+class Post(models.Model):
+
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name="posts",
+        null=True,
+        blank=True
     )
 
     author = models.ForeignKey(

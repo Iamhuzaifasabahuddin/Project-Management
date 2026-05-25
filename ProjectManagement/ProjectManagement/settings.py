@@ -169,7 +169,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = "themirageconnect@gmail.com"
 EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
-
+EMAIL_TIMEOUT = 15
 # DOMAIN = '127.0.0.1:8000'
 
 
@@ -230,14 +230,4 @@ CELERY_TASK_ROUTES = {
 # Optional: Task rate limiting
 CELERY_TASK_RATE_LIMIT = {
     'posts.tasks.send_post_email_task': '100/m',  # 100 tasks per minute
-}
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    }
 }

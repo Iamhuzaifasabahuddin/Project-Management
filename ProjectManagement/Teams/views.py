@@ -13,16 +13,19 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.views.decorators.http import require_http_methods
 
+from Posts.models import Task
 from Teams.models import Team
 from workspaces.models import Client, Membership
 from .forms import TeamForm, TeamEditForm, TeamMembersForm
 
 @login_required
-def team_posts(request, team_id):
+def team_posts(request, task_id):
 
-    team = get_object_or_404(Team, id=team_id)
+    task = get_object_or_404(Task, id=task_id)
 
-    workspace = team.client.workspace
+    workspace = task.team.client.workspace
+    client = task.team.client
+    team = task.team
 
     # =========================================
     # SUPERUSER BYPASS
@@ -59,7 +62,7 @@ def team_posts(request, team_id):
     # =========================================
     # POSTS QUERY
     # =========================================
-    posts = team.posts.select_related(
+    posts = task.posts.select_related(
         "author"
     ).prefetch_related(
         "files",
@@ -238,10 +241,12 @@ def manage_team_members(request, team_id):
     if not can_manage_team(request.user, team):
         raise PermissionDenied("You don't have permission to manage this team's members")
 
+    action = request.GET.get('action', 'add')
     form = TeamMembersForm(
         request.POST or None,
         team=team,
-        workspace=workspace
+        workspace=workspace,
+        initial={'action': action}
     )
 
     if form.is_valid():
@@ -275,7 +280,7 @@ def manage_team_members(request, team_id):
 
             return redirect('client_teams', client_id=team.client.id)
 
-    return render(request, 'teams/manage_team_members.html', {
+    return render(request, "teams/manage_team_members.html", {
         'form': form,
         'team': team,
         'current_members': team.members.all(),

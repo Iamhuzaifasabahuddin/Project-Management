@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+{% load bootstrap5 %}
+{% load static %}
+{% bootstrap_css %}
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Tasks - {{ team.name }}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background: #f5f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .navbar-custom {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        .workspace-pill {
+            display: inline-block;
+            background: #eef2ff;
+            color: #3730a3;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            margin-top: 0.3rem;
+        }
+
+        .task-card {
+            border: none;
+            border-radius: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .task-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .task-title a {
+            text-decoration: none;
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .task-title a:hover {
+            color: #0d6efd;
+        }
+
+        .badge-user {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 0.45rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+        }
+
+        .empty-state {
+            border-radius: 14px;
+            background: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+{% bootstrap_javascript %}
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-custom px-4 py-3">
+
+    <div class="container-fluid">
+
+        <div>
+            <h5 class="mb-0 fw-semibold">Team Tasks</h5>
+            <small class="muted">{{ workspace.name }}</small>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a href="{% url 'create_task' team.id %}" class="btn btn-dark btn-sm">
+                Create Task
+            </a>
+
+            <a href="{% url 'client_teams' client.id %}" class="btn btn-outline-secondary btn-sm">
+                Team
+            </a>
+
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                Dashboard
+            </a>
+
+            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">
+                Workspaces
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+<!-- MAIN CONTENT -->
+<div class="container py-5">
+
+    <!-- Header -->
+    <div class="text-center mb-5">
+
+        <h2 class="fw-semibold">{{ team.name }} Tasks</h2>
+
+        <p class="muted">
+            {{ tasks.count }} task{{ tasks.count|pluralize }}
+        </p>
+
+        <div class="workspace-pill">
+            {{ workspace.name }} / {{ client.name }} / {{ team.name }}
+        </div>
+
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Tasks -->
+    {% if tasks %}
+
+    <div class="row">
+
+        {% for task in tasks %}
+
+        <div class="col-md-6 col-lg-4 mb-4">
+
+            <div class="card shadow-sm task-card h-100">
+
+                <div class="card-body d-flex flex-column">
+
+                    <!-- Title -->
+                    <div class="mb-3">
+
+                        <h5 class="task-title mb-1">
+                            <a href="{% url 'create_post' team.id %}">
+                                {{ task.name }}
+                            </a>
+
+                            <small class="text-muted">
+                                | {{ task.posts.count }} post{{ task.posts.count|pluralize }}
+                            </small>
+                        </h5>
+
+                        <small class="text-muted">
+                            {{ task.created_at|date:"M d, Y" }}
+                        </small>
+
+                    </div>
+
+                    <!-- Description -->
+                    <p class="text-muted flex-grow-1">
+                        {{ task.description|truncatewords:20 }}
+                    </p>
+
+                    <!-- Assigned Users -->
+                    {% if task.assigned_to.all %}
+                    <div class="mb-3">
+
+                        <small class="text-muted d-block mb-2">
+                            Assigned To
+                        </small>
+
+                        <div class="d-flex flex-wrap gap-2">
+
+                            {% for user in task.assigned_to.all %}
+                            <span class="badge-user">
+                                                {{ user.get_full_name|default:user.username }}
+                                            </span>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+                    {% else %}
+
+                    <p class="small text-warning">
+                        No assigned members
+                    </p>
+
+                    {% endif %}
+
+                    <!-- Footer -->
+                    <div class="d-flex flex-wrap gap-2 mt-4">
+
+
+                        <a href="{% url 'create_post' team.id %}"
+                           class="btn btn-sm btn-outline-dark">
+                            Post
+                        </a>
+
+                        <a href="{% url 'team_posts' task.id %}"
+                           class="btn btn-sm btn-primary">
+                            View Posts
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <!-- Empty State -->
+    <div class="empty-state shadow-sm">
+
+        <h4 class="fw-semibold mb-3">No Tasks Yet</h4>
+
+        <p class="text-muted mb-4">
+            Create your first task to get started.
+        </p>
+
+        <a href="{% url 'create_task' team.id %}"
+           class="btn btn-dark">
+            Create Task
+        </a>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+</body>
+</html>

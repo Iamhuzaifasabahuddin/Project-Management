@@ -156,7 +156,7 @@
 
                             <h4 class="fw-semibold mb-1">
 
-                                <a href="{% url 'team_posts' team.id %}"
+                                <a href="{% url 'team_tasks' team.id %}"
                                    class="text-dark">
 
                                     {{ team.name }}
@@ -208,19 +208,13 @@
                     <!-- ACTIONS -->
                     <div class="d-flex flex-wrap gap-2 mt-4">
 
-                        <a href="{% url 'team_posts' team.id %}"
+                        <a href="{% url 'team_tasks' team.id %}"
                            class="btn btn-dark btn-sm">
 
-                            Open Team
+                            Team Tasks
 
                         </a>
 
-                        <a href="{% url 'create_post' team.id %}"
-                           class="btn btn-outline-dark btn-sm">
-
-                            + Create Post
-
-                        </a>
 
                         {% if is_admin or request.user == team.team_lead or request.user.is_superuser %}
                         <a href="{% url 'manage_team_members' team.id %}"

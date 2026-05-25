@@ -1,13 +1,67 @@
 from celery import shared_task
+from celery.exceptions import Reject
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.contrib.auth.models import User
 import base64
 
-from Posts.models import Post, PostFile, CommentFile
+from Posts.models import Post, PostFile, CommentFile, Task
 from script import send_dm_by_email, upload_file_to_slack
 from workspaces.models import Client
+
+
+@shared_task(bind=True, max_retries=3)
+def send_assigned_task_email_task(
+        self,
+        user_id,
+        client_id,
+        task_id,
+        to_emails,
+        context_data,
+):
+    try:
+        user = User.objects.get(id=user_id)
+        client = Client.objects.get(id=client_id)
+        task = Task.objects.get(id=task_id)
+
+        # ✅ Create a copy to avoid modifying task kwargs in place
+        # This prevents serialization errors if the task retries.
+        email_context = context_data.copy()
+        email_context.update({
+            "author_name": user.get_full_name() or user.username,
+            "client_name": client.name,
+            "task_name": task.name,
+            "task_id": task.id,
+        })
+
+        html_content = render_to_string(
+            "emails/new_task.html",
+            email_context
+        )
+
+        email = EmailMultiAlternatives(
+            subject=f"New Task: {task.name}",
+            body="HTML email required.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=to_emails,
+        )
+
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
+        return f"Email sent to {to_emails}"
+
+    except Exception as exc:
+        # If it's a serialization error, don't retry as it will keep failing
+        if isinstance(exc, TypeError) and "JSON serializable" in str(exc):
+            raise Reject(exc, requeue=False)
+        
+        raise self.retry(
+            exc=exc,
+            countdown=60 * (self.request.retries + 1)
+        )
+
 
 @shared_task(bind=True, max_retries=3)
 def send_post_email_task(
@@ -21,20 +75,16 @@ def send_post_email_task(
         context_data,
         file_ids
 ):
-
     try:
-
         user = User.objects.get(id=user_id)
-
         client = Client.objects.get(id=client_id)
-
         post = Post.objects.get(id=post_id)
 
-        files = PostFile.objects.filter(
-            id__in=file_ids
-        )
+        files = PostFile.objects.filter(id__in=file_ids)
 
-        context_data.update({
+        # ✅ Create a copy to avoid modifying task kwargs in place
+        email_context = context_data.copy()
+        email_context.update({
             'author': user,
             'client': client,
             'post': post,
@@ -42,7 +92,7 @@ def send_post_email_task(
 
         html_content = render_to_string(
             "emails/new_post.html",
-            context_data
+            email_context
         )
 
         email = EmailMultiAlternatives(
@@ -53,22 +103,16 @@ def send_post_email_task(
             cc=cc_emails,
         )
 
-        email.attach_alternative(
-            html_content,
-            "text/html"
-        )
+        email.attach_alternative(html_content, "text/html")
 
         # Attach directly from storage
         for file_obj in files:
-
             file_obj.file.open('rb')
-
             email.attach(
                 file_obj.file.name.split("/")[-1],
                 file_obj.file.read(),
                 None
             )
-
             file_obj.file.close()
 
         email.send()
@@ -76,7 +120,9 @@ def send_post_email_task(
         return f"Email sent to {to_email}"
 
     except Exception as exc:
-
+        if isinstance(exc, TypeError) and "JSON serializable" in str(exc):
+            raise Reject(exc, requeue=False)
+            
         raise self.retry(
             exc=exc,
             countdown=60 * (self.request.retries + 1)
