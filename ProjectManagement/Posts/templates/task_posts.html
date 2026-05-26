@@ -48,8 +48,8 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-light bg-white border-bottom px-4 py-3">
     <div>
-        <h5 class="mb-0">Client Posts</h5>
-        <small class="muted">{{ client.name }}</small>
+        <h5 class="mb-0">Task Posts</h5>
+        <small class="muted">Client: {{ client.name }} | Team: {{task.team.name}} | Task: {{task.name}}</small>
     </div>
 
     <div class="d-flex gap-2">
@@ -83,10 +83,11 @@
         </h3>
 
         <p class="muted mb-1">
-            {{ client.email  }} • {{ client.number }}
+            {{ client.email }} • {{ client.number }}
         </p>
         <p class="muted mb-1">
-            Amount: <strong>${{ client.amount_paid }}</strong> • Paid: <strong>{{ client.paid }}</strong> • Payment Date: <strong>{{ client.payment_date| date:"d M, Y" }}</strong> • <strong>{{ client.paid_type | capfirst }}</strong>
+            Amount: <strong>${{ client.amount_paid }}</strong> • Paid: <strong>{{ client.paid }}</strong> • Payment
+            Date: <strong>{{ client.payment_date| date:"d M, Y" }}</strong> • <strong>{{ client.paid_type | capfirst }}</strong>
         </p>
 
         <p class="muted mb-0">
@@ -97,9 +98,24 @@
 
     <!-- POSTS -->
     <h4 class="fw-semibold mb-3">
-        Posts
+        {{task.name}} Posts
     </h4>
+    {% if messages %}
+    {% for message in messages %}
 
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+
+        {{ message }}
+
+        <button type="button"
+                class="btn-close"
+                data-bs-dismiss="alert">
+        </button>
+
+    </div>
+
+    {% endfor %}
+    {% endif %}
     <div class="row g-3">
 
         {% for post in posts %}
@@ -123,29 +139,38 @@
                 </p>
 
                 <!-- ACTIONS -->
-                <div class="d-flex gap-2 align-items-center flex-wrap">
+                <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
 
-                    {% if post.file %}
-                        <a href="{{ post.file.url }}"
+                    {% if post.files.all %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for file_obj in post.files.all %}
+                        {% if file_obj.file %}
+                        <a href="{{ file_obj.file.url }}"
                            class="btn btn-outline-secondary btn-sm">
                             Download File
                         </a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
                     {% endif %}
+
+                    <a href="{% url 'post_detail' post.id %}"
+                       class="btn btn-primary btn-sm">
+                        Open Post
+                    </a>
 
                     {% if is_admin or is_member or request.user.is_superuser %}
 
-                        <!-- DELETE BUTTON -->
-                        <button type="button"
-                                class="btn btn-outline-danger btn-sm ms-auto"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteModal{{ post.id }}">
-                            Delete Post
-                        </button>
+                    <button type="button"
+                            class="btn btn-outline-danger btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#deleteModal{{ post.id }}">
+                        Delete Post
+                    </button>
 
                     {% endif %}
 
                 </div>
-
             </div>
 
         </div>
@@ -180,7 +205,7 @@
                             Cancel
                         </button>
 
-                        <a href="{% url 'delete_post' post.id %}"
+                        <a href="{% url 'delete_task_post' post.id %}"
                            class="btn btn-danger">
                             Yes, Delete
                         </a>

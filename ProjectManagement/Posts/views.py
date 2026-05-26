@@ -15,7 +15,7 @@ from .tasks import (
     send_slack_post_notification_task,
     upload_files_to_slack_task,
     send_comment_notification_task,
-send_assigned_task_email_task
+    send_assigned_task_email_task
 )
 from workspaces.models import Client, Membership
 import base64
@@ -44,28 +44,24 @@ def team_tasks(request, team_id):
     team = get_object_or_404(Team, id=team_id)
     workspace = team.client.workspace
 
-    # 🔐 Must belong to workspace
     if not request.user.is_superuser:
 
         if not Membership.objects.filter(
-            user=request.user,
-            workspace=workspace
+                user=request.user,
+                workspace=workspace
         ).exists():
-
             raise PermissionDenied("Not allowed")
 
-    # 🔐 Determine access level
     is_admin = (
-        request.user.is_superuser or
-        request.user == team.team_lead or
-        Membership.objects.filter(
-            user=request.user,
-            workspace=workspace,
-            role='admin'   # adjust if your field differs
-        ).exists()
+            request.user.is_superuser or
+            request.user == team.team_lead or
+            Membership.objects.filter(
+                user=request.user,
+                workspace=workspace,
+                role='admin'
+            ).exists()
     )
 
-    # 📌 Admins/team leads see all tasks
     if is_admin:
 
         tasks = Task.objects.filter(
@@ -75,7 +71,6 @@ def team_tasks(request, team_id):
             'posts'
         ).order_by('-created_at')
 
-    # 📌 Regular members only see assigned tasks
     else:
 
         tasks = Task.objects.filter(
@@ -96,6 +91,7 @@ def team_tasks(request, team_id):
 
     return render(request, "team_tasks.html", context)
 
+
 @login_required
 def create_task(request, team_id):
     """
@@ -106,21 +102,19 @@ def create_task(request, team_id):
     workspace = team.client.workspace
     client = team.client
 
-    # 🔐 Permission check: must be workspace member (superusers always allowed)
     if not request.user.is_superuser:
         if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
             raise PermissionDenied("Not allowed")
 
-        # 🔐 Optional stricter check: must be team member or admin
         is_admin = Membership.objects.filter(user=request.user, workspace=workspace, role='admin').exists()
         if not is_admin and request.user not in team.members.all():
             raise PermissionDenied("Not a team member")
-
 
     form = TaskForm(request.POST or None, team=team)
     if form.is_valid():
         task = form.save(commit=False)
         task.team = team
+        task.created_by = request.user
         task.save()
         form.save_m2m()
         messages.success(request, f"Task '{task.name}' created successfully.")
@@ -171,17 +165,19 @@ def delete_task(request, task_id):
     return redirect("team_tasks", team_id=team_id)
 
 
+
 # =========================
 # POSTS + COMMENTS
 # =========================
 
 @login_required
-def team_posts(request, team_id):
+def task_posts(request, task_id):
     """
     Display all posts within a team (optional view).
     Only workspace members can view.
     """
-    team = get_object_or_404(Team, id=team_id)
+    task = get_object_or_404(Task, id=task_id)
+    team = task.team
     workspace = team.client.workspace
 
     # 🔐 Permission check: must be workspace member (superusers always allowed)
@@ -200,9 +196,10 @@ def team_posts(request, team_id):
         "workspace": workspace,
         "client": team.client,
         "posts": posts,
+        "task": task
     }
 
-    return render(request, "team_posts.html", context)
+    return render(request, "task_posts.html", context)
 
 
 @login_required
@@ -216,18 +213,14 @@ def create_post(request, task_id):
     client = task.team.client
     team = task.team
 
-    # 🔐 Permission check: must be workspace member (superusers always allowed)
-    # 🔐 Permission checks
     if not request.user.is_superuser:
 
-        # Must belong to workspace
         if not Membership.objects.filter(
                 user=request.user,
                 workspace=workspace
         ).exists():
             raise PermissionDenied("Not allowed")
 
-        # Must belong to team
         if request.user not in team.members.all():
             raise PermissionDenied("Not a team member")
 
@@ -239,7 +232,6 @@ def create_post(request, task_id):
     form = PostForm(request.POST or None, request.FILES or None)
     if form.is_valid():
 
-        # Save post
         post = form.save(commit=False)
         post.author = request.user
         post.task = task
@@ -265,15 +257,9 @@ def create_post(request, task_id):
                 'content': base64.b64encode(file_content).decode('utf-8'),
                 'content_type': uploaded_file.content_type
             })
-
-        # 🔥 URL (post-based)
         post_url = request.build_absolute_uri(
             reverse('post_detail', kwargs={'post_id': post.id})
         )
-
-        memberships = Membership.objects.filter(
-            workspace=workspace
-        ).select_related('user')
 
         cc_emails = [
             u.email
@@ -304,18 +290,18 @@ def create_post(request, task_id):
 
         message = f"""
         *New Team Post Created*
-        
+
         *Team:* {team.name}
         *Client:* {team.client.name}
         *Author:* {request.user.username}
-        
+
         *Title:* {post.title}
-        
+
         *Content:*
         >{post.content}
-        
+
         *Files:* {file_names}
-        
+
         *URL:* {post_url}
         """
 
@@ -333,7 +319,7 @@ def create_post(request, task_id):
             )
 
         messages.success(request, "Post created successfully.")
-        return redirect("team_posts", team_id=team.id)
+        return redirect("task_posts", task_id=task.id)
 
     return render(request, "create_post.html", {
         "form": form,
@@ -352,10 +338,8 @@ def post_detail(request, post_id):
     """
     post = get_object_or_404(Post, id=post_id)
 
-    # Get the team from the post's task or use a fallback
     team = post.task.team if post.task else None
 
-    # Check if user has access to this workspace (superusers always allowed)
     if not request.user.is_superuser:
         if not team:
             raise PermissionDenied("Post not linked to any team")
@@ -366,20 +350,17 @@ def post_detail(request, post_id):
         ).exists():
             raise PermissionDenied("Not allowed")
 
-    # Get all comments for this post
     comments = Comment.objects.filter(post=post).order_by("-created_at")
 
     form = CommentForm(request.POST or None, request.FILES or None)
 
     if form.is_valid():
         with transaction.atomic():
-            # Save the comment
             comment = form.save(commit=False)
             comment.post = post
             comment.author = request.user
             comment.save()
 
-            # Handle multiple file uploads for comment
             uploaded_files = request.FILES.getlist('files')
             file_ids = []
 
@@ -390,8 +371,6 @@ def post_detail(request, post_id):
                         file=uploaded_file
                     )
                     file_ids.append(comment_file.id)
-
-            # Queue async task for notification (with or without files)
             send_comment_notification_task.delay(
                 user_id=request.user.id,
                 post_id=post.id,
@@ -401,7 +380,6 @@ def post_detail(request, post_id):
             messages.success(request, "Comment posted successfully.")
             return redirect("post_detail", post_id=post.id)
 
-    # Get all files associated with the post
     post_files = post.files.all()
 
     return render(request, "post_detail.html", {
@@ -420,9 +398,8 @@ def delete_post(request, post_id):
     Only superusers, workspace admins, or post author can delete.
     """
     post = get_object_or_404(Post, id=post_id)
-    team_id = post.task.team.id if post.task else None
+    task = post.task if post.task else None
 
-    # Permission checks
     is_superuser = request.user.is_superuser
     workspace = post.task.team.client.workspace if post.task else None
     is_admin = role_checker(request.user, workspace, "admin") if workspace else False
@@ -434,6 +411,6 @@ def delete_post(request, post_id):
     post.delete()
     messages.success(request, "Post deleted successfully.")
 
-    if team_id:
-        return redirect("team_posts", team_id=team_id)
-    return redirect("home")
+    if task:
+        return redirect("task_posts", task_id=task.id)
+    return redirect("dashboard")

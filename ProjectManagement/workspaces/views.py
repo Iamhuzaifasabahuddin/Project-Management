@@ -254,7 +254,7 @@ def client_posts(request, client_id):
         if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
             raise PermissionDenied("Not a member of this workspace")
 
-    return render(request, "client_posts.html", {
+    return render(request, "task_posts.html", {
         "client": client,
         "posts": client.posts.all().order_by("-created_at"),
     })
@@ -291,7 +291,7 @@ def team_posts(request, team_id):
         "comments"
     ).order_by("-created_at")
 
-    return render(request, "client_posts.html", {
+    return render(request, "task_posts.html", {
         "team": team,
         "client": team.client,
         "workspace": workspace,

@@ -12,7 +12,7 @@
           rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<!-- Select2 JS -->
+    <!-- Select2 JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
 
     <style>
@@ -67,8 +67,8 @@
     <div class="container-fluid">
 
         <div>
-            <h5 class="mb-0 fw-semibold">Create Team</h5>
-            <small class="muted">{{ workspace.name }}</small>
+            <h5 class="mb-0 fw-semibold">Create Task</h5>
+            <small class="muted">Workspace: {{ workspace.name }} | Client: {{client.name}} | Team: {{team.name}}</small>
         </div>
 
         <div class="d-flex gap-2">
@@ -103,8 +103,40 @@
         <div class="text-center mb-4">
             <h2 class="fw-semibold">Create Task</h2>
             <p class="muted">Add a new task inside this team</p>
-            <div class="workspace-pill">
-                {{ workspace.name }} / {{ client.name }} / {{team.name}}
+            <div class="">
+                <nav aria-label="breadcrumb" class="d-flex justify-content-center mt-3">
+                    <ol class="breadcrumb mb-0">
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboard' %}" class="text-decoration-none">
+                                {{ workspace.name }}
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'client_details' workspace.id %}" class="text-decoration-none">
+                                {{ client.name }}
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'client_teams' client.id %}" class="text-decoration-none">
+                                {{ client.name }}
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'team_tasks' team.id %}" class="text-decoration-none">
+                                {{ team.name }} Tasks
+                            </a>
+                        </li>
+
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Create Task
+                        </li>
+
+                    </ol>
+                </nav>
             </div>
         </div>
 

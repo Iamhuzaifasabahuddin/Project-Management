@@ -17,7 +17,6 @@ urlpatterns = [
     # =========================
     # TEAM CONTENT
     # =========================
-    path('teams/<int:task_id>/posts/', views.team_posts, name='team_posts'),
     path('team/<int:team_id>/details/', views.team_detail, name='team_detail'),
     path('team/<int:team_id>/statistics/', views.team_statistics, name='team_statistics'),
 

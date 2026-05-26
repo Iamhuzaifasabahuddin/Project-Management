@@ -11,7 +11,7 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['name', 'description', 'assigned_to']
+        fields = ['name', 'description', 'due_date', 'assigned_to']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -30,6 +30,10 @@ class TaskForm(forms.ModelForm):
                 'data-minimum-input-length': 0,
                 'data-close-on-select': False,
             }),
+            'due_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+            })
         }
 
     def __init__(self, *args, **kwargs):

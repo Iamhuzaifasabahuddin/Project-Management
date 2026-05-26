@@ -69,7 +69,7 @@ def team_posts(request, task_id):
         "comments"
     ).order_by("-created_at")
 
-    return render(request, "client_posts.html", {
+    return render(request, "task_posts.html", {
         "team": team,
         "client": team.client,
         "workspace": workspace,

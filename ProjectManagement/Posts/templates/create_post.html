@@ -89,8 +89,40 @@
                 Publish content inside your workspace
             </p>
 
-            <div class="workspace-pill">
-                {{ workspace.name }} / {{ client.name }} / {{team.name}}
+            <div class="">
+            <nav aria-label="breadcrumb" class="d-flex justify-content-center mt-3">
+                <ol class="breadcrumb mb-0">
+
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'dashboard' %}" class="text-decoration-none">
+                            {{ workspace.name }}
+                        </a>
+                    </li>
+
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'client_details' workspace.id %}" class="text-decoration-none">
+                            {{ client.name }}
+                        </a>
+                    </li>
+
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'client_teams' client.id %}" class="text-decoration-none">
+                            {{ client.name }} Team
+                        </a>
+                    </li>
+
+                    <li class="breadcrumb-item active" aria-current="page">
+                        <a href="{% url 'team_tasks' team.id %}" class="text-decoration-none">
+                            {{ team.name }} Tasks
+                        </a>
+                    </li>
+
+                        <li class="breadcrumb-item active" aria-current="page">
+                            Create Post
+                    </li>
+
+                </ol>
+            </nav>
             </div>
 
         </div>
