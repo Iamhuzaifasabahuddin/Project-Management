@@ -115,7 +115,7 @@ WSGI_APPLICATION = 'ProjectManagement.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='mysql://root:password@localhost:3306/railway'),
+        default=env('DATABASE_URL', default='mysql://root:pvlQNNXisAtWniAWiakYXuyDymUaKyDk@mysql-lefe.railway.internal:3306/railway'),
         conn_max_age=600
     )
 }
@@ -179,15 +179,15 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='your-email@gmail.com')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='your-app-password')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='themirageconnect@gmail.com')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='ymjm gvhu dkie rreg')
 EMAIL_TIMEOUT = 15
 
 # Celery broker - using Redis (recommended for production)
-CELERY_BROKER_URL = env('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_BROKER_URL = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
 
 # Celery result backend - store task results
-CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
 
 # Task serialization
 CELERY_ACCEPT_CONTENT = ['json']
