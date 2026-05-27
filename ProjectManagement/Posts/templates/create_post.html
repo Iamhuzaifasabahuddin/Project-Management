@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 {% load bootstrap5 %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
@@ -7,42 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Create Post</title>
-
-    <style>
-        body {
-            background: #f5f6f8;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        .navbar-custom {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .editor-card {
-            border: none;
-            border-radius: 16px;
-            background: #ffffff;
-        }
-
-        .muted {
-            color: #6b7280;
-        }
-
-        .workspace-pill {
-            display: inline-block;
-            background: #eef2ff;
-            color: #3730a3;
-            padding: 0.25rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            margin-top: 0.3rem;
-        }
-
-        textarea {
-            min-height: 180px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
 </head>
 
 <body>

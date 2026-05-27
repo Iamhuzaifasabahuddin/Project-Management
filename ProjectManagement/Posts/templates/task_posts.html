@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 {% load bootstrap5 %}
 {% bootstrap_css %}
 
@@ -6,40 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ client.name }} - Posts</title>
-
-    <style>
-        body {
-            background: #f5f6f8;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        .header-card {
-            background: #fff;
-            border-radius: 14px;
-            padding: 20px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .post-card {
-            background: #fff;
-            border-radius: 14px;
-            border: none;
-            transition: 0.2s ease;
-        }
-
-        .post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        }
-
-        .muted {
-            color: #6b7280;
-        }
-
-        a {
-            text-decoration: none;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
 </head>
 
 <body>

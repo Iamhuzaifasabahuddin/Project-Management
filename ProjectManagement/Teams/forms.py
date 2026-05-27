@@ -217,7 +217,9 @@ class TeamMembersForm(forms.Form):
             if action == 'add':
                 qs = qs.exclude(id__in=team.members.all())
             elif action == 'remove':
-                qs = qs.filter(id__in=team.members.all())
+                qs = qs.filter(
+                    id__in=team.members.exclude(id=team.team_lead.id)
+                )
 
 
         self.fields['members'].queryset = qs.order_by('first_name', 'last_name', 'username')
@@ -240,7 +242,6 @@ class TeamMembersForm(forms.Form):
         members = cleaned_data.get('members')
 
         if action == 'remove' and self.team:
-            # Prevent removing all members
             if len(members) >= self.team.members.count():
                 raise forms.ValidationError("Cannot remove all members from a team.")
 

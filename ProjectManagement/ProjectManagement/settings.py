@@ -11,22 +11,32 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
-import cloudinary
+
+# Initialize environ
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-SITE_ID=2
+
+# Read .env file if it exists
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+SITE_ID = 2
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-(m#=q7phwwd!y0dt*kqsi%^6yt^dp%%mr6ctaj(2v+-ms57$az'
+SECRET_KEY = env('SECRET_KEY', default='django-insecure-fallback-key-change-me')
 
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 
 # Application definition
@@ -66,16 +76,14 @@ CACHES = {
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-
 ]
 
 ROOT_URLCONF = 'ProjectManagement.urls'
@@ -102,14 +110,10 @@ WSGI_APPLICATION = 'ProjectManagement.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'ProjectManagement',
-        'USER': 'Hexz',
-        'PASSWORD': 'Hexz7799*',
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
-    }
+    'default': dj_database_url.config(
+        default=env('DATABASE_URL', default='mysql://root:pvlQNNXisAtWniAWiakYXuyDymUaKyDk@mysql-lefe.railway.internal:3306/railway'),
+        conn_max_age=600
+    )
 }
 
 
@@ -153,6 +157,9 @@ STATICFILES_DIRS = [
     BASE_DIR / 'Project_Static_Files'
 ]
 
+# Whitenoise storage for compression and caching
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -167,40 +174,15 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "themirageconnect@gmail.com"
-EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default="themirageconnect@gmail.com")
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default="ymjm gvhu dkie rreg")
 EMAIL_TIMEOUT = 15
-# DOMAIN = '127.0.0.1:8000'
-
-
-# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-#
-# CLOUDINARY_STORAGE = {
-#     'CLOUD_NAME': 'dyczgg4if',
-#     'API_KEY': '473393663333598',
-#     'API_SECRET': 'QA-geG0kTwcEuM7QPQ8xee2-Af8',
-# }
-
-# DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-# AWS_ACCESS_KEY_ID = "your_access_key"
-# AWS_SECRET_ACCESS_KEY = "your_secret_key"
-#
-# AWS_STORAGE_BUCKET_NAME = "your_bucket_name"
-# AWS_S3_ENDPOINT_URL = "https://<account_id>.r2.cloudflarestorage.com"
-#
-# AWS_S3_REGION_NAME = "auto"
-# AWS_DEFAULT_ACL = None
-#
-# AWS_QUERYSTRING_AUTH = False
-# AWS_S3_FILE_OVERWRITE = False
-
-# ===========================
 
 # Celery broker - using Redis (recommended for production)
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
 
 # Celery result backend - store task results
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
 
 # Task serialization
 CELERY_ACCEPT_CONTENT = ['json']
