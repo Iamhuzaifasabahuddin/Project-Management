@@ -115,7 +115,7 @@ WSGI_APPLICATION = 'ProjectManagement.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='mysql://root:pvlQNNXisAtWniAWiakYXuyDymUaKyDk@mysql-lefe.railway.internal:3306/railway'),
+        default=env('DATABASE_URL', default='mysql://root:DuEpFABCnXNvpzsVQvATdOVdCxIyZlBU@zephyr.proxy.rlwy.net:12082/railway'),
         conn_max_age=600
     )
 }

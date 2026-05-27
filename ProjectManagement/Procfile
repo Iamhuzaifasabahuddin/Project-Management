@@ -1,3 +1,3 @@
-1web: gunicorn ProjectManagement.wsgi
-worker: celery -A ProjectManagement worker --pool=threads -l info
+web: gunicorn ProjectManagement.wsgi --bind 0.0.0.0:$PORT
+worker: celery -A ProjectManagement worker -l info
 beat: celery -A ProjectManagement beat -l info
