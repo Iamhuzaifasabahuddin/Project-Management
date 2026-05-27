@@ -216,8 +216,8 @@ EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='themirageconnect@gmail.com')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='ymjm gvhu dkie rreg')
+EMAIL_HOST_USER = "themirageconnect@gmail.com"
+EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
 EMAIL_TIMEOUT = 15
 
 # Celery broker - using Redis (recommended for production)
