@@ -16,6 +16,7 @@ import os
 import environ
 import dj_database_url
 
+
 # Initialize environ
 env = environ.Env(
     # set casting, default value
@@ -38,8 +39,10 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-fallback-key-change-me')
 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['project-management-production-c86c.up.railway.app'])
 
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
+    'https://project-management-production-c86c.up.railway.app'])
 
 # Application definition
 
