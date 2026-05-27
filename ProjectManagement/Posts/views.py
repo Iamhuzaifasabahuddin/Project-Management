@@ -125,7 +125,6 @@ def create_task(request, team_id):
             "task_url": task_url,
         }
         to_emails = [user.email for user in task.assigned_to.all() if user.email]
-        print(to_emails)
         send_assigned_task_email_task.delay(
             user_id=request.user.id,
             client_id=client.id,

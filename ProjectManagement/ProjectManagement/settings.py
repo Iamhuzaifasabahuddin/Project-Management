@@ -39,10 +39,10 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-fallback-key-change-me')
 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['project-management-production-c86c.up.railway.app'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['project-management-production-c86c.up.railway.app', '127.0.0.1:8000', 'localhost'])
 
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
-    'https://project-management-production-c86c.up.railway.app'])
+    'https://project-management-production-c86c.up.railway.app', 'http://127.0.0.1:8000/'])
 
 # Application definition
 
@@ -221,10 +221,10 @@ EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='ymjm gvhu dkie rreg')
 EMAIL_TIMEOUT = 15
 
 # Celery broker - using Redis (recommended for production)
-CELERY_BROKER_URL = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
+CELERY_BROKER_URL = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@zephyr.proxy.rlwy.net:45872')
 
 # Celery result backend - store task results
-CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
+CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@zephyr.proxy.rlwy.net:45872')
 
 # Task serialization
 CELERY_ACCEPT_CONTENT = ['json']
