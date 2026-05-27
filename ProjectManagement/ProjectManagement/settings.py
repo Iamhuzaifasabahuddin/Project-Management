@@ -55,9 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'django.contrib.sites',
-
-    # allauth apps
-    'allauth',
+'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
@@ -66,7 +64,8 @@ INSTALLED_APPS = [
     'Posts',
     'workspaces',
     'Teams',
-    'django_select2'
+    'django_select2',
+    'storages'
 ]
 
 SELECT2_APPS = {
@@ -158,18 +157,58 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_ROOT = BASE_DIR / 'Project_Static_Root'
-STATIC_URL = 'static/'
+
+
+
+# =========================
+# STATIC FILES
+# =========================
+
+STATIC_URL = '/static/'
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 STATICFILES_DIRS = [
-    BASE_DIR / 'Project_Static_Files'
+    BASE_DIR / 'Project_Static_Files',
 ]
 
-# Whitenoise storage for compression and caching
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 WHITENOISE_MANIFEST_STRICT = False
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+
+# =========================
+# RAILWAY OBJECT STORAGE
+# =========================
+
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default='tid_xadCTRzWngjZtniYMQvOXTsiNtcXNcoRTuYwPYYRahuhiuxUdj')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default='tsec_yym78o_XMVDSjMcya48ZB7f+itdM5YB1NmQl91ovAE8kYll80HCwr9_7SLN4aFlIpP9_dy')
+
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME', default='coordinated-pantry-fdohv0')
+
+AWS_S3_ENDPOINT_URL = 'https://t3.storageapi.dev'
+
+AWS_S3_REGION_NAME = 'auto'
+
+AWS_DEFAULT_ACL = None
+
+AWS_QUERYSTRING_AUTH = False
+
+AWS_S3_FILE_OVERWRITE = False
+
+MEDIA_URL = f'https://t3.storageapi.dev/{AWS_STORAGE_BUCKET_NAME}/media/'
+
+
+# =========================
+# DJANGO 6 STORAGE SYSTEM
+# =========================
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Login configuration
 LOGIN_URL = '/login'
