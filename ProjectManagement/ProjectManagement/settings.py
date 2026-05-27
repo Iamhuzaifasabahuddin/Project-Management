@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 
+import environ
+import dj_database_url
 
 # Initialize environ
 env = environ.Env(
@@ -63,6 +65,7 @@ INSTALLED_APPS = [
     'Teams',
     'django_select2'
 ]
+
 SELECT2_APPS = {
     'data_url': '/select2/',
 }
@@ -74,6 +77,7 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -111,7 +115,7 @@ WSGI_APPLICATION = 'ProjectManagement.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='mysql://root:pvlQNNXisAtWniAWiakYXuyDymUaKyDk@mysql-lefe.railway.internal:3306/railway'),
+        default=env('DATABASE_URL', default='mysql://root:password@localhost:3306/railway'),
         conn_max_age=600
     )
 }
@@ -170,19 +174,20 @@ LOGIN_REDIRECT_URL = 'dashboard'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER', default="themirageconnect@gmail.com")
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default="ymjm gvhu dkie rreg")
+EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='your-email@gmail.com')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD', default='your-app-password')
 EMAIL_TIMEOUT = 15
 
 # Celery broker - using Redis (recommended for production)
-CELERY_BROKER_URL = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
+CELERY_BROKER_URL = env('REDIS_URL', default='redis://localhost:6379/0')
 
 # Celery result backend - store task results
-CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@redis.railway.internal:6379')
+CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://localhost:6379/0')
 
 # Task serialization
 CELERY_ACCEPT_CONTENT = ['json']
@@ -202,14 +207,12 @@ CELERY_TASK_DEFAULT_RETRY_DELAY = 60  # 60 seconds between retries
 # Result backend settings
 CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
 
-# Optional: Task routing for different workers
+# Task routing for different workers
 CELERY_TASK_ROUTES = {
     'posts.tasks.send_post_email_task': {'queue': 'email'},
     'posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
     'posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
 }
 
-# Optional: Task rate limiting
-CELERY_TASK_RATE_LIMIT = {
-    'posts.tasks.send_post_email_task': '100/m',  # 100 tasks per minute
-}
+# Task rate limiting using kombu
+CELERY_TASK_DEFAULT_RATE_LIMIT = '100/m'  # 100 tasks per minute globally
