@@ -165,12 +165,19 @@ USE_TZ = True
 # =========================
 
 STATIC_URL = '/static/'
-
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-
 STATICFILES_DIRS = [
     BASE_DIR / 'Project_Static_Files',
 ]
+
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
 
 WHITENOISE_MANIFEST_STRICT = False
 
@@ -196,19 +203,6 @@ AWS_S3_FILE_OVERWRITE = False
 
 MEDIA_URL = f'https://t3.storageapi.dev/{AWS_STORAGE_BUCKET_NAME}/media/'
 
-
-# =========================
-# DJANGO 6 STORAGE SYSTEM
-# =========================
-
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
 
 # Login configuration
 LOGIN_URL = '/login'
