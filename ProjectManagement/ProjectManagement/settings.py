@@ -246,9 +246,10 @@ CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
 
 # Task routing for different workers
 CELERY_TASK_ROUTES = {
-    'posts.tasks.send_post_email_task': {'queue': 'email'},
-    'posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
-    'posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
+    'Posts.tasks.send_assigned_task_email_task': {'queue': 'email'},
+    'Posts.tasks.send_post_email_task': {'queue': 'email'},
+    'Posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
+    'Posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
 }
 
 # Task rate limiting using kombu
