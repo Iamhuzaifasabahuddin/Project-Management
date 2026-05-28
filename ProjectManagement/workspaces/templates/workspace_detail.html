@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load static %}
 {% load bootstrap5 %}
 {% bootstrap_css %}
 {% bootstrap_javascript %}
@@ -7,45 +8,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Workspace</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
 
-    <style>
-        body {
-            background: #f5f6f8;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
 
-        .navbar-custom {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .workspace-header {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 20px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .post-card {
-            border: none;
-            border-radius: 14px;
-            background: #ffffff;
-            transition: all 0.2s ease;
-        }
-
-        .post-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .muted {
-            color: #6b7280;
-        }
-    </style>
 </head>
 
 <body>
@@ -109,15 +75,6 @@
     <div class="workspace-header mb-4">
 
         <h2 class="fw-semibold mb-2">{{ workspace.name }}</h2>
-
-        {% if workspace.parent %}
-        <p class="muted mb-3">
-            Sub-workspace of
-            <a href="{% url 'workspace_detail' workspace.parent.id %}" class="fw-medium text-dark">
-                {{ workspace.parent.name }}
-            </a>
-        </p>
-        {% endif %}
 
     </div>
 

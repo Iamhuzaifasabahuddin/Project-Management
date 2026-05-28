@@ -35,14 +35,13 @@ SITE_ID = 2
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY', default='django-insecure-fallback-key-change-me')
+SECRET_KEY = env('SECRET_KEY')
 
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['project-management-production-c86c.up.railway.app', '127.0.0.1:8000', 'localhost'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[
-    'https://project-management-production-c86c.up.railway.app', 'http://127.0.0.1:8000/'])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
 
 # Application definition
 
@@ -117,7 +116,7 @@ WSGI_APPLICATION = 'ProjectManagement.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=env('DATABASE_URL', default='mysql://root:DuEpFABCnXNvpzsVQvATdOVdCxIyZlBU@zephyr.proxy.rlwy.net:12082/railway'),
+        default=env('DATABASE_URL'),
         conn_max_age=600
     )
 }
@@ -186,10 +185,10 @@ WHITENOISE_MANIFEST_STRICT = False
 # RAILWAY OBJECT STORAGE
 # =========================
 
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID', default='tid_xadCTRzWngjZtniYMQvOXTsiNtcXNcoRTuYwPYYRahuhiuxUdj')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY', default='tsec_yym78o_XMVDSjMcya48ZB7f+itdM5YB1NmQl91ovAE8kYll80HCwr9_7SLN4aFlIpP9_dy')
+AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
 
-AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME', default='coordinated-pantry-fdohv0')
+AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
 
 AWS_S3_ENDPOINT_URL = 'https://t3.storageapi.dev'
 
@@ -217,33 +216,33 @@ EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 465
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = "themirageconnect@gmail.com"
-EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_TIMEOUT = 15
 
 # Celery broker - using Redis (recommended for production)
-CELERY_BROKER_URL = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@zephyr.proxy.rlwy.net:45872')
+CELERY_BROKER_URL = env('REDIS_URL')
 
 # Celery result backend - store task results
-CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://default:gXyvcbqMJWLupPiPaYuVsfPrpBofWncO@zephyr.proxy.rlwy.net:45872')
+CELERY_RESULT_BACKEND = env('REDIS_URL')
 
 # Task serialization
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = 'Asia/Karachi'
 
 # Task execution settings
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
-CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes (warning before hard limit)
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
 
 # Retry settings
 CELERY_TASK_MAX_RETRIES = 3
-CELERY_TASK_DEFAULT_RETRY_DELAY = 60  # 60 seconds between retries
+CELERY_TASK_DEFAULT_RETRY_DELAY = 60
 
 # Result backend settings
-CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
+CELERY_RESULT_EXPIRES = 3600
 
 # Task routing for different workers
 CELERY_TASK_ROUTES = {
