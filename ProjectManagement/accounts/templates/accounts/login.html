@@ -1,123 +1,220 @@
 <!DOCTYPE html>
+
 {% load bootstrap5 %}
 {% bootstrap_css %}
-{% bootstrap_javascript %}
 {% load static %}
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="{% static 'login.css' %}">
+    <title>Login - Project Management</title>
+
+
+<!-- CDNs -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{% static 'login.css' %}">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'login.js' %}" defer></script>
+
 
 </head>
+<body class="bg-light">
+{% bootstrap_javascript %}
 
-<body>
+<div class="page-wrapper">
 
-<div class="container d-flex align-items-center justify-content-center min-vh-100">
+<!-- Header -->
+<div class="top-title">
+    <h1>Welcome to Hexz Connect</h1>
+</div>
 
-    <div class="col-lg-5 col-md-7 col-sm-10">
+<!-- Login Card -->
+<div class="auth-card">
 
-        <!-- Title -->
-        <div class="text-center mb-4">
-            <h2 class="fw-semibold">Hexz Project Management</h2>
-            <p class="text-muted small mb-0">Sign in to continue</p>
-        </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 p-md-5">
 
-        <!-- Card -->
-        <div class="card auth-card shadow-sm border-0">
-            <div class="card-body p-4 p-md-5">
-                {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} py-2 small mb-3">
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %}
-                <h4 class="text-center mb-3 fw-semibold">Welcome back</h4>
-
-                <p class="text-center small text-muted">
-                    Don’t have an account?
-                    <a href="{% url 'register' %}" class="fw-medium text-dark text-decoration-none">
-                        Sign up
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Sign In</h2>
+                <p class="text-muted small">
+                    Don't have an account?
+                    <a href="{% url 'register' %}" class="fw-bold text-decoration-none">
+                        Sign Up
                     </a>
                 </p>
-
-                <form method="POST" novalidate>
-                    {% csrf_token %}
-
-                    <!-- Username -->
-                    <div class="form-floating mb-3">
-                        <input type="text" name="username"
-                               class="form-control"
-                               id="username"
-                               placeholder="Username or email" required>
-                        <label for="username">Username</label>
-                    </div>
-
-                    <!-- Password -->
-                    <div class="form-floating mb-2">
-                        <input type="password" name="password"
-                               class="form-control"
-                               id="password"
-                               placeholder="Password" required>
-                        <label for="password">Password</label>
-                    </div>
-
-                    <!-- Alerts -->
-                    {% if error %}
-                    <div class="alert alert-danger mt-3 py-2 small">
-                        {{ error }}
-                    </div>
-                    {% endif %}
-
-                    {% if message %}
-                    <div class="alert alert-success mt-3 py-2 small">
-                        {{ message }}
-                    </div>
-                    {% endif %}
-
-                    <!-- Remember + Forgot -->
-                    <div class="d-flex justify-content-between align-items-center my-3">
-                        <div class="form-check small">
-                            <input class="form-check-input" type="checkbox" name="remember">
-                            <label class="form-check-label">Remember me</label>
-                        </div>
-
-                        <a href="{% url 'password_reset' %}" class="small text-muted text-decoration-none">
-                            Forgot password?
-                        </a>
-                    </div>
-
-                    <button type="submit" class="btn btn-dark w-100">
-                        Log in
-                    </button>
-
-                </form>
-
-                <!-- Divider -->
-                <!--                <div class="divider my-4 small">OR</div>-->
-
-                <!--                &lt;!&ndash; OAuth &ndash;&gt;-->
-                <!--                <div class="d-grid gap-2">-->
-                <!--                    <a href="/oauth2/authorization/google"-->
-                <!--                       class="btn btn-outline-dark d-flex justify-content-center align-items-center gap-2">-->
-                <!--                        Continue with Google-->
-                <!--                    </a>-->
-
-                <!--                    <a href="/oauth2/authorization/github"-->
-                <!--                       class="btn btn-outline-dark d-flex justify-content-center align-items-center gap-2">-->
-                <!--                        Continue with GitHub-->
-                <!--                    </a>-->
-                <!--                </div>-->
-
             </div>
-        </div>
 
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                <div class="form-floating mb-3">
+                    <input
+                        type="text"
+                        class="form-control border-dark border-bottom rounded-0"
+                        id="username-email"
+                        name="username"
+                        placeholder="Username or email"
+                        required
+                    >
+                    <label for="username-email">
+                        Username or Email <span class="text-danger">*</span>
+                    </label>
+                    <div class="invalid-feedback username-email">
+                        Username/Email cannot be empty!
+                    </div>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input
+                        type="password"
+                        class="form-control border-dark border-bottom rounded-0"
+                        id="password"
+                        name="password"
+                        placeholder="Password"
+                        required
+                    >
+                    <label for="password">
+                        Password <span class="text-danger">*</span>
+                    </label>
+                    <div class="invalid-feedback password">
+                        Password cannot be empty!
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show small py-2 rounded-0 border-0 border-bottom border-dark" role="alert">
+                            {{ message }}
+                            <button type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show small py-2 rounded-0 border-0 border-bottom border-dark" role="alert">
+                        {{ error }}
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="alert"
+                                aria-label="Close"></button>
+                    </div>
+                {% endif %}
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="form-check small">
+                        <input
+                            class="form-check-input border-dark"
+                            type="checkbox"
+                            name="remember"
+                            id="remember"
+                        >
+                        <label class="form-check-label" for="remember">
+                            Remember Me
+                        </label>
+                    </div>
+
+                    <a href="#"
+                       data-bs-toggle="modal"
+                       data-bs-target="#passwordResetModal"
+                       class="small text-decoration-none text-muted">
+                        Forgot Password?
+                    </a>
+                </div>
+
+                <div class="d-grid">
+                    <button
+                        class="btn btn-dark btn-lg rounded-0 fs-6 py-3"
+                        type="submit">
+                        Log In
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
     </div>
 
 </div>
 
+</div>
+
+<!-- Password Reset Modal -->
+
+<div class="modal fade"
+     id="passwordResetModal"
+     tabindex="-1"
+     aria-labelledby="passwordResetModalLabel"
+     aria-hidden="true">
+
+
+<div class="modal-dialog modal-dialog-centered">
+
+    <form id="modalForm"
+          class="modal-content rounded-0"
+          action="{% url 'password_reset' %}"
+          method="POST"
+          novalidate>
+
+        {% csrf_token %}
+
+        <div class="modal-header border-dark">
+            <h1 class="modal-title fs-5" id="passwordResetModalLabel">
+                Password Reset
+            </h1>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close">
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <p class="text-muted small">
+                Enter your email address and we'll send you a link to reset your password.
+            </p>
+
+            <div class="form-floating mb-3">
+                <input
+                    type="email"
+                    id="resetEmail"
+                    name="email"
+                    placeholder="Email"
+                    class="form-control border-dark border-bottom rounded-0"
+                    required
+                >
+
+                <label for="resetEmail">
+                    Email Address
+                </label>
+
+                <div class="invalid-feedback resetEmail"></div>
+            </div>
+        </div>
+
+        <div class="modal-footer border-dark">
+            <button type="button"
+                    class="btn btn-secondary rounded-0 fs-6"
+                    data-bs-dismiss="modal">
+                Close
+            </button>
+
+            <button type="submit"
+                    class="btn btn-primary rounded-0 fs-6">
+                Submit
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+</div>
 
 </body>
 </html>

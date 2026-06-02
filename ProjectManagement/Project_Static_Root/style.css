@@ -99,7 +99,6 @@ a:hover {
 .workspace-header,
 .page-header {
   background: var(--surface);
-  border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-sm);
   transition: all 0.25s ease;
@@ -115,16 +114,14 @@ a:hover {
 
         .workspace-header {
             background: #ffffff;
-            border-radius: 14px;
             padding: 20px;
             border: 1px solid #e5e7eb;
         }
 /* ── Buttons ──────────────────────────────────────── */
 
 .btn {
-  border-radius: 12px;
   font-weight: 600;
-  padding: 0.7rem 1rem;
+  padding: 0.4rem 1rem;
   transition: all 0.2s ease;
 }
 
@@ -150,7 +147,6 @@ a:hover {
 .select2-selection {
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: 12px !important;
   padding: 0.75rem 1rem;
   transition: all 0.2s ease;
 }
@@ -167,7 +163,6 @@ textarea {
 /* ── Select2 ──────────────────────────────────────── */
 
 .select2-container--bootstrap-5 .select2-selection {
-  border-radius: 12px !important;
   border: 1px solid var(--border);
   min-height: 48px;
   padding: 0.45rem 0.75rem;
@@ -182,7 +177,6 @@ textarea {
   background: #eff6ff !important;
   color: #1d4ed8 !important;
   border: none !important;
-  border-radius: 999px !important;
   padding: 4px 10px !important;
 }
 
@@ -195,7 +189,6 @@ textarea {
   background: #eef2ff;
   color: #4338ca;
   padding: 6px 12px;
-  border-radius: 999px;
   font-size: 0.78rem;
   font-weight: 600;
 }
@@ -204,7 +197,7 @@ textarea {
 .member-badge,
 .badge-user,
 .badge-role {
-  border-radius: 999px;
+border-radius: 999px;
   font-weight: 600;
   font-size: 0.75rem;
   padding: 6px 12px;
@@ -236,7 +229,6 @@ textarea {
 .comment-card {
   background: var(--surface-alt);
   border: 1px solid var(--border);
-  border-radius: 14px;
   padding: 16px;
 }
 
@@ -272,7 +264,6 @@ textarea {
 .empty-state {
   background: var(--surface);
   border: 1px dashed var(--border);
-  border-radius: var(--radius);
   padding: 5rem 2rem;
   text-align: center;
 }
@@ -291,6 +282,10 @@ textarea {
 
 .muted {
   color: var(--text-muted);
+}
+
+.due-date {
+  color: red;
 }
 
 .shadow-sm {

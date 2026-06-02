@@ -1,6 +1,7 @@
 # Create your models here.
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from Teams.models import Team
 from workspaces.models import Client
@@ -35,6 +36,14 @@ class Task(models.Model):
 
     def __str__(self):
         return f"{self.team.name} - {self.name}"
+
+    def due_status(self):
+        today = timezone.localdate()
+        if self.due_date < today:
+            return "overdue"
+        elif self.due_date == today:
+            return "today"
+        return "upcoming"
 
 
 # ─────────────────────────────────────────────

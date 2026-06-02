@@ -7,339 +7,265 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - Project Management</title>
-
+    <title>Registration - Project Management</title>
+    
+    <!-- CDNs -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <link rel="stylesheet" href="{% static 'register.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'register.js' %}" defer></script>
 
     <style>
         body {
-            background: #f5f7fb;
+
+        font-family: "titillium web";
+        }
+        .password-meter {
+            display: flex;
+            height: 5px;
+            margin-top: 10px;
+            gap: 2px;
         }
 
-        .auth-wrapper {
-            min-height: 100vh;
+        .meter-section {
+            flex: 1;
+            height: 5px;
+            background-color: #e0e0e0;
+            transition: background-color 0.3s ease-out;
+        }
+
+        .meter-section.active {
+            background-color: #76c7c0;
+            animation: fluid 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes fluid {
+            from { background-color: #76c7c0; }
+            to { background-color: #66b3b3; }
+        }
+
+        .meter-section.weak.active {
+            background-color: red;
+            animation: fluid-weak 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes fluid-weak {
+            from { background-color: red; }
+            to { background-color: #ff9999; }
+        }
+
+        .meter-section.medium.active {
+            background-color: orange;
+            animation: fluid-medium 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes fluid-medium {
+            from { background-color: orange; }
+            to { background-color: #ffa07a; }
+        }
+
+        .meter-section.strong.active {
+            background-color: yellowgreen;
+            animation: fluid-strong 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes fluid-strong {
+            from { background-color: yellowgreen; }
+            to { background-color: #7fff7f; }
+        }
+
+        .meter-section.very-strong.active {
+            background-color: green;
+            animation: fluid-very-strong 1s ease-in-out infinite alternate;
+        }
+
+        @keyframes fluid-very-strong {
+            from { background-color: green; }
+            to { background-color: #00ff00; }
         }
 
         .auth-card {
             border: none;
-            border-radius: 18px;
+            border-radius: 0;
+        }
+        .form-control.is-invalid:focus, .was-validated .form-control:invalid:focus {
+            box-shadow: none;
+        }
+         .form-control:focus {
+            box-shadow: none;
         }
 
-        .title {
-            font-weight: 700;
+        .form-control.is-valid: focus, .was-validated .form-control:valid:focus {
+            box-shadow: none;
         }
 
-        .subtitle {
-            color: #6c757d;
-        }
-
-        .password-toggle {
-            cursor: pointer;
-        }
-
-        .form-control,
-        .input-group-text {
-            height: 50px;
-        }
-
-        .btn-primary {
-            height: 50px;
-            font-weight: 600;
+        .text-bg-dark {
+            background-color: #212529 !important;
         }
     </style>
 </head>
-
 <body>
 
-<div class="container-fluid auth-wrapper d-flex align-items-center justify-content-center py-5">
+<section class="p-3 p-md-5 p-xl-5 p-lg-5">
+    <div class="container">
+        <div class="card border-light-subtle shadow auth-card">
+            <div class="row g-0">
+                <!-- Left Side: Branding -->
+                <div class="col-12 col-md-6 text-bg-dark">
+                    <div class="d-flex align-items-center justify-content-center h-100">
+                        <div class="col-10 col-xl-8 py-5">
+                            <img class="img-fluid mb-4" loading="lazy" src="{% static 'Images/MirageLogoNew1.5.png' %}"
+                                 width="400" height="150" alt="Logo" onerror="this.src='https://via.placeholder.com/400x150?text=Logo'">
+                            <hr class="border-light mb-4">
+                            <h1 class="h2 mb-4">The AI-powered, all-in-one developer hub revolutionizing problem-solving and collaboration.</h1>
+                            <p class="h4 lead m-0 fw-bold">From code to community.</p>
+                        </div>
+                    </div>
+                </div>
 
-    <!-- Increased Width -->
-    <div class="col-xl-8 col-lg-9 col-md-11">
+                <!-- Right Side: Registration Form -->
+                <div class="col-12 col-md-6">
+                    <div class="card-body p-3 p-md-4 p-xl-5">
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h1 class="fs-1">Registration</h1>
+                                <h4 class="fw-normal text-muted m-0">Enter your details to register</h4>
+                            </div>
+                        </div>
 
-        <div class="text-center mb-4">
-            <h2 class="title">Create your account</h2>
-            <p class="subtitle">Start managing your projects efficiently</p>
-        </div>
-
-        <div class="card shadow auth-card p-4 p-md-5">
-
-            <form method="POST" novalidate>
-                {% csrf_token %}
-
-                <!-- First Name + Last Name -->
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_first_name" class="form-label">
-                            <i class="fas fa-user"></i> First Name
-                        </label>
-
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-pen"></i>
-                            </span>
-
-                            <input
-                                    type="text"
-                                    class="form-control"
-                                    id="id_first_name"
-                                    name="first_name"
-                                    placeholder="Enter first name"
-                                    {% if form.first_name.value %}
-                                    value="{{ form.first_name.value }}"
+                        <form method="POST" novalidate class="mb-2" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            
+                            <div class="row gy-3">
+                                <!-- First Name -->
+                                <div class="col-12">
+                                    <label for="id_first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control border-dark border-bottom rounded-0" 
+                                           name="first_name" id="id_first_name" placeholder="First Name" 
+                                           value="{{ form.first_name.value|default:'' }}" required>
+                                    <div class="invalid-feedback id_first_name"></div>
+                                    {% if form.first_name.errors %}
+                                        <div class="text-danger small">{% for error in form.first_name.errors %}{{ error }}{% endfor %}</div>
                                     {% endif %}
-                            >
-                        </div>
+                                </div>
 
-                        {% if form.first_name.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.first_name.errors %}
-                            {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="id_last_name" class="form-label">
-                            <i class="fas fa-user"></i> Last Name
-                        </label>
-
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-pen"></i>
-                            </span>
-
-                            <input
-                                    type="text"
-                                    class="form-control"
-                                    id="id_last_name"
-                                    name="last_name"
-                                    placeholder="Enter last name"
-                                    {% if form.last_name.value %}
-                                    value="{{ form.last_name.value }}"
+                                <!-- Last Name -->
+                                <div class="col-12">
+                                    <label for="id_last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control border-dark border-bottom rounded-0" 
+                                           name="last_name" id="id_last_name" placeholder="Last Name" 
+                                           value="{{ form.last_name.value|default:'' }}" required>
+                                    <div class="invalid-feedback id_last_name"></div>
+                                    {% if form.last_name.errors %}
+                                        <div class="text-danger small">{% for error in form.last_name.errors %}{{ error }}{% endfor %}</div>
                                     {% endif %}
-                            >
-                        </div>
+                                </div>
 
-                        {% if form.last_name.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.last_name.errors %}
-                            {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Username + Email -->
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_username" class="form-label">
-                            <i class="fas fa-at"></i> Username
-                        </label>
-
-                        <div class="input-group">
-                            <span class="input-group-text">@</span>
-
-                            <input
-                                    type="text"
-                                    class="form-control"
-                                    id="id_username"
-                                    name="username"
-                                    placeholder="Username"
-                                    {% if form.username.value %}
-                                    value="{{ form.username.value }}"
+                                <!-- Username -->
+                                <div class="col-12">
+                                    <label for="id_username" class="form-label">Username <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control border-dark border-bottom rounded-0" 
+                                           name="username" id="id_username" placeholder="Username" 
+                                           value="" required>
+                                    <div class="invalid-feedback id_username"></div>
+                                    {% if form.username.errors %}
+                                        <div class="text-danger small">{% for error in form.username.errors %}{{ error }}{% endfor %}</div>
                                     {% endif %}
-                            >
-                        </div>
+                                </div>
 
-                        {% if form.username.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.username.errors %}
-                            {{ error }}
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="id_email" class="form-label">
-                            <i class="fas fa-envelope"></i> Email Address
-                        </label>
-
-                        <div class="input-group">
-                            <input
-                                    type="text"
-                                    class="form-control"
-                                    id="id_email"
-                                    name="email"
-                                    placeholder="your email"
-                                    {% if form.email.value %}
-                                    value="{{ form.email.value|cut:'@topsoftdigitals.pk' }}"
+                                <!-- Email -->
+                                <div class="col-12">
+                                    <label for="id_email" class="form-label">Email Address <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control border-dark border-bottom rounded-0" 
+                                               name="email" id="id_email" placeholder="Email username" 
+                                               value="" required>
+                                        <span class="input-group-text border-dark border-bottom rounded-0 bg-transparent">@topsoftdigitals.pk</span>
+                                    </div>
+                                    <div class="invalid-feedback id_email"></div>
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small">{% for error in form.email.errors %}{{ error }}{% endfor %}</div>
                                     {% endif %}
-                            >
-                            <span class="input-group-text">
-    @topsoftdigitals.pk
-</span>
-                        </div>
+                                </div>
 
-                        {% if form.email.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.email.errors %}
-                            {{ error }}
-                            {% endfor %}
+                                <!-- Password -->
+                                <div class="col-12">
+                                    <label for="id_password1" class="form-label">Password <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control border-dark border-bottom rounded-0" 
+                                               name="password1" id="id_password1" required>
+                                        <button class="btn btn-outline-dark border-dark border-bottom rounded-0 toggle-password" 
+                                                type="button">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="password-meter mt-2">
+                                        <div class="meter-section"></div>
+                                        <div class="meter-section"></div>
+                                        <div class="meter-section"></div>
+                                        <div class="meter-section"></div>
+                                    </div>
+                                    <div class="invalid-feedback id_password1"></div>
+                                    {% if form.password1.errors %}
+                                        <div class="text-danger small">{% for error in form.password1.errors %}{{ error }}{% endfor %}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="col-12">
+                                    <label for="id_password2" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control border-dark border-bottom rounded-0" 
+                                               name="password2" id="id_password2" required>
+                                        <button class="btn btn-outline-dark border-dark border-bottom rounded-0 toggle-password" 
+                                                type="button">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="invalid-feedback id_password2"></div>
+                                    {% if form.password2.errors %}
+                                        <div class="text-danger small">{% for error in form.password2.errors %}{{ error }}{% endfor %}</div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Dynamic Fields (if any) -->
+                                {% for field in form %}
+                                    {% if field.name not in 'first_name,last_name,username,email,password1,password2' %}
+                                    <div class="col-12">
+                                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                        {{ field }}
+                                        {% if field.errors %}
+                                            <div class="text-danger small">{% for error in field.errors %}{{ error }}{% endfor %}</div>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
+
+                                <!-- Submit Button -->
+                                <div class="col-12 mt-4">
+                                    <div class="d-grid">
+                                        <button class="btn btn-primary btn-lg border-0 rounded-0 btn-dark" type="submit">
+                                            Sign up
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="row">
+                            <div class="col-12 text-center mt-4">
+                                <hr class="mb-4 border-secondary-subtle">
+                                <p class="m-0 text-dark">Already have an account? 
+                                    <a href="{% url 'login' %}" class="link-primary text-decoration-none fw-bold">Sign in</a>
+                                </p>
+                            </div>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
-
-                <!-- Password + Confirm Password -->
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_password1" class="form-label">
-                            <i class="fas fa-lock"></i> Password
-                        </label>
-
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-key"></i>
-                            </span>
-
-                            <input
-                                    type="password"
-                                    class="form-control"
-                                    id="id_password1"
-                                    name="password1"
-                                    placeholder="Enter password"
-                            >
-
-                            <span
-                                    class="input-group-text password-toggle"
-                                    onclick="togglePassword('id_password1', this)"
-                            >
-                                <i class="fas fa-eye"></i>
-                            </span>
-                        </div>
-
-                        {% if form.password1.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.password1.errors %}
-                            <i class="fas fa-exclamation-circle"></i>
-                            {{ error }}<br>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="id_password2" class="form-label">
-                            <i class="fas fa-lock"></i> Confirm Password
-                        </label>
-
-                        <div class="input-group">
-                            <span class="input-group-text">
-                                <i class="fas fa-key"></i>
-                            </span>
-
-                            <input
-                                    type="password"
-                                    class="form-control"
-                                    id="id_password2"
-                                    name="password2"
-                                    placeholder="Confirm password"
-                            >
-
-                            <span
-                                    class="input-group-text password-toggle"
-                                    onclick="togglePassword('id_password2', this)"
-                            >
-                                <i class="fas fa-eye"></i>
-                            </span>
-                        </div>
-
-                        {% if form.password2.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.password2.errors %}
-                            <i class="fas fa-exclamation-circle"></i>
-                            {{ error }}<br>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Other Dynamic Fields -->
-                <div class="row">
-                    {% for field in form %}
-                    {% if field.name not in 'first_name,last_name,username,email,password1,password2' %}
-                    <div class="col-md-6 mb-3">
-
-                        <label for="{{ field.id_for_label }}" class="form-label">
-                            {{ field.label }}
-                        </label>
-
-                        {{ field }}
-
-                        {% if field.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in field.errors %}
-                            {{ error }}<br>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-
-                    </div>
-                    {% endif %}
-                    {% endfor %}
-                </div>
-
-                <!-- Submit -->
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-user-check"></i>
-                        Create Account
-                    </button>
-                </div>
-
-            </form>
-
-            <div class="text-center my-4 text-muted small">
-                <i class="fas fa-arrow-right"></i>
-                Already have an account?
             </div>
-
-            <div class="text-center">
-                <a href="{% url 'login' %}" class="fw-semibold text-decoration-none">
-                    <i class="fas fa-sign-in-alt"></i>
-                    Sign in instead
-                </a>
-            </div>
-
         </div>
-
     </div>
-
-</div>
-
-<script>
-    function togglePassword(fieldId, element) {
-
-        const field = document.getElementById(fieldId);
-        const icon = element.querySelector('i');
-
-        if (field.type === 'password') {
-            field.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
-        } else {
-            field.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
-        }
-    }
-</script>
+</section>
 
 </body>
 </html>

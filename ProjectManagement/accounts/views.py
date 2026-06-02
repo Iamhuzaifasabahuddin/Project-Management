@@ -6,7 +6,6 @@ from allauth.account.forms import default_token_generator
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -36,6 +35,38 @@ def send_custom_email(user, subject, template, context):
     email.attach_alternative(html_content, "text/html")
     email.send()
 
+
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+
+
+# =========================
+# AJAX VALIDATION
+# =========================
+
+def check_username(request):
+    username = request.GET.get('username', None)
+    data = {
+        'usernameExists': User.objects.filter(username__iexact=username).exists()
+    }
+    return JsonResponse(data)
+
+
+def check_email(request):
+    email_part = request.GET.get('email', None)
+    ALLOWED_DOMAIN = "topsoftdigitals.pk"
+    full_email = f"{email_part}@{ALLOWED_DOMAIN}"
+    data = {
+        'emailExists': User.objects.filter(email__iexact=full_email).exists()
+    }
+    return JsonResponse(data)
+
+def check_reset_email(request):
+    email = request.GET.get('resetEmail', None)
+    data = {
+        'emailExists': User.objects.filter(email__iexact=email).exists()
+    }
+    return JsonResponse(data)
 
 # =========================
 # AUTH FLOW

@@ -276,9 +276,9 @@ def create_post(request, task_id):
 
         send_post_email_task.delay(
             user_id=request.user.id,
-            client_id=team.client.id,  # still ok for email grouping
+            client_id=team.client.id,
             post_id=post.id,
-            to_email=team.client.email,
+            to_email=team.team_lead.email,
             cc_emails=cc_emails,
             subject=f"[{team.name}] New Post - {post.title}",
             context_data=context,
@@ -304,18 +304,18 @@ def create_post(request, task_id):
         *URL:* {post_url}
         """
 
-        send_slack_post_notification_task.delay(
-            user_id=request.user.id,
-            message=message,
-            file_names=file_names
-        )
-
-        if file_ids:
-            upload_files_to_slack_task.delay(
-                user_id=request.user.id,
-                file_ids=file_ids,
-                model_type='post'
-            )
+        # send_slack_post_notification_task.delay(
+        #     user_id=request.user.id,
+        #     message=message,
+        #     file_names=file_names
+        # )
+        #
+        # if file_ids:
+        #     upload_files_to_slack_task.delay(
+        #         user_id=request.user.id,
+        #         file_ids=file_ids,
+        #         model_type='post'
+        #     )
 
         messages.success(request, "Post created successfully.")
         return redirect("task_posts", task_id=task.id)
