@@ -17,6 +17,24 @@
     <!-- Bootstrap Icons -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        .accordion-button:not(.collapsed) {
+            background-color: #f8f9fa;
+            color: #212529;
+            box-shadow: none;
+        }
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: rgba(0,0,0,.125);
+        }
+        .task-card {
+            transition: transform 0.2s;
+        }
+        .task-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
 </head>
 
 <body>
@@ -25,55 +43,20 @@
 
 <!-- NAVBAR -->
 <nav class="navbar navbar-custom px-4 py-3">
-
     <div class="container-fluid">
-
         <div>
-            <h5 class="mb-0 fw-semibold">
-                Team Tasks
-            </h5>
-
-            <small class="muted">
-                Workspace: {{ workspace.name }} | Team: {{team.name}}
-            </small>
+            <h5 class="mb-0 fw-semibold">Team Tasks</h5>
+            <small class="muted">Workspace: {{ workspace.name }} | Team: {{team.name}}</small>
         </div>
-
         <div class="d-flex flex-wrap gap-2">
-
             {% if is_admin %}
-            <a href="{% url 'create_task' team.id %}"
-               class="btn btn-dark btn-sm">
-
-                Create Task
-
-            </a>
+            <a href="{% url 'create_task' team.id %}" class="btn btn-dark btn-sm">Create Task</a>
             {% endif %}
-
-            <a href="{% url 'client_teams' client.id %}"
-               class="btn btn-outline-secondary btn-sm">
-
-                Team
-
-            </a>
-
-            <a href="{% url 'dashboard' %}"
-               class="btn btn-outline-secondary btn-sm">
-
-                Dashboard
-
-            </a>
-
-            <a href="{% url 'workspace_list' %}"
-               class="btn btn-outline-secondary btn-sm">
-
-                Workspaces
-
-            </a>
-
+            <a href="{% url 'client_teams' client.id %}" class="btn btn-outline-secondary btn-sm">Team</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">Dashboard</a>
+            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">Workspaces</a>
         </div>
-
     </div>
-
 </nav>
 
 <!-- MAIN CONTENT -->
@@ -81,289 +64,95 @@
 
     <!-- HEADER -->
     <div class="text-center mb-5">
-
-        <h2 class="fw-semibold">
-            {{ team.name }} Tasks
-        </h2>
-
-        <p class="muted">
-            {{ tasks.count }} task{{ tasks.count|pluralize }}
-        </p>
-
-        <div class="">
-            <nav aria-label="breadcrumb" class="d-flex justify-content-center mt-3">
-                <ol class="breadcrumb mb-0">
-
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'dashboard' %}" class="text-decoration-none">
-                            {{ workspace.name }}
-                        </a>
-                    </li>
-
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'client_details' workspace.id %}" class="text-decoration-none">
-                            {{ client.name }}
-                        </a>
-                    </li>
-
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'client_teams' client.id %}" class="text-decoration-none">
-                            {{ client.name }}
-                        </a>
-                    </li>
-
-                    <li class="breadcrumb-item active" aria-current="page">
-                        {{ team.name }}
-                    </li>
-
-                </ol>
-            </nav>
-        </div>
-
+        <h2 class="fw-semibold">{{ team.name }} Tasks</h2>
+        <p class="muted">Organized by status</p>
     </div>
 
     <!-- ALERTS -->
     {% if messages %}
     {% for message in messages %}
-
     <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-
         {{ message }}
-
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
-        </button>
-
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-
     {% endfor %}
     {% endif %}
 
-    <!-- TASKS -->
-    {% if tasks %}
+    <div class="accordion" id="taskAccordion">
 
-    <div class="row">
-
-        {% for task in tasks %}
-
-        <div class="col-md-6 col-lg-4 mb-4">
-
-            <div class="card shadow-sm task-card h-100">
-
-                <div class="card-body d-flex flex-column">
-
-                    <!-- TOP -->
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-
-                        <div>
-
-                            <h5 class="task-title mb-1">
-
-                                <a href="{% url 'create_post' task.id %}">
-                                    {{ task.name }}
-                                </a>
-
-                                <small class="text-muted">
-                                    | {{ task.posts.count }} post{{ task.posts.count|pluralize }}
-                                </small>
-
-                            </h5>
-
-                            <small class="text-muted">
-                                {{ task.created_at|date:"M d, Y" }}
-                            </small>
-                            |
-                            {% if task.due_status == 'overdue' %}
-                            <span class="badge bg-danger">Overdue</span>
-                            {% elif task.due_status == 'today' %}
-                            <span class="badge bg-warning">Due Today</span>
-                            {% else %}
-                            <span class="badge bg-success">Upcoming</span>
-                            {% endif %}
-                            {{ task.due_date|date:"M d, Y" }}
-
-                        </div>
-
+        <!-- 1. AWAITING APPROVAL -->
+        <div class="accordion-item border-0 mb-3 shadow-sm">
+            <h2 class="accordion-header" id="headingAwaiting">
+                <button class="accordion-button {% if not awaiting_tasks %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAwaiting" aria-expanded="{% if awaiting_tasks %}true{% else %}false{% endif %}" aria-controls="collapseAwaiting">
+                    <i class="bi bi-clock-history me-2 text-info"></i>
+                    <strong>Awaiting Approval</strong>
+                    <span class="badge bg-info ms-2">{{ awaiting_tasks.count }}</span>
+                </button>
+            </h2>
+            <div id="collapseAwaiting" class="accordion-collapse collapse {% if awaiting_tasks %}show{% endif %}" aria-labelledby="headingAwaiting" data-bs-parent="#taskAccordion">
+                <div class="accordion-body bg-light">
+                    {% if awaiting_tasks %}
+                    <div class="row">
+                        {% for task in awaiting_tasks %}
+                        {% include "includes/task_card.html" with task=task %}
+                        {% endfor %}
                     </div>
-
-                    <!-- DESCRIPTION -->
-                    <p class="text-muted flex-grow-1">
-                        {{ task.description|truncatewords:20 }}
-                    </p>
-
-                    <!-- ASSIGNED USERS -->
-                    {% if task.assigned_to.all %}
-
-                    <div class="mb-3">
-
-                        <small class="text-muted d-block mb-2">
-                            Assigned To
-                        </small>
-
-                        <div class="d-flex flex-wrap gap-2">
-
-                            {% for user in task.assigned_to.all %}
-
-                            <span class="badge-user">
-                                {{ user.get_full_name|default:user.username }}
-                            </span>
-
-                            {% endfor %}
-
-                        </div>
-
-                    </div>
-
                     {% else %}
-
-                    <p class="small text-warning">
-                        No assigned members
-                    </p>
-
+                    <p class="text-muted mb-0">No tasks awaiting approval.</p>
                     {% endif %}
-
-                    <!-- FOOTER -->
-                    <div class="d-flex flex-wrap gap-2 mt-auto align-items-center">
-
-                        <a href="{% url 'create_post' task.id %}"
-                           class="btn btn-sm btn-outline-dark">
-
-                            Post
-
-                        </a>
-
-                        <a href="{% url 'task_posts' task.id %}"
-                           class="btn btn-sm btn-primary">
-
-                            View Posts
-
-                        </a>
-
-                        {% if is_admin or is_member or request.user.is_superuser %}
-
-                        <!-- DELETE BUTTON -->
-                        <button type="button"
-                                class="btn btn-outline-danger btn-sm ms-auto"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteTaskModal{{ task.id }}">
-
-                            <i class="bi bi-trash me-1"></i>
-                            Delete
-
-                        </button>
-
-                        {% endif %}
-
-                    </div>
-
                 </div>
-
             </div>
-
-            <!-- DELETE TASK MODAL -->
-            <div class="modal fade"
-                 id="deleteTaskModal{{ task.id }}"
-                 tabindex="-1"
-                 aria-labelledby="deleteTaskModalLabel{{ task.id }}"
-                 aria-hidden="true">
-
-                <div class="modal-dialog modal-dialog-centered">
-
-                    <div class="modal-content border-0 shadow">
-
-                        <div class="modal-header border-0">
-
-                            <h5 class="modal-title fw-semibold"
-                                id="deleteTaskModalLabel{{ task.id }}">
-
-                                Delete Task
-
-                            </h5>
-
-                            <button type="button"
-                                    class="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close">
-                            </button>
-
-                        </div>
-
-                        <div class="modal-body">
-
-                            <p class="mb-2">
-                                Are you sure you want to delete:
-                            </p>
-
-                            <div class="p-3 rounded bg-light border">
-
-                                <strong>{{ task.name }}</strong>
-
-                            </div>
-
-                            <p class="text-muted small mt-3 mb-0">
-                                This action cannot be undone.
-                            </p>
-
-                        </div>
-
-                        <div class="modal-footer border-0">
-
-                            <button type="button"
-                                    class="btn btn-outline-secondary"
-                                    data-bs-dismiss="modal">
-
-                                Cancel
-
-                            </button>
-
-                            <a href="{% url 'delete_task' task.id %}"
-                               class="btn btn-danger">
-
-                                <i class="bi bi-trash me-1"></i>
-                                Delete Task
-
-                            </a>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
         </div>
 
-        {% endfor %}
+        <!-- 2. PENDING TASKS -->
+        <div class="accordion-item border-0 mb-3 shadow-sm">
+            <h2 class="accordion-header" id="headingPending">
+                <button class="accordion-button {% if awaiting_tasks and not pending_tasks %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePending" aria-expanded="{% if not awaiting_tasks or pending_tasks %}true{% else %}false{% endif %}" aria-controls="collapsePending">
+                    <i class="bi bi-list-task me-2 text-primary"></i>
+                    <strong>Pending Tasks</strong>
+                    <span class="badge bg-primary ms-2">{{ pending_tasks.count }}</span>
+                </button>
+            </h2>
+            <div id="collapsePending" class="accordion-collapse collapse {% if not awaiting_tasks or pending_tasks %}show{% endif %}" aria-labelledby="headingPending" data-bs-parent="#taskAccordion">
+                <div class="accordion-body bg-light">
+                    {% if pending_tasks %}
+                    <div class="row">
+                        {% for task in pending_tasks %}
+                        {% include "includes/task_card.html" with task=task %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No pending tasks.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. COMPLETED TASKS -->
+        <div class="accordion-item border-0 mb-3 shadow-sm">
+            <h2 class="accordion-header" id="headingCompleted">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCompleted" aria-expanded="false" aria-controls="collapseCompleted">
+                    <i class="bi bi-check-circle me-2 text-success"></i>
+                    <strong>Completed Tasks</strong>
+                    <span class="badge bg-success ms-2">{{ completed_tasks.count }}</span>
+                </button>
+            </h2>
+            <div id="collapseCompleted" class="accordion-collapse collapse" aria-labelledby="headingCompleted" data-bs-parent="#taskAccordion">
+                <div class="accordion-body bg-light">
+                     {% if completed_tasks %}
+                    <div class="row">
+                        {% for task in completed_tasks %}
+                        {% include "includes/task_card.html" with task=task %}
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted mb-0">No pending tasks.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
 
     </div>
-
-    {% else %}
-
-    <!-- EMPTY STATE -->
-    <div class="empty-state shadow-sm">
-
-        <h4 class="fw-semibold mb-3">
-            No Tasks Yet
-        </h4>
-
-        <p class="text-muted mb-4">
-            Create your first task to get started.
-        </p>
-
-        {% if is_admin %}
-        <a href="{% url 'create_task' team.id %}"
-           class="btn btn-dark">
-
-            Create Task
-
-        </a>
-        {% endif %}
-
-    </div>
-
-    {% endif %}
 
 </div>
 

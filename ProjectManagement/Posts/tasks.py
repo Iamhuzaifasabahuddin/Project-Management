@@ -12,6 +12,107 @@ from workspaces.models import Client
 
 
 @shared_task(bind=True, max_retries=3)
+def send_task_status_notification_task(
+        self,
+        user_id,
+        task_id,
+        status,
+        to_emails,
+        context_data,
+):
+    try:
+        task = Task.objects.get(id=task_id)
+        user = User.objects.get(id=user_id)
+        email_context = context_data.copy()
+        email_context.update({
+            "task_name": task.name,
+            "status": status,
+            "team_name": task.team.name,
+        })
+
+        template_name = "emails/task_approved.html" if status == "approved" else "emails/task_declined.html"
+
+        if status == "approved":
+            email_context.update({
+                "approved_by": user.username,
+            })
+        else:
+            email_context.update({
+                "declined_by": user.username,
+            })
+        subject = f"Task {status.capitalize()}: {task.name}"
+
+        html_content = render_to_string(template_name, email_context)
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body="HTML email required.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=to_emails,
+
+        )
+
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
+        return f"Status notification ({status}) sent to {to_emails}"
+
+    except Exception as exc:
+        if isinstance(exc, TypeError) and "JSON serializable" in str(exc):
+            raise Reject(exc, requeue=False)
+        
+        raise self.retry(
+            exc=exc,
+            countdown=60 * (self.request.retries + 1)
+        )
+
+@shared_task(bind=True, max_retries=3)
+def send_task_completion_request_email_task(
+        self,
+        user_id,
+        task_id,
+        to_emails,
+        context_data,
+):
+    try:
+        user = User.objects.get(id=user_id)
+        task = Task.objects.get(id=task_id)
+
+        email_context = context_data.copy()
+        email_context.update({
+            "requester_name": user.get_full_name() or user.username,
+            "task_name": task.name,
+            "task_id": task.id,
+            "team_name": task.team.name,
+        })
+
+        html_content = render_to_string(
+            "emails/task_completion_request.html",
+            email_context
+        )
+
+        email = EmailMultiAlternatives(
+            subject=f"Completion Request: {task.name}",
+            body="HTML email required.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=to_emails,
+        )
+
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
+        return f"Completion request email sent to {to_emails}"
+
+    except Exception as exc:
+        if isinstance(exc, TypeError) and "JSON serializable" in str(exc):
+            raise Reject(exc, requeue=False)
+        
+        raise self.retry(
+            exc=exc,
+            countdown=60 * (self.request.retries + 1)
+        )
+
+@shared_task(bind=True, max_retries=3)
 def send_assigned_task_email_task(
         self,
         user_id,
@@ -33,6 +134,7 @@ def send_assigned_task_email_task(
             "client_name": client.name,
             "task_name": task.name,
             "task_id": task.id,
+            "due_date": task.due_date,
         })
 
         html_content = render_to_string(

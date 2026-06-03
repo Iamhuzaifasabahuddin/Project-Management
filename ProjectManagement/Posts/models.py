@@ -10,6 +10,12 @@ from workspaces.models import Client
 # ─────────────────────────────────────────────
 
 class Task(models.Model):
+    STATUS_CHOICES = (
+        ('pending', 'Pending'),
+        ('awaiting_approval', 'Awaiting Approval'),
+        ('completed', 'Completed'),
+    )
+
     name = models.CharField(max_length=100)
     description = models.TextField()
     team = models.ForeignKey(
@@ -28,6 +34,12 @@ class Task(models.Model):
         related_name="tasks",
         blank=True,
         null=True
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
     )
 
     due_date = models.DateField(blank=True, null=True)

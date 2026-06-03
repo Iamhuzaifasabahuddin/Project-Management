@@ -11,37 +11,23 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-import os
 
-import environ
-import dj_database_url
-
-
-# Initialize environ
-env = environ.Env(
-    # set casting, default value
-    DEBUG=(bool, False)
-)
+import cloudinary
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# Read .env file if it exists
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-
-SITE_ID = 2
+SITE_ID=2
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+SECRET_KEY = 'django-insecure-(m#=q7phwwd!y0dt*kqsi%^6yt^dp%%mr6ctaj(2v+-ms57$az'
 
-DEBUG = env('DEBUG')
+DEBUG = True
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+ALLOWED_HOSTS = ['*']
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
 
 # Application definition
 
@@ -54,7 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'django.contrib.sites',
-'allauth',
+
+    # allauth apps
+    'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
@@ -63,10 +51,8 @@ INSTALLED_APPS = [
     'Posts',
     'workspaces',
     'Teams',
-    'django_select2',
-    'storages'
+    'django_select2'
 ]
-
 SELECT2_APPS = {
     'data_url': '/select2/',
 }
@@ -78,17 +64,18 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+
 ]
 
 ROOT_URLCONF = 'ProjectManagement.urls'
@@ -115,10 +102,14 @@ WSGI_APPLICATION = 'ProjectManagement.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default=env('DATABASE_URL'),
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ProjectManagement',
+        'USER': 'Hexz',
+        'PASSWORD': 'Hexz7799*',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    }
 }
 
 
@@ -156,52 +147,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-
-
-
-# =========================
-# STATIC FILES
-# =========================
-
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'Project_Static_Root'
+STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'Project_Static_Files',
+    BASE_DIR / 'Project_Static_Files'
 ]
 
-STORAGES = {
-    "default": {
-        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
-    },
-}
-
-WHITENOISE_MANIFEST_STRICT = False
-
-
-# =========================
-# RAILWAY OBJECT STORAGE
-# =========================
-
-AWS_ACCESS_KEY_ID = env('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = env('AWS_SECRET_ACCESS_KEY')
-
-AWS_STORAGE_BUCKET_NAME = env('AWS_STORAGE_BUCKET_NAME')
-
-AWS_S3_ENDPOINT_URL = 'https://t3.storageapi.dev'
-
-AWS_S3_REGION_NAME = 'auto'
-
-AWS_DEFAULT_ACL = None
-
-AWS_QUERYSTRING_AUTH = True
-
-AWS_S3_FILE_OVERWRITE = False
-
-MEDIA_URL = f'https://t3.storageapi.dev/{AWS_STORAGE_BUCKET_NAME}/media/'
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Login configuration
 LOGIN_URL = '/login'
@@ -210,47 +163,74 @@ LOGIN_REDIRECT_URL = 'dashboard'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "themirageconnect@gmail.com"
+EMAIL_HOST_PASSWORD = "ymjm gvhu dkie rreg"
 EMAIL_TIMEOUT = 15
+# DOMAIN = '127.0.0.1:8000'
+
+
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+#
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': 'dyczgg4if',
+#     'API_KEY': '473393663333598',
+#     'API_SECRET': 'QA-geG0kTwcEuM7QPQ8xee2-Af8',
+# }
+
+# DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+# AWS_ACCESS_KEY_ID = "your_access_key"
+# AWS_SECRET_ACCESS_KEY = "your_secret_key"
+#
+# AWS_STORAGE_BUCKET_NAME = "your_bucket_name"
+# AWS_S3_ENDPOINT_URL = "https://<account_id>.r2.cloudflarestorage.com"
+#
+# AWS_S3_REGION_NAME = "auto"
+# AWS_DEFAULT_ACL = None
+#
+# AWS_QUERYSTRING_AUTH = False
+# AWS_S3_FILE_OVERWRITE = False
+
+# ===========================
 
 # Celery broker - using Redis (recommended for production)
-CELERY_BROKER_URL = env('REDIS_URL')
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 # Celery result backend - store task results
-CELERY_RESULT_BACKEND = env('REDIS_URL')
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
 
 # Task serialization
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Karachi'
+CELERY_TIMEZONE = 'UTC'
 
 # Task execution settings
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60
-CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutes (warning before hard limit)
 
 # Retry settings
 CELERY_TASK_MAX_RETRIES = 3
-CELERY_TASK_DEFAULT_RETRY_DELAY = 60
+CELERY_TASK_DEFAULT_RETRY_DELAY = 60  # 60 seconds between retries
 
 # Result backend settings
-CELERY_RESULT_EXPIRES = 3600
+CELERY_RESULT_EXPIRES = 3600  # Results expire after 1 hour
 
-# Task routing for different workers
+# Optional: Task routing for different workers
 CELERY_TASK_ROUTES = {
     'Posts.tasks.send_assigned_task_email_task': {'queue': 'email'},
     'Posts.tasks.send_post_email_task': {'queue': 'email'},
+    'Posts.tasks.send_task_completion_request_email_task': {'queue': 'email'},
+    'Posts.tasks.send_task_status_notification_task': {'queue': 'email'},
     'Posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
     'Posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
 }
 
-# Task rate limiting using kombu
-CELERY_TASK_DEFAULT_RATE_LIMIT = '100/m'  # 100 tasks per minute globally
+# Optional: Task rate limiting
+CELERY_TASK_RATE_LIMIT = {
+    'posts.tasks.send_post_email_task': '100/m',  # 100 tasks per minute
+}

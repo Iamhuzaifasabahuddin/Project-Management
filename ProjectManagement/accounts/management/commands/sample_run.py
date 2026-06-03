@@ -9,10 +9,10 @@ class Command(BaseCommand):
         User = get_user_model()
 
         sample_users = [
-            {"username": "manager", "email": "user1@example.com", "password": "test12345"},
-            {"username": "editor", "email": "user2@example.com", "password": "test12345"},
-            {"username": "projectmanager", "email": "user3@example.com", "password": "test12345"},
-            {"username": "designer", "email": "designer@example.com", "password": "test12345"},
+            {"username": "marc_bm", "email": "marc.spector@bookmarketeers.net", "password": "test12345"},
+            {"username": "marc_wc", "email": "marc.spector@writersclique.net", "password": "test12345"},
+            {"username": "marc_aw", "email": "marc.spector@aurorawriters.com", "password": "test12345"},
+            {"username": "huzaifa", "email": "huzaifa.sabah@topsoftdigitals.pk", "password": "test12345"},
         ]
 
         created_count = 0

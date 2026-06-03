@@ -60,7 +60,6 @@ function validateResetEmail(submit = false) {
     
     if (!input) return;
 
-    // Initial state: checking
     if (!validateNotEmpty(id)) {
         changeValidity(input, feedback, false);
         if (feedback) feedback.textContent = 'Email cannot be empty!';
@@ -131,7 +130,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Modal Reset Form Initialization
     const resetInput = document.getElementById("resetEmail");
     if (resetInput) {
         resetInput.addEventListener("input", () => {

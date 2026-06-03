@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
@@ -135,7 +136,9 @@ def login_view(request):
         username = request.POST.get("username")
         password = request.POST.get("password")
 
-        user = User.objects.filter(username=username).first()
+        user = User.objects.filter(
+            Q(username=username) | Q(email=username)
+        ).first()
 
         if not user or not user.check_password(password):
             error = "Invalid credentials."

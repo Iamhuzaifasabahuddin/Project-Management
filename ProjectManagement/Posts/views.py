@@ -15,7 +15,9 @@ from .tasks import (
     send_slack_post_notification_task,
     upload_files_to_slack_task,
     send_comment_notification_task,
-    send_assigned_task_email_task
+    send_assigned_task_email_task,
+    send_task_completion_request_email_task,
+    send_task_status_notification_task
 )
 from workspaces.models import Client, Membership
 import base64
@@ -63,29 +65,17 @@ def team_tasks(request, team_id):
     )
 
     if is_admin:
-
-        tasks = Task.objects.filter(
-            team=team
-        ).prefetch_related(
-            'assigned_to',
-            'posts'
-        ).order_by('-created_at')
-
+        tasks_queryset = Task.objects.filter(team=team).prefetch_related('assigned_to', 'posts').order_by('-created_at')
     else:
-
-        tasks = Task.objects.filter(
-            team=team,
-            assigned_to=request.user
-        ).prefetch_related(
-            'assigned_to',
-            'posts'
-        ).order_by('-created_at')
+        tasks_queryset = Task.objects.filter(team=team, assigned_to=request.user).prefetch_related('assigned_to', 'posts').order_by('-created_at')
 
     context = {
         "team": team,
         "workspace": workspace,
         "client": team.client,
-        "tasks": tasks,
+        "pending_tasks": tasks_queryset.filter(status='pending'),
+        "awaiting_tasks": tasks_queryset.filter(status='awaiting_approval'),
+        "completed_tasks": tasks_queryset.filter(status='completed'),
         "is_admin": is_admin,
     }
 
@@ -141,6 +131,140 @@ def create_task(request, team_id):
         "client": team.client
     })
 
+@login_required
+def task_completion_request(request, task_id):
+    """
+    Request completion for a task.
+    Sets status to 'awaiting_approval' and emails team lead and admins.
+    """
+    task = get_object_or_404(Task, id=task_id)
+    team = task.team
+    workspace = team.client.workspace
+
+    # Only assigned users or team lead/admin can request completion
+    if not request.user.is_superuser:
+        is_assigned = request.user in task.assigned_to.all()
+        is_admin = (
+            request.user == team.team_lead or
+            Membership.objects.filter(user=request.user, workspace=workspace, role='admin').exists()
+        )
+        if not (is_assigned or is_admin):
+            raise PermissionDenied("Not assigned to this task")
+
+    if task.status == 'completed':
+        messages.info(request, "Task is already completed.")
+        return redirect("team_tasks", team_id=team.id)
+
+    task.status = 'awaiting_approval'
+    task.save()
+
+    # Get team lead and admins emails
+    admin_memberships = Membership.objects.filter(workspace=workspace, role='admin').select_related('user')
+    admin_emails = {m.user.email for m in admin_memberships if m.user.email}
+    if team.team_lead and team.team_lead.email:
+        admin_emails.add(team.team_lead.email)
+    
+    to_emails = list(admin_emails)
+
+    if to_emails:
+        approve_url = request.build_absolute_uri(reverse('task_approve', kwargs={'task_id': task.id}))
+        decline_url = request.build_absolute_uri(reverse('task_decline', kwargs={'task_id': task.id}))
+        
+        context = {
+            "approve_url": approve_url,
+            "decline_url": decline_url,
+            "task_url": request.build_absolute_uri(reverse('team_tasks', kwargs={'team_id': team.id})),
+        }
+        
+        send_task_completion_request_email_task.delay(
+            user_id=request.user.id,
+            task_id=task.id,
+            to_emails=to_emails,
+            context_data=context
+        )
+
+    messages.success(request, f"Completion request sent for '{task.name}'.")
+    return redirect("team_tasks", team_id=team.id)
+
+
+@login_required
+def task_approve(request, task_id):
+    """
+    Approve task completion.
+    Only team lead or admins can approve.
+    """
+    task = get_object_or_404(Task, id=task_id)
+    team = task.team
+    workspace = team.client.workspace
+
+    # Permission check
+    is_admin = (
+        request.user.is_superuser or
+        request.user == team.team_lead or
+        Membership.objects.filter(user=request.user, workspace=workspace, role='admin').exists()
+    )
+    if not is_admin:
+        raise PermissionDenied("Only admins or team leads can approve tasks.")
+
+    task.status = 'completed'
+    task.save()
+
+    # Notify assignees
+    to_emails = [user.email for user in task.assigned_to.all() if user.email]
+    if to_emails:
+        context = {
+            "task_url": request.build_absolute_uri(reverse('team_tasks', kwargs={'team_id': team.id})),
+        }
+        send_task_status_notification_task.delay(
+            user_id=request.user.id,
+            task_id=task.id,
+            status="approved",
+            to_emails=to_emails,
+            context_data=context
+        )
+
+    messages.success(request, f"Task '{task.name}' marked as completed.")
+    return redirect("team_tasks", team_id=team.id)
+
+
+@login_required
+def task_decline(request, task_id):
+    """
+    Decline task completion.
+    Only team lead or admins can decline.
+    """
+    task = get_object_or_404(Task, id=task_id)
+    team = task.team
+    workspace = team.client.workspace
+
+    # Permission check
+    is_admin = (
+        request.user.is_superuser or
+        request.user == team.team_lead or
+        Membership.objects.filter(user=request.user, workspace=workspace, role='admin').exists()
+    )
+    if not is_admin:
+        raise PermissionDenied("Only admins or team leads can decline tasks.")
+
+    task.status = 'pending'
+    task.save()
+
+    # Notify assignees
+    to_emails = [user.email for user in task.assigned_to.all() if user.email]
+    if to_emails:
+        context = {
+            "task_url": request.build_absolute_uri(reverse('team_tasks', kwargs={'team_id': team.id})),
+        }
+        send_task_status_notification_task.delay(
+            user_id=request.user.id,
+            task_id=task.id,
+            status="declined",
+            to_emails=to_emails,
+            context_data=context
+        )
+
+    messages.warning(request, f"Completion request for '{task.name}' declined.")
+    return redirect("team_tasks", team_id=team.id)
 
 @login_required
 def delete_task(request, task_id):

@@ -1,3 +1,5 @@
+from datetime import date
+
 from django import forms
 from django_select2.forms import Select2MultipleWidget
 
@@ -30,9 +32,11 @@ class TaskForm(forms.ModelForm):
                 'data-minimum-input-length': 0,
                 'data-close-on-select': False,
             }),
+
             'due_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date',
+                'min': date.today().isoformat(),
             })
         }
 

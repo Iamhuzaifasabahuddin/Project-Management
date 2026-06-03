@@ -291,16 +291,8 @@ function asyncValidate(submit = false, usernameValid = false, emailValid = false
 
 $(document).ready(function() {
     'use strict'
-    $('input.form-control').on('input', function() {
+     $('input.form-control').on('input', function() {
         validateUsername(false);
-    });
-    // Toggle password visibility
-    $('.toggle-password').on('click', function() {
-        const input = $(this).closest('.input-group').find('input');
-        const icon = $(this).find('i');
-        const type = input.attr('type') === 'password' ? 'text' : 'password';
-        input.attr('type', type);
-        icon.toggleClass('bi-eye bi-eye-slash');
     });
 
     $('form').on('submit', function(event) {
