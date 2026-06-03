@@ -1,0 +1,114 @@
+{% load static %}
+
+<div class="col-md-6 col-lg-4 mb-4">
+    <div class="card shadow-sm task-card h-100 bg-white border-0">
+        <div class="card-body d-flex flex-column">
+
+            <!-- TOP -->
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h5 class="task-title mb-1">
+                        <a href="{% url 'create_post' task.id %}" class="text-dark text-decoration-none fw-semibold">
+                            {{ task.name }}
+                        </a>
+                        <small class="text-muted">
+                            | {{ task.posts.count }} post{{ task.posts.count|pluralize }}
+                        </small>
+                    </h5>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <small class="text-muted">
+                            {{ task.created_at|date:"M d, Y" }}
+                        </small>
+                        <span class="text-muted">|</span>
+                        {% if task.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                        {% elif task.status == 'awaiting_approval' %}
+                            <span class="badge bg-info text-white">Awaiting Approval</span>
+                        {% else %}
+                            {% if task.due_status == 'overdue' %}
+                                <span class="badge bg-danger">Overdue</span>
+                            {% elif task.due_status == 'today' %}
+                                <span class="badge bg-warning text-dark">Due Today</span>
+                            {% else %}
+                                <span class="badge bg-success">Upcoming</span>
+                            {% endif %}
+                        {% endif %}
+                        <small class="text-muted ms-1">{{ task.due_date|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <p class="text-muted small flex-grow-1">
+                {{ task.description|truncatewords:20 }}
+            </p>
+
+            <!-- ASSIGNED USERS -->
+            {% if task.assigned_to.all %}
+            <div class="mb-3">
+                <small class="text-muted d-block mb-2">Assigned To</small>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for user in task.assigned_to.all %}
+                    <span class="badge rounded-pill bg-light text-dark border">
+                        {{ user.get_full_name|default:user.username }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- FOOTER -->
+            <div class="d-flex flex-wrap gap-2 mt-auto align-items-center">
+                <a href="{% url 'create_post' task.id %}" class="btn btn-sm btn-outline-dark">Post</a>
+                <a href="{% url 'task_posts' task.id %}" class="btn btn-sm btn-primary">View Posts</a>
+
+                {% if is_admin or request.user.is_superuser %}
+                <button type="button" class="btn btn-outline-danger btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#deleteTaskModal{{ task.id }}">
+                    <i class="bi bi-trash"></i>
+                </button>
+                {% endif %}
+            </div>
+
+            <div class="mt-3">
+                {% if task.status == 'pending' %}
+                    <a href="{% url 'task_completion_request' task.id %}" class="btn btn-sm btn-info text-white w-100">
+                        Request Completion
+                    </a>
+                {% elif task.status == 'awaiting_approval' %}
+                    {% if is_admin %}
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'task_approve' task.id %}" class="btn btn-sm btn-success flex-grow-1">Approve</a>
+                        <a href="{% url 'task_decline' task.id %}" class="btn btn-sm btn-danger flex-grow-1">Decline</a>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info py-1 px-2 mb-0 small text-center">
+                        <i class="bi bi-info-circle me-1"></i> Awaiting Approval
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- DELETE TASK MODAL -->
+<div class="modal fade" id="deleteTaskModal{{ task.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold">Delete Task</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong>{{ task.name }}</strong>?</p>
+                <p class="text-muted small mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="{% url 'delete_task' task.id %}" class="btn btn-danger">Delete Task</a>
+            </div>
+        </div>
+    </div>
+</div>

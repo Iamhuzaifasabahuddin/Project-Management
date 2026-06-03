@@ -1,3 +1,2 @@
 web: python manage.py migrate && python manage.py collectstatic --noinput && gunicorn ProjectManagement.wsgi --bind 0.0.0.0:$PORT
 worker: celery -A ProjectManagement worker --pool=threads -l info -Q celery,email,slack
-beat: celery -A ProjectManagement beat -l info

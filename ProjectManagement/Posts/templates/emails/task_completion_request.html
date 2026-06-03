@@ -1,0 +1,22 @@
+<h2>Task Completion Request</h2>
+
+<p><strong>Requester:</strong> {{ requester_name }}</p>
+<p><strong>Team:</strong> {{ team_name }}</p>
+<p><strong>Task:</strong> {{ task_name }}</p>
+
+<p>The user has requested to mark this task as completed. Please review and take action:</p>
+
+<p>
+    <a href="{{ approve_url }}" style="background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;">
+        Approve
+    </a>
+    <a href="{{ decline_url }}" style="background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+        Decline
+    </a>
+</p>
+
+<p>
+    <a href="{{ task_url }}">
+        View Task Details
+    </a>
+</p>
