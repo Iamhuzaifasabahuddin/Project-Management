@@ -225,7 +225,6 @@ EMAIL_USE_SSL = True
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 EMAIL_TIMEOUT = 15
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # Celery broker - using Redis (recommended for production)
 CELERY_BROKER_URL = env('REDIS_URL')
@@ -253,6 +252,7 @@ CELERY_RESULT_EXPIRES = 3600
 
 # Task routing for different workers
 CELERY_TASK_ROUTES = {
+    'Posts.tasks.send_password_reset_email_task': {'queue': 'email'},
     'Posts.tasks.send_assigned_task_email_task': {'queue': 'email'},
     'Posts.tasks.send_post_email_task': {'queue': 'email'},
     'Posts.tasks.send_task_completion_request_email_task': {'queue': 'email'},
