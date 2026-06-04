@@ -447,6 +447,7 @@ def create_post(request, task_id):
     return render(request, "create_post.html", {
         "form": form,
         "team": team,
+        "task": task,
         "workspace": workspace,
         "client": client,
         "tasks": tasks,
