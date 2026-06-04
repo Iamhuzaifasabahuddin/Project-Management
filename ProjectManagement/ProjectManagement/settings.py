@@ -29,7 +29,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Read .env file if it exists
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
-SITE_ID = 2
+SITE_ID = 3
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -260,6 +261,9 @@ CELERY_TASK_ROUTES = {
     'Posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
     'Posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
 }
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
 
-# Task rate limiting using kombu
+# Task rate limiting using kombubu
 CELERY_TASK_DEFAULT_RATE_LIMIT = '100/m'  # 100 tasks per minute globally
