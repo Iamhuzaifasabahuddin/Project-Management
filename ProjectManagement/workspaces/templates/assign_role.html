@@ -1,108 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Assign Role</title>
+{% extends 'base.html' %}
+{% load bootstrap5 %}
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
+{% block title %}Assign Role - Hexz Connect{% endblock %}
 
-        .form-card {
-            width: 100%;
-            max-width: 450px;
-            background: #fff;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        }
-
-        .form-title {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 22px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: #4a90e2;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background: #4a90e2;
-            border: none;
-            color: #fff;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .btn-submit:hover {
-            background: #357abd;
-        }
-
-        .errorlist {
-            color: red;
-            font-size: 13px;
-            margin-top: 5px;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="form-card">
-    <h2 class="form-title">Assign Role</h2>
-
-    <form method="post">
-        {% csrf_token %}
-
-        <div class="form-group">
-            {{ form.user.label_tag }}
-            {{ form.user }}
-            {{ form.user.errors }}
+{% block content %}
+<header class="page-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="eyebrow">Governance & Permissions</div>
+                <h1>Assign Role<span>.</span></h1>
+                <p class="muted mb-0">Manage user permissions and define access levels within project workspaces.</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                <a href="{% url 'dashboard' %}" class="btn-outline-custom">
+                    <i class="bi bi-house me-1"></i> Dashboard
+                </a>
+            </div>
         </div>
+    </div>
+</header>
 
-        <div class="form-group">
-            {{ form.workspace.label_tag }}
-            {{ form.workspace }}
-            {{ form.workspace.errors }}
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-5 col-md-8">
+            <div class="hexz-card" style="padding: 3rem;">
+                <div class="text-center mb-5">
+                    <div class="hex-icon mx-auto mb-3" style="width: 48px; height: 48px; font-size: 20px;">H</div>
+                    <h2 class="font-syne fw-bold h4">Permission Settings</h2>
+                    <p class="muted small">Configure user authority levels.</p>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="field-group">
+                        <label class="field-label" for="{{ form.users.id_for_label }}">Select Users</label>
+                        {{ form.users }}
+                        {% if form.users.help_text %}
+                            <div class="muted small mt-1">{{ form.users.help_text|safe }}</div>
+                        {% endif %}
+                        {% if form.users.errors %}
+                            <div class="invalid-feedback d-block">{{ form.users.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="{{ form.workspace.id_for_label }}">Target Workspace</label>
+                        {{ form.workspace }}
+                        {% if form.workspace.errors %}
+                            <div class="invalid-feedback d-block">{{ form.workspace.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="{{ form.role.id_for_label }}">Designated Role</label>
+                        {{ form.role }}
+                        {% if form.role.errors %}
+                            <div class="invalid-feedback d-block">{{ form.role.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pt-4 border-top">
+                        <button type="submit" class="btn-gold w-100 py-3">
+                            <span>Assign Access Level</span>
+                            <i class="bi bi-shield-check ms-1"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <p class="muted small">
+                    <i class="bi bi-info-circle me-1"></i> 
+                    Roles determine visibility and action permissions within the workspace.
+                </p>
+            </div>
         </div>
-
-        <div class="form-group">
-            {{ form.role.label_tag }}
-            {{ form.role }}
-            {{ form.role.errors }}
-        </div>
-
-        <button type="submit" class="btn-submit">Assign</button>
-    </form>
+    </div>
 </div>
-
-
-</body>
-</html>
+{% endblock %}

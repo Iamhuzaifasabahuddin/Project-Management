@@ -55,11 +55,10 @@ def check_username(request):
 
 def check_email(request):
     email_part = request.GET.get('email', None)
-    ALLOWED_DOMAIN = "topsoftdigitals.pk"
-    full_email = f"{email_part}@{ALLOWED_DOMAIN}"
     data = {
-        'emailExists': User.objects.filter(email__iexact=full_email).exists()
+        'emailExists': User.objects.filter(email__iexact=email_part).exists()
     }
+    print(data)
     return JsonResponse(data)
 
 def check_reset_email(request):

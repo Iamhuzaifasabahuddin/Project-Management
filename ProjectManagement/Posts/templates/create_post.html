@@ -1,185 +1,95 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
 {% load bootstrap5 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Create Post</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
+{% block title %}Create Post - {{ task.name }}{% endblock %}
 
-<body>
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-custom px-4 py-3">
-    <div class="container-fluid">
-
-        <div>
-            <h5 class="mb-0 fw-semibold">Create Post</h5>
-            <small class="muted">Publish content in your workspace</small>
-        </div>
-
-        <div class="d-flex gap-2">
-
-            <a href="{% url 'dashboard' %}" 
-               class="btn btn-outline-secondary btn-sm">
-                Dashboard
-            </a>
-
-            <a href="{% url 'client_details' workspace.id %}" 
-               class="btn btn-outline-secondary btn-sm">
-                Workspace
-            </a>
-
-        </div>
-
-    </div>
-</nav>
-
-<!-- CONTENT -->
-<div class="container py-5 d-flex justify-content-center">
-
-    <div class="col-lg-7 col-md-9 col-sm-12">
-
-        <!-- HEADER -->
-        <div class="text-center mb-4">
-
-            <h3 class="fw-semibold mb-1">
-                Create New Post
-            </h3>
-
-            <p class="muted mb-1">
-                Publish content inside your workspace
-            </p>
-
-            <div class="">
-            <nav aria-label="breadcrumb" class="d-flex justify-content-center mt-3">
-                <ol class="breadcrumb mb-0">
-
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'dashboard' %}" class="text-decoration-none">
-                            {{ workspace.name }}
-                        </a>
-                    </li>
-
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'client_details' workspace.id %}" class="text-decoration-none">
-                            {{ client.name }}
-                        </a>
-                    </li>
-
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'client_teams' client.id %}" class="text-decoration-none">
-                            {{ client.name }} Team
-                        </a>
-                    </li>
-
-                    <li class="breadcrumb-item active" aria-current="page">
-                        <a href="{% url 'team_tasks' team.id %}" class="text-decoration-none">
-                            {{ team.name }} Tasks
-                        </a>
-                    </li>
-
-                        <li class="breadcrumb-item active" aria-current="page">
-                            Create Post
-                    </li>
-
-                </ol>
-            </nav>
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
+            <div>
+                <div class="eyebrow">Workspace: {{ workspace.name }} | Client: {{ client.name }} | Task: {{ task.name }}</div>
+                <h1 class="section-title mb-0">Create New Post</h1>
             </div>
-
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'task_posts' task.id %}" class="btn-black">
+                    <i class="bi bi-arrow-left"></i> Back to Posts
+                </a>
+                <a href="{% url 'team_tasks' task.team.id %}" class="btn-outline-custom">
+                    Back to Tasks
+                </a>
+            </div>
         </div>
-
-        <!-- CARD -->
-        <div class="card editor-card shadow-sm p-4 p-md-5">
-
-            <form method="post" enctype="multipart/form-data" novalidate>
-                {% csrf_token %}
-
-                <!-- TITLE -->
-                <div class="mb-4">
-
-                    <label for="{{ form.title.id_for_label }}" 
-                           class="form-label fw-semibold">
-                        Title *
-                    </label>
-
-                    {{ form.title }}
-
-                    {% if form.title.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.title.errors }}
-                        </div>
-                    {% endif %}
-
-                </div>
-
-                <!-- CONTENT -->
-                <div class="mb-4">
-
-                    <label for="{{ form.content.id_for_label }}" 
-                           class="form-label fw-semibold">
-                        Content *
-                    </label>
-
-                    {{ form.content }}
-
-                    {% if form.content.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.content.errors }}
-                        </div>
-                    {% endif %}
-
-                </div>
-
-                <!-- FILES -->
-                <div class="mb-4">
-
-                    <label for="files" class="form-label fw-semibold">
-                        Attach Files
-                    </label>
-
-                    <input 
-                        type="file"
-                        id="files"
-                        name="files"
-                        multiple
-                        class="form-control"
-                        accept="*/*"
-                    >
-
-                    <small class="text-muted d-block mt-2">
-                        You can select multiple files at once.
-                        Ctrl+Click (Cmd+Click on Mac) to select multiple files.
-                    </small>
-
-                </div>
-
-                <!-- ACTION BUTTONS -->
-                <div class="d-flex gap-2 mt-4">
-
-                    <button type="submit" 
-                            class="btn btn-dark px-4">
-                        Publish Post
-                    </button>
-
-                    <a href="{% url 'client_teams' client.id %}"
-                       class="btn btn-outline-secondary">
-                        Cancel
-                    </a>
-
-                </div>
-
-            </form>
-
-        </div>
-
     </div>
-
 </div>
 
-</body>
-</html>
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="hexz-card p-4 p-md-5">
+                <div class="mb-4">
+                    <h2 class="font-syne h4 fw-bold">Post Content</h2>
+                    <p class="muted">Share updates, files, or information with your team.</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+
+                    <div class="field-group">
+                        <label class="field-label" for="{{ form.title.id_for_label }}">Title *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="{{ form.content.id_for_label }}">Content *</label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="text-danger small mt-1">{{ form.content.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="files">Attach Files</label>
+                        <input type="file" id="files" name="files" multiple class="form-control" accept="*/*">
+                        <div class="muted small mt-2">
+                            <i class="bi bi-info-circle"></i> You can select multiple files at once.
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-3 mt-5">
+                        <button type="submit" class="btn-gold py-3 px-5">
+                            <i class="bi bi-send"></i> Publish Post
+                        </button>
+                        <a href="{% url 'task_posts' task.id %}" class="btn-outline-custom py-3 px-5">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: 4px;
+        background: var(--white);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--black);
+        outline: none;
+        transition: all 0.2s;
+    }
+    input[type="text"]:focus, textarea:focus {
+        border-color: var(--black);
+        box-shadow: 0 0 0 3px rgba(10,10,10,0.05);
+    }
+</style>
+{% endblock %}

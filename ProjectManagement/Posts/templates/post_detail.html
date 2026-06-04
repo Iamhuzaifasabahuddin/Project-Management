@@ -1,261 +1,151 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
 {% load bootstrap5 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Post Detail</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-</head>
+{% block title %}Post: {{ post.title }}{% endblock %}
 
-<body>
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-custom px-4 py-3">
-    <div class="container-fluid">
-
-        <div>
-            <h5 class="mb-0 fw-semibold">Post Detail</h5>
-            <small class="muted">
-                View and manage comments
-            </small>
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
+            <div>
+                <div class="eyebrow">Task: {{ post.task.name }} | Posted by {{ post.author.username }}</div>
+                <h1 class="section-title mb-0">{{ post.title }}</h1>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'task_posts' post.task.id %}" class="btn-black">
+                    <i class="bi bi-arrow-left"></i> Back to Posts
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn-outline-custom">
+                    Dashboard
+                </a>
+            </div>
         </div>
-
-        <div class="d-flex gap-2">
-
-            <a href="{% url 'dashboard' %}" 
-               class="btn btn-outline-secondary btn-sm">
-                Dashboard
-            </a>
-
-            <a href="{% url 'task_posts' post.task.id %}"
-               class="btn btn-outline-secondary btn-sm">
-                Back
-            </a>
-
-        </div>
-
     </div>
-</nav>
+</div>
 
-<!-- CONTENT -->
-<div class="container py-5 main-container">
-
-    <!-- POST CARD -->
-    <div class="card custom-card mb-4 p-4 p-md-5">
-
-        <h2 class="fw-bold mb-3">
-            {{ post.title }}
-        </h2>
-
-        <!-- META -->
-        <div class="mb-4 muted">
-            <small>
-                Posted by 
-                <strong>{{ post.author.username }}</strong>
-                ·
-                {{ post.created_at|date:"M d, Y H:i" }}
-
-                {% if post.updated_at != post.created_at %}
-                    · Edited {{ post.updated_at|date:"M d, Y H:i" }}
-                {% endif %}
-            </small>
-        </div>
-
-        <!-- CONTENT -->
-        <div class="post-content mb-4">
-            {{ post.content|linebreaks }}
-        </div>
-
-        <!-- POST FILES -->
-        {% if post_files %}
-            <div class="mt-4">
-
-                <h6 class="fw-semibold mb-3">
-                    Attached Files ({{ post_files.count }})
-                </h6>
-
-                <div class="d-flex flex-column gap-3">
-
-                    {% for file in post_files %}
-                        <div class="file-box d-flex justify-content-between align-items-center">
-
-                            <div>
-                                <a href="{{ file.file.url }}" 
-                                   target="_blank"
-                                   class="text-decoration-none fw-semibold">
-                                    📎 {{ file.file.name|truncatechars:50 }}
-                                </a>
-
-                                <small class="muted d-block mt-1">
-                                    Uploaded {{ file.uploaded_at|date:"M d, Y H:i" }}
-                                </small>
-                            </div>
-
-
-                        </div>
-                    {% endfor %}
-
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <!-- POST CONTENT -->
+            <div class="hexz-card mb-5 p-4 p-md-5">
+                <div class="mb-4 muted" style="font-size: 0.8rem;">
+                    <i class="bi bi-person-circle"></i> Published by <strong>{{ post.author.username }}</strong> 
+                    <span class="mx-2">·</span> 
+                    <i class="bi bi-clock"></i> {{ post.created_at|date:"M d, Y H:i" }}
+                    {% if post.updated_at != post.created_at %}
+                        <span class="mx-2">·</span> 
+                        <span class="badge bg-light text-dark border">Edited</span>
+                    {% endif %}
                 </div>
 
+                <div class="post-content mb-5" style="font-size: 1.1rem; line-height: 1.8;">
+                    {{ post.content|linebreaks }}
+                </div>
+
+                {% if post_files %}
+                <div class="border-top pt-4">
+                    <div class="eyebrow mb-3">Attached Files ({{ post_files.count }})</div>
+                    <div class="d-flex flex-wrap gap-3">
+                        {% for file in post_files %}
+                        <a href="{{ file.file.url }}" target="_blank" class="btn-outline-custom d-flex align-items-center gap-2 py-2 px-3">
+                            <i class="bi bi-file-earmark-arrow-down"></i>
+                            <span class="text-truncate" style="max-width: 200px;">{{ file.file.name|basename }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
-        {% endif %}
 
-    </div>
+            <!-- COMMENTS SECTION -->
+            <div class="mb-5">
+                <h3 class="font-syne fw-bold mb-4 d-flex align-items-center gap-3">
+                    Comments
+                    <span class="badge bg-black text-white px-3 py-2" style="font-size: 0.9rem;">{{ comments.count }}</span>
+                </h3>
 
-    <!-- COMMENTS -->
-    <div class="card custom-card mb-4 p-4">
-
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-semibold mb-0">
-                Comments
-            </h4>
-
-            <span class="badge bg-dark">
-                {{ comments.count }}
-            </span>
-        </div>
-
-        {% if comments %}
-
-            <div class="d-flex flex-column gap-3">
-
-                {% for comment in comments %}
-
-                    <div class="comment-card p-3">
-
-                        <!-- COMMENT HEADER -->
+                <div class="d-flex flex-column gap-4">
+                    {% for comment in comments %}
+                    <div class="hexz-card bg-white p-4">
                         <div class="d-flex justify-content-between align-items-start mb-3">
-
                             <div>
-                                <h6 class="fw-semibold mb-1">
-                                    {{ comment.author.username }}
-                                </h6>
-
-                                <small class="muted">
-                                    {{ comment.created_at|date:"M d, Y H:i" }}
-                                </small>
+                                <h6 class="fw-bold mb-0 text-black">{{ comment.author.username }}</h6>
+                                <small class="muted">{{ comment.created_at|date:"M d, Y H:i" }}</small>
                             </div>
-
                         </div>
-
-                        <!-- COMMENT CONTENT -->
-                        <div class="mb-3">
+                        <div class="comment-text mb-3">
                             {{ comment.content|linebreaks }}
                         </div>
 
-                        <!-- COMMENT FILES -->
                         {% if comment.files.all %}
-
-                            <div class="d-flex flex-column gap-2">
-
-                                {% for file in comment.files.all %}
-
-                                    <div class="file-box d-flex justify-content-between align-items-center">
-
-                                        <a href="{{ file.file.url }}"
-                                           target="_blank"
-                                           class="text-decoration-none text-truncate">
-                                            📎 {{ file.file.name|truncatechars:35 }}
-                                        </a>
-
-                                    </div>
-
-                                {% endfor %}
-
-                            </div>
-
+                        <div class="d-flex flex-wrap gap-2 mt-3 pt-3 border-top">
+                            {% for file in comment.files.all %}
+                            <a href="{{ file.file.url }}" target="_blank" class="small text-decoration-none text-gold fw-bold">
+                                <i class="bi bi-paperclip"></i> {{ file.file.name|basename|truncatechars:30 }}
+                            </a>
+                            {% endfor %}
+                        </div>
                         {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="hexz-card text-center py-5 bg-light border-0">
+                        <i class="bi bi-chat-dots muted mb-2" style="font-size: 2rem;"></i>
+                        <p class="muted mb-0">No comments yet. Be the first to start the conversation.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
 
+            <!-- ADD COMMENT -->
+            <div class="hexz-card p-4 p-md-5">
+                <h4 class="font-syne fw-bold mb-4">Add a Comment</h4>
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="field-group">
+                        <label class="field-label" for="{{ form.content.id_for_label }}">Your Comment *</label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="text-danger small mt-1">{{ form.content.errors|striptags }}</div>
+                        {% endif %}
                     </div>
 
-                {% endfor %}
-
-            </div>
-
-        {% else %}
-
-            <p class="muted mb-0">
-                No comments yet.
-            </p>
-
-        {% endif %}
-
-    </div>
-
-    <!-- ADD COMMENT -->
-    <div class="card custom-card p-4 p-md-5">
-
-        <h4 class="fw-semibold mb-4">
-            Add Comment
-        </h4>
-
-        <form method="post" enctype="multipart/form-data" novalidate>
-            {% csrf_token %}
-
-            <!-- COMMENT FIELD -->
-            <div class="mb-4">
-
-                <label for="{{ form.content.id_for_label }}" 
-                       class="form-label fw-semibold">
-                    Your Comment *
-                </label>
-
-                {{ form.content }}
-
-                {% if form.content.errors %}
-                    <div class="invalid-feedback d-block">
-                        {{ form.content.errors }}
+                    <div class="field-group">
+                        <label class="field-label" for="files">Attach Files</label>
+                        <input type="file" id="files" name="files" multiple class="form-control" accept="*/*">
+                        <div class="muted small mt-2">Optional: Share documents or screenshots.</div>
                     </div>
-                {% endif %}
 
+                    <div class="mt-4">
+                        <button type="submit" class="btn-gold py-3 px-5">
+                            <i class="bi bi-chat-right-text"></i> Post Comment
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <!-- FILE UPLOAD -->
-            <div class="mb-4">
-
-                <label for="files" class="form-label fw-semibold">
-                    Attach Files
-                </label>
-
-                <input
-                    type="file"
-                    id="files"
-                    name="files"
-                    multiple
-                    class="form-control"
-                    accept="*/*"
-                >
-
-                <small class="text-muted d-block mt-2">
-                    You can upload multiple files at once.
-                </small>
-
-            </div>
-
-            <!-- BUTTONS -->
-            <div class="d-flex gap-2">
-
-                <button type="submit" 
-                        class="btn btn-dark px-4">
-                    Post Comment
-                </button>
-
-                <a href="{% url 'task_posts' post.task.id %}"
-                   class="btn btn-outline-secondary">
-                    Cancel
-                </a>
-
-            </div>
-
-        </form>
-
+        </div>
     </div>
-
 </div>
 
-</body>
-</html>
+<style>
+    textarea {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1.5px solid var(--border);
+        border-radius: 4px;
+        background: var(--white);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        color: var(--black);
+        outline: none;
+        transition: all 0.2s;
+        min-height: 120px;
+    }
+    textarea:focus {
+        border-color: var(--black);
+        box-shadow: 0 0 0 3px rgba(10,10,10,0.05);
+    }
+    .text-gold { color: var(--gold-dim); }
+</style>
+{% endblock %}

@@ -1,96 +1,59 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load bootstrap5 %}
 {% load static %}
-{% bootstrap_css %}
 
-<html lang="en">
+{% block title %}Tasks - {{ team.name }}{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Tasks - {{ team.name }}</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <style>
-        .accordion-button:not(.collapsed) {
-            background-color: #f8f9fa;
-            color: #212529;
-            box-shadow: none;
-        }
-        .accordion-button:focus {
-            box-shadow: none;
-            border-color: rgba(0,0,0,.125);
-        }
-        .task-card {
-            transition: transform 0.2s;
-        }
-        .task-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
-</head>
-
-<body>
-
-{% bootstrap_javascript %}
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-custom px-4 py-3">
-    <div class="container-fluid">
-        <div>
-            <h5 class="mb-0 fw-semibold">Team Tasks</h5>
-            <small class="muted">Workspace: {{ workspace.name }} | Team: {{team.name}}</small>
-        </div>
-        <div class="d-flex flex-wrap gap-2">
-            {% if is_admin %}
-            <a href="{% url 'create_task' team.id %}" class="btn btn-dark btn-sm">Create Task</a>
-            {% endif %}
-            <a href="{% url 'client_teams' client.id %}" class="btn btn-outline-secondary btn-sm">Team</a>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">Dashboard</a>
-            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">Workspaces</a>
+{% block content %}
+<!-- HEADER -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
+            <div>
+                <div class="eyebrow">Workspace: {{ workspace.name }} | Team: {{ team.name }}</div>
+                <h1 class="section-title mb-0">{{ team.name }} Tasks</h1>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                {% if is_admin %}
+                <a href="{% url 'create_task' team.id %}" class="btn-gold">
+                    <i class="bi bi-plus-lg"></i> Create Task
+                </a>
+                {% endif %}
+                <a href="{% url 'client_teams' client.id %}" class="btn-black">
+                    <i class="bi bi-people"></i> Team
+                </a>
+                <a href="{% url 'dashboard' %}" class="btn-outline-custom">
+                    Dashboard
+                </a>
+            </div>
         </div>
     </div>
-</nav>
+</div>
 
-<!-- MAIN CONTENT -->
-<div class="container py-5">
-
-    <!-- HEADER -->
-    <div class="text-center mb-5">
-        <h2 class="fw-semibold">{{ team.name }} Tasks</h2>
-        <p class="muted">Organized by status</p>
-    </div>
-
+<div class="container pb-5">
     <!-- ALERTS -->
     {% if messages %}
     {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     {% endfor %}
     {% endif %}
 
-    <div class="accordion" id="taskAccordion">
+    <div class="accordion border-0" id="taskAccordion">
 
         <!-- 1. AWAITING APPROVAL -->
         <div class="accordion-item border-0 mb-3 shadow-sm">
             <h2 class="accordion-header" id="headingAwaiting">
                 <button class="accordion-button {% if not awaiting_tasks %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAwaiting" aria-expanded="{% if awaiting_tasks %}true{% else %}false{% endif %}" aria-controls="collapseAwaiting">
-                    <i class="bi bi-clock-history me-2 text-info"></i>
-                    <strong>Awaiting Approval</strong>
-                    <span class="badge bg-info ms-2">{{ awaiting_tasks.count }}</span>
+                    <i class="bi bi-clock-history me-2 text-warning"></i>
+                    <span class="fw-bold">Awaiting Approval</span>
+                    <span class="badge bg-dark ms-2">{{ awaiting_tasks.count }}</span>
                 </button>
             </h2>
             <div id="collapseAwaiting" class="accordion-collapse collapse {% if awaiting_tasks %}show{% endif %}" aria-labelledby="headingAwaiting" data-bs-parent="#taskAccordion">
-                <div class="accordion-body bg-light">
+                <div class="accordion-body bg-white border-top">
                     {% if awaiting_tasks %}
                     <div class="row">
                         {% for task in awaiting_tasks %}
@@ -98,7 +61,7 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p class="text-muted mb-0">No tasks awaiting approval.</p>
+                    <p class="muted mb-0">No tasks awaiting approval.</p>
                     {% endif %}
                 </div>
             </div>
@@ -109,12 +72,12 @@
             <h2 class="accordion-header" id="headingPending">
                 <button class="accordion-button {% if awaiting_tasks and not pending_tasks %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePending" aria-expanded="{% if not awaiting_tasks or pending_tasks %}true{% else %}false{% endif %}" aria-controls="collapsePending">
                     <i class="bi bi-list-task me-2 text-primary"></i>
-                    <strong>Pending Tasks</strong>
-                    <span class="badge bg-primary ms-2">{{ pending_tasks.count }}</span>
+                    <span class="fw-bold">Pending Tasks</span>
+                    <span class="badge bg-dark ms-2">{{ pending_tasks.count }}</span>
                 </button>
             </h2>
             <div id="collapsePending" class="accordion-collapse collapse {% if not awaiting_tasks or pending_tasks %}show{% endif %}" aria-labelledby="headingPending" data-bs-parent="#taskAccordion">
-                <div class="accordion-body bg-light">
+                <div class="accordion-body bg-white border-top">
                     {% if pending_tasks %}
                     <div class="row">
                         {% for task in pending_tasks %}
@@ -122,7 +85,7 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p class="text-muted mb-0">No pending tasks.</p>
+                    <p class="muted mb-0">No pending tasks.</p>
                     {% endif %}
                 </div>
             </div>
@@ -133,12 +96,12 @@
             <h2 class="accordion-header" id="headingCompleted">
                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCompleted" aria-expanded="false" aria-controls="collapseCompleted">
                     <i class="bi bi-check-circle me-2 text-success"></i>
-                    <strong>Completed Tasks</strong>
-                    <span class="badge bg-success ms-2">{{ completed_tasks.count }}</span>
+                    <span class="fw-bold">Completed Tasks</span>
+                    <span class="badge bg-dark ms-2">{{ completed_tasks.count }}</span>
                 </button>
             </h2>
             <div id="collapseCompleted" class="accordion-collapse collapse" aria-labelledby="headingCompleted" data-bs-parent="#taskAccordion">
-                <div class="accordion-body bg-light">
+                <div class="accordion-body bg-white border-top">
                      {% if completed_tasks %}
                     <div class="row">
                         {% for task in completed_tasks %}
@@ -146,15 +109,24 @@
                         {% endfor %}
                     </div>
                     {% else %}
-                    <p class="text-muted mb-0">No completed tasks.</p>
+                    <p class="muted mb-0">No completed tasks.</p>
                     {% endif %}
                 </div>
             </div>
         </div>
 
     </div>
-
 </div>
 
-</body>
-</html>
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: var(--white);
+        color: var(--black);
+        box-shadow: none;
+    }
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: var(--border);
+    }
+</style>
+{% endblock %}

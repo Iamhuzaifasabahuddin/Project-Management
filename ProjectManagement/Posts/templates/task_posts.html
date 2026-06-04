@@ -1,207 +1,151 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
 {% load bootstrap5 %}
-{% bootstrap_css %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ client.name }} - Posts</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-        <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-</head>
+{% block title %}{{ task.name }} - Posts{% endblock %}
 
-<body>
-{% bootstrap_javascript %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
+            <div>
+                <div class="eyebrow">Client: {{ client.name }} | Team: {{ task.team.name }} | Task: {{ task.name }}</div>
+                <h1 class="section-title mb-0">{{ task.name }} Posts</h1>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'create_post' task.id %}" class="btn-gold">
+                    <i class="bi bi-plus-lg"></i> New Post
+                </a>
+                <a href="{% url 'team_tasks' task.team.id %}" class="btn-black">
+                    <i class="bi bi-arrow-left"></i> Back to Tasks
+                </a>
+                <a href="{% url 'client_teams' client.id %}" class="btn-outline-custom">
+                    Teams
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-light bg-white border-bottom px-4 py-3">
-    <div>
-        <h5 class="mb-0">Task Posts</h5>
-        <small class="muted">Client: {{ client.name }} | Team: {{task.team.name}} | Task: {{task.name}}</small>
+<div class="container pb-5">
+    <!-- CLIENT INFO CARD -->
+    <div class="hexz-card mb-5 bg-light border-0">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h3 class="font-syne fw-bold mb-1">{{ client.name }}</h3>
+                <p class="muted mb-3">{{ client.email }} • {{ client.number }}</p>
+                <div class="d-flex flex-wrap gap-4">
+                    <div>
+                        <div class="eyebrow" style="font-size: 0.6rem;">Amount Paid</div>
+                        <div class="fw-bold text-success">${{ client.amount_paid }}</div>
+                    </div>
+                    <div>
+                        <div class="eyebrow" style="font-size: 0.6rem;">Payment Status</div>
+                        <div class="fw-bold">{{ client.paid }}</div>
+                    </div>
+                    <div>
+                        <div class="eyebrow" style="font-size: 0.6rem;">Payment Date</div>
+                        <div class="fw-bold">{{ client.payment_date|date:"d M, Y" }}</div>
+                    </div>
+                    <div>
+                        <div class="eyebrow" style="font-size: 0.6rem;">Type</div>
+                        <div class="fw-bold">{{ client.paid_type|capfirst }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                <div class="eyebrow">Workspace</div>
+                <div class="fw-bold">{{ client.workspace.name }}</div>
+            </div>
+        </div>
     </div>
 
-    <div class="d-flex gap-2">
-
-        <a href="{% url 'client_teams' client.id %}"
-           class="btn btn-primary btn-sm">
-            Go Back To Teams
-        </a>
-
-        <a href="{% url 'client_details' client.workspace.id %}"
-           class="btn btn-outline-secondary btn-sm">
-            Back to Workspace
-        </a>
-
-        <a href="{% url 'create_post' client.id %}"
-           class="btn btn-dark btn-sm">
-            + New Post
-        </a>
-
-    </div>
-</nav>
-
-<!-- CONTENT -->
-<div class="container py-5">
-
-    <!-- HEADER -->
-    <div class="header-card mb-4 workspace-header">
-
-        <h3 class="fw-semibold mb-1">
-            {{ client.name }}
-        </h3>
-
-        <p class="muted mb-1">
-            {{ client.email }} • {{ client.number }}
-        </p>
-        <p class="muted mb-1">
-            Amount: <strong>${{ client.amount_paid }}</strong> • Paid: <strong>{{ client.paid }}</strong> • Payment
-            Date: <strong>{{ client.payment_date| date:"d M, Y" }}</strong> • <strong>{{ client.paid_type | capfirst }}</strong>
-        </p>
-
-        <p class="muted mb-0">
-            Workspace: <strong>{{ client.workspace.name }}</strong>
-        </p>
-
-    </div>
-
-    <!-- POSTS -->
-    <h4 class="fw-semibold mb-3">
-        {{task.name}} Posts
-    </h4>
+    <!-- MESSAGES -->
     {% if messages %}
     {% for message in messages %}
-
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4">
         {{ message }}
-
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
-        </button>
-
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
-
     {% endfor %}
     {% endif %}
-    <div class="row g-3">
 
+    <!-- POSTS GRID -->
+    <div class="row g-4">
         {% for post in posts %}
-
         <div class="col-lg-6">
+            <div class="hexz-card h-100 d-flex flex-column">
+                <div class="mb-3">
+                    <h5 class="fw-bold mb-1">
+                        <a href="{% url 'post_detail' post.id %}" class="text-dark text-decoration-none hover-gold">
+                            {{ post.title }}
+                        </a>
+                    </h5>
+                    <div class="muted small">
+                        By <span class="text-black fw-bold">{{ post.author.username }}</span> • {{ post.created_at|date:"M d, Y H:i" }}
+                    </div>
+                </div>
 
-            <div class="card post-card p-3 shadow-sm">
-
-                <h5 class="fw-semibold mb-2">
-                    <a href="{% url 'post_detail' post.id %}" class="text-dark">
-                        {{ post.title }}
-                    </a>
-                </h5>
-
-                <p class="muted small mb-2">
-                    By {{ post.author.username }} • {{ post.created_at }}
-                </p>
-
-                <p class="mb-3">
-                    {{ post.content|truncatewords:25 }}
+                <p class="muted flex-grow-1">
+                    {{ post.content|truncatewords:30 }}
                 </p>
 
                 <!-- ACTIONS -->
-                <div class="d-flex align-items-center flex-wrap gap-2 mt-3">
-
+                <div class="d-flex align-items-center flex-wrap gap-2 mt-4 pt-3 border-top">
                     {% if post.files.all %}
-                    <div class="d-flex flex-wrap gap-2">
                         {% for file_obj in post.files.all %}
-                        {% if file_obj.file %}
-                        <a href="{{ file_obj.file.url }}"
-                           class="btn btn-outline-secondary btn-sm">
-                            Download File
-                        </a>
-                        {% endif %}
+                            {% if file_obj.file %}
+                            <a href="{{ file_obj.file.url }}" class="btn-outline-custom" style="padding: 6px 12px; font-size: 0.7rem;">
+                                <i class="bi bi-download"></i> File
+                            </a>
+                            {% endif %}
                         {% endfor %}
-                    </div>
                     {% endif %}
 
-                    <a href="{% url 'post_detail' post.id %}"
-                       class="btn btn-primary btn-sm">
+                    <a href="{% url 'post_detail' post.id %}" class="btn-black" style="padding: 6px 12px; font-size: 0.7rem;">
                         Open Post
                     </a>
 
                     {% if is_admin or is_member or request.user.is_superuser %}
-
-                    <button type="button"
-                            class="btn btn-outline-danger btn-sm"
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteModal{{ post.id }}">
-                                                    <i class="bi bi-trash me-1"></i>
-                        Delete Post
+                    <button type="button" class="btn-outline-custom ms-auto" style="padding: 4px 10px; color: var(--error); border-color: var(--error);" data-bs-toggle="modal" data-bs-target="#deleteModal{{ post.id }}">
+                        <i class="bi bi-trash"></i>
                     </button>
-
                     {% endif %}
-
                 </div>
             </div>
-
         </div>
 
         <!-- DELETE MODAL -->
-        <div class="modal fade"
-             id="deleteModal{{ post.id }}"
-             tabindex="-1"
-             aria-hidden="true">
-
+        <div class="modal fade" id="deleteModal{{ post.id }}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
-
-                <div class="modal-content">
-
-                    <div class="modal-header">
-                        <h5 class="modal-title">Confirm Deletion</h5>
-                        <button type="button" class="btn-close"
-                                data-bs-dismiss="modal"></button>
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="section-title mb-0" style="font-size: 1.2rem;">Confirm Deletion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-
                     <div class="modal-body">
-                        Are you sure you want to delete
-                        <strong>{{ post.title }}</strong>?
-
+                        Are you sure you want to delete <strong>{{ post.title }}</strong>?
                     </div>
-
-                    <div class="modal-footer">
-
-                        <button type="button"
-                                class="btn btn-secondary"
-                                data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-
-                        <a href="{% url 'delete_task_post' post.id %}"
-                           class="btn btn-danger">
-                            Yes, Delete
-                        </a>
-
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                        <a href="{% url 'delete_task_post' post.id %}" class="btn btn-danger font-syne px-3 py-2" style="font-size: 0.8rem;">DELETE POST</a>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
-
         {% empty %}
-
-        <div class="col-12">
-            <div class="alert alert-light border">
-                No posts found for this client.
-            </div>
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-chat-left-text muted mb-3" style="font-size: 3rem;"></i>
+            <h4 class="font-syne muted">No posts found for this task.</h4>
+            <a href="{% url 'create_post' task.id %}" class="btn-gold mt-3">Create First Post</a>
         </div>
-
         {% endfor %}
-
     </div>
-
 </div>
 
-</body>
-</html>
+<style>
+    .hover-gold:hover {
+        color: var(--gold-dim) !important;
+    }
+</style>
+{% endblock %}

@@ -236,6 +236,7 @@ def manage_team_members(request, team_id):
     """
     team = get_object_or_404(Team, id=team_id)
     workspace = team.client.workspace
+    client = team.client
 
     # Permission check: Workspace Admin, Superuser, OR Team Lead
     if not can_manage_team(request.user, team):
@@ -285,6 +286,7 @@ def manage_team_members(request, team_id):
         'team': team,
         'current_members': team.members.all(),
         'workspace': workspace,
+        'client': client,
     })
 
 

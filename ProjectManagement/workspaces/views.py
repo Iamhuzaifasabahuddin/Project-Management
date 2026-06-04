@@ -104,7 +104,7 @@ def create_workspace(request):
         )
 
         messages.success(request, "Workspace created")
-        return redirect("workspace_list")
+        return redirect("dashboard")
 
     return render(request, "create_workspace.html", {"form": form})
 
@@ -141,6 +141,8 @@ def workspace_detail(request, workspace_id):
     })
 
 
+from django.db import transaction
+
 # =========================
 # ROLE ASSIGNMENT
 # =========================
@@ -153,7 +155,18 @@ def assign_role(request):
     form = RoleAssignForm(request.POST or None)
 
     if form.is_valid():
-        form.save()
+        users = form.cleaned_data['users']
+        workspace = form.cleaned_data['workspace']
+        role = form.cleaned_data['role']
+        
+        with transaction.atomic():
+            memberships = [
+                Membership(user=user, workspace=workspace, role=role)
+                for user in users
+            ]
+            Membership.objects.bulk_create(memberships)
+            
+        messages.success(request, f"Successfully assigned '{role}' role to {len(users)} users.")
         return redirect("workspace_list")
 
     return render(request, "assign_role.html", {"form": form})

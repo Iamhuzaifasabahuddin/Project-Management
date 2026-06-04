@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django_select2.forms import Select2MultipleWidget, Select2Widget
@@ -20,25 +21,50 @@ class WorkspaceForm(forms.ModelForm):
         return name
 
 
-class RoleAssignForm(forms.ModelForm):
-    class Meta:
-        model = Membership
-        fields = ['user', 'workspace', 'role']
+class RoleAssignForm(forms.Form):
+    users = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(),
+        widget=Select2MultipleWidget(attrs={
+            'class': 'form-control',
+            'data-placeholder': 'Select one or more users...',
+            'data-allow-clear': 'true',
+            'data-close-on-select': False,
+        }),
+        help_text="Select one or more users to assign this role to."
+    )
+    workspace = forms.ModelChoiceField(
+        queryset=Workspace.objects.all(),
+        widget=Select2Widget(attrs={
+            'class': 'form-control',
+            'data-placeholder': 'Select target workspace...',
+        })
+    )
+    role = forms.ChoiceField(
+        choices=Membership.ROLE_CHOICES,
+        widget=Select2Widget(attrs={
+            'class': 'form-control',
+            'data-placeholder': 'Select designated role...',
+        })
+    )
 
     def clean(self):
         cleaned_data = super().clean()
-        user = cleaned_data.get("user")
+        users = cleaned_data.get("users")
         workspace = cleaned_data.get("workspace")
         role = cleaned_data.get("role")
 
-        if Membership.objects.filter(
-                user=user,
+        if users and workspace and role:
+            existing = Membership.objects.filter(
+                user__in=users,
                 workspace=workspace,
                 role=role
-        ).exists():
-            raise forms.ValidationError(
-                "This role is already assigned to this user in this workspace."
-            )
+            ).values_list('user__username', flat=True)
+
+            if existing.exists():
+                usernames = ", ".join(existing)
+                raise forms.ValidationError(
+                    f"The following users already have this role in this workspace: {usernames}"
+                )
 
         return cleaned_data
 
@@ -46,8 +72,8 @@ class RoleAssignForm(forms.ModelForm):
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ['name', 'address', 'number', 'email', 'paid', 'amount_paid', 'paid_type', 'payment_date',
-                  'total_amount', 'assigned_to']
+        fields = ['name', 'address', 'number', 'email', 'total_amount', 'amount_paid', 'payment_date', 'paid_type'
+                  ,'paid', 'assigned_to']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -71,8 +97,11 @@ class ClientForm(forms.ModelForm):
                 'placeholder': 'Enter email address',
                 'autocomplete': 'email',
             }),
-            'paid': forms.CheckboxInput(attrs={
-                'class': 'form-check-input',
+            'total_amount': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': '0.00',
+                'step': '0.01',
+                'min': '0',
             }),
             'amount_paid': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -85,15 +114,12 @@ class ClientForm(forms.ModelForm):
                 'data-placeholder': 'Select payment type...',
                 'data-allow-clear': 'true',
             }),
+            'paid': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
             'payment_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date',
-            }),
-            'total_amount': forms.NumberInput(attrs={
-                'class': 'form-control',
-                'placeholder': '0.00',
-                'step': '0.01',
-                'min': '0',
             }),
             'assigned_to': Select2MultipleWidget(attrs={
                 'class': 'form-control',
@@ -108,6 +134,7 @@ class ClientForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['assigned_to'].label_from_instance = self._user_label
         self.fields['assigned_to'].required = False
+        self.fields['payment_date'].required = True
         self.fields['assigned_to'].help_text = 'Select one or more users to assign this client'
         self.fields['amount_paid'].help_text = 'Amount the client has paid so far'
         self.fields['total_amount'].help_text = 'Total amount owed by the client'

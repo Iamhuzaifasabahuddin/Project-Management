@@ -1,186 +1,123 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load bootstrap5 %}
-{% bootstrap_css %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Client Details</title>
+{% block title %}Client Profile - Hexz Connect{% endblock %}
 
-    <style>
-        body {
-            background: #f5f6f8;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
-        .navbar-custom {
-            background: #ffffff;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .card-ui {
-            border: none;
-            border-radius: 14px;
-            background: #ffffff;
-        }
-
-        .muted { color: #6b7280; }
-
-        .label {
-            font-size: 12px;
-            color: #9ca3af;
-            text-transform: uppercase;
-            margin-top: 10px;
-        }
-
-        .value {
-            font-weight: 500;
-            margin-bottom: 6px;
-        }
-
-        .section-title {
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
-
-<body>
-{% bootstrap_javascript %}
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-custom px-4 py-3">
-    <div class="container-fluid">
-
-        <div>
-            <h5 class="mb-0 fw-semibold">Client</h5>
-            <small class="muted">{{ client.workspace.name }}</small>
+{% block content %}
+<header class="page-header">
+    <div class="container">
+        <div class="row align-items-end">
+            <div class="col-md-8">
+                <div class="eyebrow">{{ client.workspace.name }} &bull; Portfolio</div>
+                <h1>{{ client.name }}<span>.</span></h1>
+                <p class="muted mb-0">Comprehensive client profile overview and financial status</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-4 mt-md-0 d-flex gap-2 justify-content-md-end">
+                <a href="{% url 'client_list' client.workspace.id %}" class="btn-outline-custom">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Portfolio
+                </a>
+                <a href="{% url 'client_teams' client.id %}" class="btn-gold">
+                    <span>Open Teams</span> <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
         </div>
-
-        <div class="d-flex gap-2">
-
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
-                Dashboard
-            </a>
-
-            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">
-                Workspaces
-            </a>
-
-            <a href="{% url 'client_list' client.workspace.id %}" class="btn btn-outline-secondary btn-sm">
-                All Clients
-            </a>
-
-            <a href="{% url 'client_posts' client.id %}" class="btn btn-outline-secondary btn-sm">
-                Posts
-            </a>
-
-            <a href="{% url 'create_post' client.id %}" class="btn btn-dark btn-sm">
-                + Add Post
-            </a>
-
-        </div>
-
     </div>
-</nav>
+</header>
 
-<div class="container py-5">
-
-    <!-- HEADER -->
-    <div class="card card-ui p-4 mb-4">
-
-        <h3 class="fw-semibold mb-1">{{ client.name }}</h3>
-        <p class="muted mb-0">Client profile overview</p>
-
-    </div>
-
+<div class="container pb-5">
     <div class="row g-4">
-
         <!-- LEFT COLUMN -->
         <div class="col-lg-6">
-
-            <div class="card card-ui p-4 mb-4">
-
-                <div class="section-title">Contact Information</div>
-
-                <div class="label">Email</div>
-                <div class="value">{{ client.email }}</div>
-
-                <div class="label">Phone</div>
-                <div class="value">{{ client.number }}</div>
-
-                <div class="label">Address</div>
-                <div class="value">{{ client.address }}</div>
-
-            </div>
-
-            <div class="card card-ui p-4">
-
-                <div class="section-title">Workspace</div>
-                <div class="value">
-                    {{ client.workspace.name }}
+            <div class="hexz-card mb-4" style="background: var(--white);">
+                <h4 class="section-title h5 mb-4"><i class="bi bi-person-lines-fill me-2 text-gold"></i>Contact Information</h4>
+                
+                <div class="mb-3">
+                    <div class="field-label" style="color: var(--gold-dim);">Email Address</div>
+                    <div class="fw-bold text-dark">{{ client.email }}</div>
                 </div>
 
+                <div class="mb-3">
+                    <div class="field-label" style="color: var(--gold-dim);">Phone Number</div>
+                    <div class="fw-bold text-dark">{{ client.number }}</div>
+                </div>
+
+                <div>
+                    <div class="field-label" style="color: var(--gold-dim);">Business Address</div>
+                    <div class="fw-bold text-dark">{{ client.address }}</div>
+                </div>
             </div>
 
+            <div class="hexz-card">
+                <h4 class="section-title h5 mb-4"><i class="bi bi-layers-half me-2 text-gold"></i>Workspace Link</h4>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="hex-icon" style="width: 36px; height: 36px; font-size: 14px;">H</div>
+                    <div>
+                        <div class="fw-bold text-dark">{{ client.workspace.name }}</div>
+                        <div class="muted small">Managed Project Environment</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- RIGHT COLUMN -->
         <div class="col-lg-6">
-
-            <div class="card card-ui p-4 mb-4">
-
-                <div class="section-title">Payment Details</div>
-
-                <div class="label">Status</div>
-                <div class="value">
-                    {% if client.paid %}
-                        <span class="text-success fw-semibold">Paid</span>
-                    {% else %}
-                        <span class="text-warning fw-semibold">Pending</span>
-                    {% endif %}
+            <div class="hexz-card mb-4">
+                <h4 class="section-title h5 mb-4"><i class="bi bi-credit-card-2-front me-2 text-gold"></i>Financial Details</h4>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-6">
+                        <div class="field-label" style="color: var(--gold-dim);">Status</div>
+                        {% if client.paid %}
+                            <span class="badge-custom badge-status-completed">Fully Paid</span>
+                        {% else %}
+                            <span class="badge-custom badge-status-pending">Payment Pending</span>
+                        {% endif %}
+                    </div>
+                    <div class="col-6">
+                        <div class="field-label" style="color: var(--gold-dim);">Payment Type</div>
+                        <div class="fw-bold text-dark">{{ client.paid_type }}</div>
+                    </div>
                 </div>
 
-                <div class="label">Payment Type</div>
-                <div class="value">{{ client.paid_type }}</div>
-
-                <div class="label">Amount Paid</div>
-                <div class="value">${{ client.amount_paid }}</div>
-
-                <div class="label">Total Amount</div>
-                <div class="value">${{ client.total_amount }}</div>
-
-                <div class="label">Outstanding</div>
-                <div class="value text-danger">
-                    ${{ client.outstanding }}
+                <div class="row g-4 mb-4">
+                    <div class="col-6">
+                        <div class="field-label" style="color: var(--gold-dim);">Amount Paid</div>
+                        <div class="fw-bold text-success">${{ client.amount_paid }}</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="field-label" style="color: var(--gold-dim);">Total Amount</div>
+                        <div class="fw-bold text-dark">${{ client.total_amount }}</div>
+                    </div>
                 </div>
 
-                <div class="label">Payment Date</div>
-                <div class="value">
-                    {{ client.payment_date|default:"Not set" }}
+                <div class="mb-4 pt-3 border-top">
+                    <div class="field-label" style="color: var(--gold-dim);">Outstanding Balance</div>
+                    <div class="h4 fw-bold {% if client.outstanding > 0 %}text-danger{% else %}text-success{% endif %}">
+                        ${{ client.outstanding }}
+                    </div>
                 </div>
 
+                <div class="pt-3 border-top">
+                    <div class="field-label" style="color: var(--gold-dim);">Payment Recorded Date</div>
+                    <div class="fw-bold text-dark">{{ client.payment_date|default:"Not set" }}</div>
+                </div>
             </div>
 
-            <div class="card card-ui p-4">
-
-                <div class="section-title">Assigned Users</div>
-
-                {% for user in client.assigned_to.all %}
-                    <span class="badge bg-dark me-1 mb-1">
-                        {{ user.username }}
-                    </span>
-                {% empty %}
-                    <p class="muted mb-0">No users assigned</p>
-                {% endfor %}
-
+            <div class="hexz-card">
+                <h4 class="section-title h5 mb-4"><i class="bi bi-people-fill me-2 text-gold"></i>Team Representatives</h4>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for user in client.assigned_to.all %}
+                        <span class="badge bg-black px-3 py-2" style="font-weight: 500; border-radius: 2px;">
+                            <i class="bi bi-person me-1"></i> {{ user.username }}
+                        </span>
+                    {% empty %}
+                        <div class="alert alert-light border w-100 py-2 small mb-0">
+                            <i class="bi bi-info-circle me-2"></i> No users assigned yet.
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
-
         </div>
-
     </div>
-
 </div>
-
-</body>
-</html>
+{% endblock %}

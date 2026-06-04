@@ -1,160 +1,74 @@
+/**
+ * HEXZ CONNECT - Registration Validation
+ * Refactored to support silent background validation and strict button control.
+ */
+
+// Helper to check if an email is valid (simplified version of global engine)
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
 // Function to change the validity of an input field based on a boolean flag
-function changeValidity(input, feedback, validity) {
+function changeValidity(input, feedback, validity, message = '') {
+    if (!input || !feedback) return;
     if (validity) {
         input.classList.add('is-valid');
         input.classList.remove('is-invalid');
         feedback.style.display = 'none';
+        feedback.textContent = '';
     } else {
         input.classList.add('is-invalid');
         input.classList.remove('is-valid');
+        feedback.textContent = message;
         feedback.style.display = 'block';
     }
 }
 
-// Function to validate if an input field is not empty
-function validateNotEmpty(id) {
-    const input = document.querySelector(`#${id}`);
-    const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (input.value.length === 0) {
-        feedback.textContent = 'Cannot be empty!';
-        return false;
-    }
-    return true;
-}
-
-// Function to validate if an input field does not contain spaces
-function validateNoSpaces(id) {
-    const input = document.querySelector(`#${id}`);
-    const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (input.value.includes(' ')) {
-        feedback.textContent = 'Cannot contain spaces!';
-        return false;
-    }
-    return true;
-}
-
-// Function to validate the length of an input field
-function validateLength(id, min, max) {
-    const input = document.querySelector(`#${id}`);
-    const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (input.value.length < min || input.value.length > max) {
-        feedback.textContent = `Must be ${min}-${max} long!`;
-        return false;
-    }
-    return true;
-}
-
-// Function to validate if an input field contains only alphabetic characters
-function validateAlphabetic(id) {
-    const input = document.querySelector(`#${id}`);
-    const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (!/^[a-zA-Z]+$/.test(input.value)) {
-        feedback.textContent = `Must contain letters only!`;
-        return false;
-    }
-    return true;
-}
+// Validation Primitives
+function checkNotEmpty(val) { return val.trim().length > 0; }
+function checkNoSpaces(val) { return !val.includes(' '); }
+function checkLength(val, min, max) { return val.length >= min && val.length <= max; }
+function checkAlphabetic(val) { return /^[a-zA-Z]+$/.test(val); }
 
 /*
-Function to validate the first name
+Modular Validation Functions
+Supports 'silent' mode for background button state checks.
 */
-function validateFirstname() {
+
+function validateFirstname(silent = false) {
     const id = 'id_first_name';
     const input = document.querySelector(`#${id}`);
     const feedback = document.querySelector(`.invalid-feedback.${id}`);
     if (!input) return false;
-    changeValidity(input, feedback, false);
-    if (validateNotEmpty(id) && validateNoSpaces(id) &&
-        validateLength(id, 2, 30) && validateAlphabetic(id)) {
-        changeValidity(input, feedback, true);
-        feedback.textContent = '';
-        return true;
-    }
-    return false;
+
+    const val = input.value;
+    let valid = true;
+    let msg = '';
+
+    if (!checkNotEmpty(val)) { valid = false; msg = 'Cannot be empty!'; }
+    else if (!checkNoSpaces(val)) { valid = false; msg = 'Cannot contain spaces!'; }
+    else if (!checkLength(val, 2, 30)) { valid = false; msg = 'Must be 2-30 characters long!'; }
+    else if (!checkAlphabetic(val)) { valid = false; msg = 'Must contain letters only!'; }
+
+    if (!silent) changeValidity(input, feedback, valid, msg);
+    return valid;
 }
 
-/*
-Function to validate the last name
-*/
-function validateLastname() {
+function validateLastname(silent = false) {
     const id = 'id_last_name';
     const input = document.querySelector(`#${id}`);
     const feedback = document.querySelector(`.invalid-feedback.${id}`);
     if (!input) return false;
-    changeValidity(input, feedback, false);
-    if (validateNotEmpty(id) && validateNoSpaces(id) &&
-        validateLength(id, 2, 30) && validateAlphabetic(id)) {
-        changeValidity(input, feedback, true);
-        feedback.textContent = '';
-        return true;
-    }
-    return false;
-}
 
-/*
-Function to validate the username
-*/
-function validateUsername(submit = false) {
-    const id = 'id_username';
-    const input = document.querySelector(`#${id}`);
-    const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (!input) return;
+    const val = input.value;
+    let valid = true;
+    let msg = '';
 
-    if (validateNotEmpty(id) && validateNoSpaces(id) && validateLength(id, 4, 20)) {
-        $.ajax({
-            url: '/checkUsername/',
-            type: 'GET',
-            data: {username: input.value},
-            success: function (data) {
-                let usernameValid = false;
-                if (data.usernameExists) {
-                    changeValidity(input, feedback, false);
-                    feedback.textContent = 'Username is already taken!';
-                } else {
-                    changeValidity(input, feedback, true);
-                    feedback.textContent = '';
-                    usernameValid = true;
-                }
-                validateEmail(submit, usernameValid);
-            }
-        });
-    } else {
-        changeValidity(input, feedback, false);
-        validateEmail(submit, false);
-    }
-}
+    if (!checkNotEmpty(val)) { valid = false; msg = 'Cannot be empty!'; }
+    else if (!checkNoSpaces(val)) { valid = false; msg = 'Cannot contain spaces!'; }
+    else if (!checkLength(val, 2, 30)) { valid = false; msg = 'Must be 2-30 characters long!'; }
+    else if (!checkAlphabetic(val)) { valid = false; msg = 'Must contain letters only!'; }
 
-/*
-Function to validate email
- */
-function validateEmail(submit = false, usernameValid = false) {
-    const id = 'id_email';
-    const input = document.querySelector(`#${id}`);
-    const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (!input) return;
-
-    if (validateNotEmpty(id)) {
-        $.ajax({
-            url: '/checkEmail/',
-            type: 'get',
-            data: {email: input.value},
-            success: function (data) {
-                let emailValid = false;
-                if (data.emailExists) {
-                    changeValidity(input, feedback, false);
-                    feedback.textContent = 'Email is already registered!';
-                } else {
-                    changeValidity(input, feedback, true);
-                    feedback.textContent = '';
-                    emailValid = true;
-                }
-                asyncValidate(submit, usernameValid, emailValid)
-            }
-        });
-    } else {
-        changeValidity(input, feedback, false);
-        asyncValidate(submit, usernameValid, false)
-    }
+    if (!silent) changeValidity(input, feedback, valid, msg);
+    return valid;
 }
 
 function updatePasswordMeter(strength) {
@@ -184,18 +98,17 @@ function updatePasswordMeter(strength) {
     }
 }
 
-function checkPasswordStrength() {
-    const password = document.getElementById('id_password1').value;
+function checkPasswordStrength(val) {
     let strength = 'Weak';
     let missing = [];
     let lengthMsg = [];
     
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasDigit = /\d/.test(password);
-    const hasSpecialChar = /[!@#£$%^&*()_+{}:;<>,.?~='/-]/.test(password);
+    const hasUpperCase = /[A-Z]/.test(val);
+    const hasLowerCase = /[a-z]/.test(val);
+    const hasDigit = /\d/.test(val);
+    const hasSpecialChar = /[!@#£$%^&*()_+{}:;<>,.?~='/-]/.test(val);
 
-    if (password.length >= 8 && password.length <= 32) {
+    if (val.length >= 8 && val.length <= 32) {
         if (hasUpperCase && hasLowerCase && hasDigit && hasSpecialChar) {
             strength = 'Very Strong';
         } else if (hasUpperCase && hasLowerCase && (hasDigit || hasSpecialChar)) {
@@ -209,97 +122,248 @@ function checkPasswordStrength() {
             if (!hasDigit) missing.push('a digit');
             if (!hasSpecialChar) missing.push('a special character');
         }
-    } else if (password.length > 0) {
+    } else if (val.length > 0) {
         lengthMsg.push('between 8 and 32 characters');
     }
-
-    updatePasswordMeter(strength);
 
     return {strength: strength, missing: missing, length: lengthMsg};
 }
 
-function validatePassword() {
+function validatePassword(silent = false) {
     const id = 'id_password1';
     const input = document.querySelector(`#${id}`);
     const feedback = document.querySelector(`.invalid-feedback.${id}`);
     if (!input) return false;
     
-    changeValidity(input, feedback, false);
+    const val = input.value;
+    const result = checkPasswordStrength(val);
+    
+    if (!silent) updatePasswordMeter(result.strength);
 
-    if (validateNotEmpty(id)) {
-        const result = checkPasswordStrength();
-        if (result.strength === 'Very Strong') {
-            changeValidity(input, feedback, true);
-            feedback.textContent = '';
-            return true;
-        } else if (input.value.length > 0 && input.value.length >= 8 && input.value.length <= 32) {
-            feedback.textContent = 'Password is missing: ' + result.missing.join(', ');
-        } else if(input.value.length > 0) {
-            feedback.textContent = 'Password must be ' + result.length.join(', ');
-        }
+    let valid = false;
+    let msg = '';
+
+    if (!checkNotEmpty(val)) {
+        msg = 'Cannot be empty!';
+    } else if (result.strength === 'Very Strong') {
+        valid = true;
+    } else if (val.length >= 8 && val.length <= 32) {
+        msg = 'Password is missing: ' + result.missing.join(', ');
     } else {
-        updatePasswordMeter('Empty');
+        msg = 'Password must be between 8 and 32 characters';
     }
-    return false;
+
+    if (!silent) changeValidity(input, feedback, valid, msg);
+    return valid;
 }
 
-function validateConfirmPassword() {
+function validateConfirmPassword(silent = false) {
     const id = 'id_password2';
     const input = document.querySelector(`#${id}`);
     const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (!input) return false;
+    const p1 = document.querySelector('#id_password1');
+    if (!input || !p1) return false;
 
-    changeValidity(input, feedback, false);
-    if (validateNotEmpty(id)) {
-        if (document.querySelector('#id_password1').value !== input.value) {
-            feedback.textContent = 'Passwords must be the same!'
-        } else {
-            changeValidity(input, feedback, true);
-            feedback.textContent = '';
-            return true;
-        }
+    const val = input.value;
+    let valid = true;
+    let msg = '';
+
+    if (!checkNotEmpty(val)) {
+        valid = false;
+        msg = 'Cannot be empty!';
+    } else if (p1.value !== val) {
+        valid = false;
+        msg = 'Passwords must be the same!';
     }
-    return false;
+
+    if (!silent) changeValidity(input, feedback, valid, msg);
+    return valid;
 }
 
-function syncValidate() {
-    const fn = validateFirstname();
-    const ln = validateLastname();
-    const p1 = validatePassword();
-    const p2 = validateConfirmPassword();
-    return fn && ln && p1 && p2;
+/*
+Asynchronous Validations (Username & Email)
+These are handled via AJAX and update the button state.
+*/
+
+let usernameState = { valid: false, checking: false, value: '' };
+let emailState = { valid: false, checking: false, value: '' };
+
+function checkUsername(silent = false) {
+    const id = 'id_username';
+    const input = document.querySelector(`#${id}`);
+    const feedback = document.querySelector(`.invalid-feedback.${id}`);
+    if (!input) return;
+
+    const val = input.value.trim();
+    if (!val) {
+        usernameState = { valid: false, checking: false, value: '' };
+        if (!silent) changeValidity(input, feedback, false, 'Cannot be empty!');
+        updateSubmitBtnState();
+        return;
+    }
+
+    if (!checkNoSpaces(val) || !checkLength(val, 4, 20)) {
+        usernameState = { valid: false, checking: false, value: val };
+        if (!silent) changeValidity(input, feedback, false, 'Must be 4-20 characters with no spaces.');
+        updateSubmitBtnState();
+        return;
+    }
+
+    if (val === usernameState.value && !usernameState.checking) {
+        if (!silent) changeValidity(input, feedback, usernameState.valid, usernameState.valid ? '' : 'Username already taken.');
+        return;
+    }
+
+    usernameState.checking = true;
+    usernameState.value = val;
+
+    $.ajax({
+        url: '/checkUsername/',
+        type: 'GET',
+        data: {username: val},
+        success: function (data) {
+            usernameState.checking = false;
+            usernameState.valid = !data.usernameExists;
+            if (!silent) {
+                changeValidity(input, feedback, usernameState.valid, usernameState.valid ? '' : 'Username is already taken!');
+            }
+            updateSubmitBtnState();
+        }
+    });
+}
+
+function checkEmail(silent = false) {
+    const id = 'id_email';
+    const input = document.querySelector(`#${id}`);
+    const feedback = document.querySelector(`.invalid-feedback.${id}`);
+    if (!input) return;
+
+    const val = input.value.trim();
+    if (!val) {
+        emailState = { valid: false, checking: false, value: '' };
+        if (!silent) changeValidity(input, feedback, false, 'Cannot be empty!');
+        updateSubmitBtnState();
+        return;
+    }
+
+    if (!isValidEmail(val)) {
+        emailState = { valid: false, checking: false, value: val };
+        if (!silent) changeValidity(input, feedback, false, 'Please enter a valid email.');
+        updateSubmitBtnState();
+        return;
+    }
+    if (!val.endsWith('@topsoftdigitals.pk')) {
+    emailState = { valid: false, checking: false, value: val };
+    if (!silent) changeValidity(input, feedback, false, 'Invalid domain entered - only @topsoftdigitals.pk allowed!');
+    updateSubmitBtnState();
+    return;
+}
+
+    if (val === emailState.value && !emailState.checking) {
+        if (!silent) changeValidity(input, feedback, emailState.valid, emailState.valid ? '' : 'Email already registered.');
+        return;
+    }
+
+    emailState.checking = true;
+    emailState.value = val;
+
+    $.ajax({
+        url: '/checkEmail/',
+        type: 'GET',
+        data: {email: val},
+        success: function (data) {
+            emailState.checking = false;
+            emailState.valid = !data.emailExists;
+            if (!silent) {
+                changeValidity(input, feedback, emailState.valid, emailState.valid ? '' : 'Email is already registered!');
+            }
+            updateSubmitBtnState();
+        }
+    });
+}
+
+function updateSubmitBtnState() {
+    const fn = validateFirstname(true);
+    const ln = validateLastname(true);
+    const p1 = validatePassword(true);
+    const p2 = validateConfirmPassword(true);
+    
+    const isAllValid = fn && ln && p1 && p2 && usernameState.valid && emailState.valid;
+    const submitBtn = document.querySelector('button[type="submit"]');
+    
+    if (submitBtn) {
+        submitBtn.disabled = !isAllValid;
+    }
 }
 
 let submitted = false;
 
-function asyncValidate(submit = false, usernameValid = false, emailValid = false) {
-    if (syncValidate() && usernameValid && emailValid) {
-        if (submit) {
-            if (!submitted) {
-                submitted = true;
-                document.querySelector('form').submit();
-            }
-        } else {
-            document.querySelector('button[type="submit"]').disabled = false;
-        }
-    } else {
-        if (submit) {
-        }
-        document.querySelector('button[type="submit"]').disabled = true;
-    }
-}
-
 $(document).ready(function() {
     'use strict'
-     $('input.form-control').on('input', function() {
-        validateUsername(false);
+    
+    const inputs = document.querySelectorAll('input.form-control');
+    
+    inputs.forEach(input => {
+        input.addEventListener('input', () => {
+            // Update button state silently on every keystroke
+            if (input.id === 'id_username') checkUsername(true);
+            else if (input.id === 'id_email') checkEmail(true);
+            else if (input.id === 'id_password1') validatePassword();
+            else if (input.id === 'id_password2') validateConfirmPassword();
+            else updateSubmitBtnState();
+            
+            // Only show/update errors if the field is already marked invalid
+            if (input.classList.contains('is-invalid')) {
+                if (input.id === 'id_first_name') validateFirstname();
+                else if (input.id === 'id_last_name') validateLastname();
+                else if (input.id === 'id_username') checkUsername();
+                else if (input.id === 'id_email') checkEmail();
+                else if (input.id === 'id_password1') validatePassword();
+                else if (input.id === 'id_password2') validateConfirmPassword();
+            }
+        });
+
+        input.addEventListener('blur', () => {
+            // Show full validation feedback on blur
+            if (input.id === 'id_first_name') validateFirstname();
+            else if (input.id === 'id_last_name') validateLastname();
+            else if (input.id === 'id_username') checkUsername();
+            else if (input.id === 'id_email') checkEmail();
+            else if (input.id === 'id_password1') validatePassword();
+            else if (input.id === 'id_password2') validateConfirmPassword();
+        });
     });
 
+    // Initial button state
+    updateSubmitBtnState();
+
     $('form').on('submit', function(event) {
-        if (!submitted) {
+        if (submitted) {
+            event.preventDefault();
+            return;
+        }
+        
+        // Final sanity check
+        const fn = validateFirstname();
+        const ln = validateLastname();
+        const p1 = validatePassword();
+        const p2 = validateConfirmPassword();
+        checkUsername();
+        checkEmail();
+
+        if (fn && ln && p1 && p2 && usernameState.valid && emailState.valid) {
+            submitted = true;
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                    <span>Creating Account...</span>
+                `;
+            }
+        } else {
             event.preventDefault();
             event.stopPropagation();
-            validateUsername(true);
         }
     });
 });

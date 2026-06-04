@@ -1,134 +1,85 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
 {% load bootstrap5 %}
-{% bootstrap_css %}
+
+{% block title %}Create Task - {{ team.name }}{% endblock %}
+
+{% block extra_css %}
 {{ form.media.css }}
-<html lang="en">
+{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Create Task</title>
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Select2 JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-</head>
-
-<body>
-
-{% bootstrap_javascript %}
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-custom px-4 py-3">
-
-    <div class="container-fluid">
-
-        <div>
-            <h5 class="mb-0 fw-semibold">Create Task</h5>
-            <small class="muted">Workspace: {{ workspace.name }} | Client: {{client.name}} | Team: {{team.name}}</small>
-        </div>
-
-        <div class="d-flex gap-2">
-
-            <a href="{% url 'client_teams' client.id %}" class="btn btn-primary btn-sm">
-                Go Back Teams
-            </a>
-
-            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
-                Dashboard
-            </a>
-
-            <a href="{% url 'workspace_list' %}" class="btn btn-outline-secondary btn-sm">
-                Workspaces
-            </a>
-
-            <a href="{% url 'client_details' workspace.id %}" class="btn btn-outline-secondary btn-sm">
-                Clients
-            </a>
-
-        </div>
-
-    </div>
-
-</nav>
-
-<!-- FORM -->
-<div class="container d-flex align-items-center justify-content-center mt-5">
-
-    <div class="col-lg-6 col-md-8 col-sm-10">
-
-        <div class="text-center mb-4">
-            <h2 class="fw-semibold">Create Task</h2>
-            <p class="muted">Add a new task inside this team</p>
-            <div class="">
-                <nav aria-label="breadcrumb" class="d-flex justify-content-center mt-3">
-                    <ol class="breadcrumb mb-0">
-
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'dashboard' %}" class="text-decoration-none">
-                                {{ workspace.name }}
-                            </a>
-                        </li>
-
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'client_details' workspace.id %}" class="text-decoration-none">
-                                {{ client.name }}
-                            </a>
-                        </li>
-
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'client_teams' client.id %}" class="text-decoration-none">
-                                {{ client.name }}
-                            </a>
-                        </li>
-
-                        <li class="breadcrumb-item">
-                            <a href="{% url 'team_tasks' team.id %}" class="text-decoration-none">
-                                {{ team.name }} Tasks
-                            </a>
-                        </li>
-
-                        <li class="breadcrumb-item active" aria-current="page">
-                            Create Task
-                        </li>
-
-                    </ol>
-                </nav>
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
+            <div>
+                <div class="eyebrow">Workspace: {{ workspace.name }} | Client: {{ client.name }} | Team: {{ team.name }}</div>
+                <h1 class="section-title mb-0">Create Task</h1>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'team_tasks' team.id %}" class="btn-black">
+                    <i class="bi bi-arrow-left"></i> Back to Tasks
+                </a>
+                <a href="{% url 'client_teams' client.id %}" class="btn-outline-custom">
+                    Teams
+                </a>
             </div>
         </div>
+    </div>
+</div>
 
-        <div class="card shadow-sm auth-card p-4 p-md-5">
-
-            <form method="POST" novalidate>
-                {% csrf_token %}
-
-                {% bootstrap_form form %}
-
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-dark">
-                        Create Task
-                    </button>
+<div class="container pb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="hexz-card p-4 p-md-5">
+                <div class="mb-4">
+                    <h2 class="font-syne h4 fw-bold">Task Details</h2>
+                    <p class="muted">Add a new task inside the {{ team.name }} team</p>
                 </div>
 
-            </form>
+                <form method="POST" novalidate>
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                        <div class="field-group">
+                            <label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ field.errors|striptags }}
+                                </div>
+                            {% endif %}
+                            {% if field.help_text %}
+                                <div class="muted small mt-1" style="font-size: 0.75rem;">{{ field.help_text|safe }}</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
 
+                    <div class="d-grid mt-5">
+                        <button type="submit" class="btn-gold justify-content-center py-3">
+                            <i class="bi bi-check2-circle"></i> Create Task
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
-
     </div>
-
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ form.media.js }}
 <script>
     $(document).ready(function() {
-        // Initialize Select2 for all select fields with django-select2 class
+        $('select').addClass('form-control');
+        $('input[type="text"], input[type="date"], textarea').addClass('form-control');
+        
         $('.django-select2').select2({
             theme: 'bootstrap-5',
-            allowClear: true,
-            closeOnSelect: false,  // For multi-select
+            width: '100%',
+            placeholder: 'Select options...',
+            allowClear: true
         });
     });
 </script>
-</body>
-</html>
+{% endblock %}
