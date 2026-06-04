@@ -495,9 +495,30 @@ def post_detail(request, post_id):
                         file=uploaded_file
                     )
                     file_ids.append(comment_file.id)
+            post_url = request.build_absolute_uri(
+                reverse('post_detail', kwargs={'post_id': post.id})
+            )
+
+            # Determine recipients
+            to_email = post.author.email
+            cc_emails = [
+                u.email
+                for u in post.task.assigned_to.all()
+                if u.email and u != request.user and u.email != post.author.email
+            ] if post.task else []
+
+            context = {
+                "post_url": post_url,
+                "comment_content": comment.content,
+            }
+
             send_comment_notification_task.delay(
                 user_id=request.user.id,
                 post_id=post.id,
+                to_email=to_email,
+                cc_emails=cc_emails,
+                subject=f"New Comment on {post.title}",
+                context_data=context,
                 file_ids=file_ids
             )
 

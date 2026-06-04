@@ -227,12 +227,26 @@ def send_post_email_task(
 
         files = PostFile.objects.filter(id__in=file_ids)
 
-        # ✅ Create a copy to avoid modifying task kwargs in place
+
         email_context = context_data.copy()
+        
+        file_urls = []
+
+        for file_obj in files:
+            url = file_obj.file.url
+            if not url.startswith('http'):
+                url = f"http://{settings.DOMAIN}{url}"
+            file_urls.append({
+                'name': file_obj.file.name.split("/")[-1],
+                'url': url
+            })
+
         email_context.update({
+
             'author': user,
             'client': client,
             'post': post,
+            'file_urls': file_urls
         })
 
         html_content = render_to_string(
@@ -249,16 +263,6 @@ def send_post_email_task(
         )
 
         email.attach_alternative(html_content, "text/html")
-
-        # Attach directly from storage
-        for file_obj in files:
-            file_obj.file.open('rb')
-            email.attach(
-                file_obj.file.name.split("/")[-1],
-                file_obj.file.read(),
-                None
-            )
-            file_obj.file.close()
 
         email.send()
 
@@ -327,36 +331,67 @@ def upload_files_to_slack_task(self, user_id, file_ids, model_type='post'):
 
 
 @shared_task(bind=True, max_retries=3)
-def send_comment_notification_task(self, user_id, post_id, file_ids):
-    """
-    Async task for comment notifications
-
-    Args:
-        user_id: ID of the commenter (not User object)
-        post_id: ID of the post (not Post object)
-        file_ids: List of CommentFile IDs
-    """
+def send_comment_notification_task(
+        self,
+        user_id,
+        post_id,
+        to_email,
+        cc_emails,
+        subject,
+        context_data,
+        file_ids,
+):
     try:
-
-
         user = User.objects.get(id=user_id)
         post = Post.objects.get(id=post_id)
 
-        message = f"""
-*New Comment on Post*
+        files = CommentFile.objects.filter(id__in=file_ids)
 
-*Post:* {post.title}
-*Commented by:* {user.username}
-*Files attached:* {len(file_ids)}
-"""
+        email_context = context_data.copy()
+        
+        file_urls = []
+        for file_obj in files:
+            # Assuming file_obj.file is an S3 file field
+            # We generate a public/temporary URL. If AWS_QUERYSTRING_AUTH is True,
+            # this generates a presigned URL automatically.
+            url = file_obj.file.url
+            if not url.startswith('http'):
+                url = f"http://{settings.DOMAIN}{url}"
+            file_urls.append({
+                'name': file_obj.file.name.split("/")[-1],
+                'url': url
+            })
+            
+        email_context.update({
+            'commenter': user,
+            'post': post,
+            'file_urls': file_urls
+        })
 
-        send_dm_by_email(user.email, message)
+        html_content = render_to_string(
+            "emails/new_comment.html",
+            email_context
+        )
 
-        # Upload files if any
-        if file_ids:
-            upload_files_to_slack_task.delay(user_id, file_ids, 'comment')
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body="HTML email required.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=[to_email],
+            cc=cc_emails,
+        )
 
-        return f"Comment notification sent for post {post_id}"
+        email.attach_alternative(html_content, "text/html")
 
-    except (User.DoesNotExist, Post.DoesNotExist) as exc:
-        raise self.retry(exc=exc, countdown=60)
+        email.send()
+
+        return f"Comment notification email sent to {to_email}"
+
+    except Exception as exc:
+        if isinstance(exc, TypeError) and "JSON serializable" in str(exc):
+            raise Reject(exc, requeue=False)
+
+        raise self.retry(
+            exc=exc,
+            countdown=60 * (self.request.retries + 1)
+        )

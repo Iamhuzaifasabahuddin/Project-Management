@@ -1,15 +1,12 @@
-<h2>New Project Update</h2>
+<h2>New Comment on Post: {{ post.title }}</h2>
 
-<p><strong>Author:</strong> {{ author.username }}</p>
-<p><strong>Client:</strong> {{ client.name }}</p>
-<p><strong>Title:</strong> {{ post.title }}</p>
-
-<p><strong>Content:</strong></p>
+<p><strong>Commenter:</strong> {{ commenter.username }}</p>
+<p><strong>Comment:</strong></p>
 <p>{{ post.content }}</p>
 
 {% if file_urls %}
     <hr>
-    <h3>Attachments</h3>
+    <h3>Attached Files</h3>
     <ul>
         {% for file in file_urls %}
             <li>
@@ -25,6 +22,6 @@
 
 <p>
     <a href="{{ post_url }}" target="_blank">
-        View Update
+        View Post
     </a>
 </p>
