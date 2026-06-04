@@ -1,30 +1,49 @@
-<h2>New Project Update</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'DM Sans', sans-serif; color: #0a0a0a; line-height: 1.6; background: #f7f6f2; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border: 1.5px solid #e0ddd6; border-radius: 4px; }
+        h2, h3 { font-family: 'Syne', sans-serif; font-weight: 700; color: #0a0a0a; }
+        a { color: #c9a800; text-decoration: none; font-weight: 600; }
+        a:hover { color: #0a0a0a; }
+        hr { border: 0; border-top: 1px solid #e0ddd6; margin: 20px 0; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>New Project Update</h2>
 
-<p><strong>Author:</strong> {{ author.username }}</p>
-<p><strong>Client:</strong> {{ client.name }}</p>
-<p><strong>Title:</strong> {{ post.title }}</p>
+        <p><strong>Author:</strong> {{ author.username }}</p>
+        <p><strong>Client:</strong> {{ client.name }}</p>
+        <p><strong>Title:</strong> {{ post.title }}</p>
 
-<p><strong>Content:</strong></p>
-<p>{{ post.content }}</p>
+        <p><strong>Content:</strong></p>
+        <p>{{ post.content }}</p>
 
-{% if file_urls %}
-    <hr>
-    <h3>Attachments</h3>
-    <ul>
-        {% for file in file_urls %}
-            <li>
-                <a href="{{ file.url }}" target="_blank">
-                    {{ file.name }}
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
+        {% if file_urls %}
+            <hr>
+            <h3>Attachments</h3>
+            <ul>
+                {% for file in file_urls %}
+                    <li>
+                        <a href="{{ file.url }}" target="_blank">
+                            {{ file.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
 
-<br>
+        <br>
 
-<p>
-    <a href="{{ post_url }}" target="_blank">
-        View Update
-    </a>
-</p>
+        <p>
+            <a href="{{ post_url }}" target="_blank" style="background: #FFD700; color: #0a0a0a; padding: 10px 20px; border-radius: 4px; display: inline-block;">
+                View Update
+            </a>
+        </p>
+    </div>
+</body>
+</html>

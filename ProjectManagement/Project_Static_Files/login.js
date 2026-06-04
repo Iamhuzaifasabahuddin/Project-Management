@@ -146,3 +146,20 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const passwordInput = document.getElementById("password");
+    const toggleBtn = document.getElementById("pwToggle");
+    const icon = document.getElementById("pwIcon");
+
+    toggleBtn.addEventListener("click", function () {
+        const isPassword = passwordInput.type === "password";
+
+        // Toggle input type
+        passwordInput.type = isPassword ? "text" : "password";
+
+        // Toggle icon
+        icon.classList.toggle("bi-eye");
+        icon.classList.toggle("bi-eye-slash");
+    });
+});
