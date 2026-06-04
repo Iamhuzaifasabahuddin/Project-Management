@@ -262,8 +262,8 @@ CELERY_TASK_ROUTES = {
     'Posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
 }
 SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+# SESSION_COOKIE_SECURE = True
+# CSRF_COOKIE_SECURE = True
 
 # Task rate limiting using kombubu
 CELERY_TASK_DEFAULT_RATE_LIMIT = '100/m'  # 100 tasks per minute globally
