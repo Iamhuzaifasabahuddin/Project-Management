@@ -1,0 +1,70 @@
+<div class="row g-4">
+    {% for post in posts %}
+    <div class="col-lg-6">
+        <div class="hexz-card h-100 d-flex flex-column">
+            <div class="mb-3">
+                <h5 class="fw-bold mb-1">
+                    <a href="{% url 'post_detail' post.id %}" class="text-dark text-decoration-none hover-gold">
+                        {{ post.title }}
+                    </a>
+                </h5>
+                <div class="muted small">
+                    By <span class="text-black fw-bold">{{ post.author.username }}</span> • {{ post.created_at|date:"M d, Y H:i" }}
+                </div>
+            </div>
+
+            <p class="muted flex-grow-1">
+                {{ post.content|truncatewords:30 }}
+            </p>
+
+            <!-- ACTIONS -->
+            <div class="d-flex align-items-center flex-wrap gap-2 mt-4 pt-3 border-top">
+                {% if post.files.all %}
+                    {% for file_obj in post.files.all %}
+                        {% if file_obj.file %}
+                        <a href="{{ file_obj.file.url }}" class="btn-outline-custom" style="padding: 6px 12px; font-size: 0.7rem;">
+                            <i class="bi bi-download"></i> File
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <a href="{% url 'post_detail' post.id %}" class="btn-black" style="padding: 6px 12px; font-size: 0.7rem;">
+                    Open Post
+                </a>
+
+                {% if is_admin or is_member or request.user.is_superuser %}
+                <button type="button" class="btn-outline-custom ms-auto" style="padding: 4px 10px; color: var(--error); border-color: var(--error);" data-bs-toggle="modal" data-bs-target="#deleteModal{{ post.id }}">
+                    <i class="bi bi-trash"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE MODAL -->
+    <div class="modal fade" id="deleteModal{{ post.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="section-title mb-0" style="font-size: 1.2rem;">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to delete <strong>{{ post.title }}</strong>?
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">Cancel</button>
+                    <a href="{% url 'delete_task_post' post.id %}" class="btn btn-danger font-syne px-3 py-2" style="font-size: 0.8rem;">DELETE POST</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-chat-left-text muted mb-3" style="font-size: 3rem;"></i>
+        <h4 class="font-syne muted">No posts found for this task.</h4>
+        <a href="{% url 'create_post' task.id %}" class="btn-gold mt-3">Create First Post</a>
+    </div>
+    {% endfor %}
+</div>

@@ -14,6 +14,7 @@ from django.db import transaction
 from django.views.decorators.http import require_http_methods
 
 from Posts.models import Task
+from workspaces.services import is_workspace_admin, is_workspace_member
 from Teams.models import Team
 from workspaces.models import Client, Membership
 from .forms import TeamForm, TeamEditForm, TeamMembersForm
@@ -38,20 +39,13 @@ def team_posts(request, task_id):
         # =========================================
         # WORKSPACE MEMBERSHIP CHECK
         # =========================================
-        if not Membership.objects.filter(
-            user=request.user,
-            workspace=workspace
-        ).exists():
+        if not is_workspace_member(request.user, workspace) and not is_team_member(request.user, team):
             raise PermissionDenied("Not a member")
 
         # =========================================
         # ADMIN CHECK
         # =========================================
-        is_admin = Membership.objects.filter(
-            user=request.user,
-            workspace=workspace,
-            role__iexact="admin"
-        ).exists()
+        is_admin = is_workspace_admin(request.user, workspace)
 
         # =========================================
         # TEAM ACCESS CHECK
@@ -88,12 +82,9 @@ def client_teams(request, client_id):
     # =========================================
     if not request.user.is_superuser:
 
-        is_workspace_member = Membership.objects.filter(
-            user=request.user,
-            workspace=workspace
-        ).exists()
+        member = is_workspace_member(request.user, workspace)
 
-        if not is_workspace_member:
+        if not member:
             raise PermissionDenied("Not a member")
 
     # =========================================
@@ -102,25 +93,19 @@ def client_teams(request, client_id):
     is_admin = (
         request.user.is_superuser
         or
-        Membership.objects.filter(
-            user=request.user,
-            workspace=workspace,
-            role__iexact="admin"
-        ).exists()
+        is_workspace_admin(request.user, workspace)
     )
 
     # =========================================
     # TEAM QUERYSET
     # =========================================
 
-    # 🔥 Admins see ALL teams
     if is_admin:
 
         teams = client.teams.prefetch_related(
             "members"
         ).order_by("roles", "name")
 
-    # 🔥 Normal users see ONLY their teams
     else:
 
         teams = client.teams.filter(
@@ -139,20 +124,6 @@ def client_teams(request, client_id):
         "is_admin": is_admin,
     })
 
-# =========================
-# HELPER FUNCTIONS
-# =========================
-
-def is_workspace_admin(user, workspace):
-    """Check if user is workspace admin or superuser"""
-    if user.is_superuser:
-        return True
-    return Membership.objects.filter(
-        user=user,
-        workspace=workspace,
-        role__iexact='admin'
-    ).exists()
-
 
 def can_manage_team(user, team):
     """
@@ -163,11 +134,7 @@ def can_manage_team(user, team):
         return True
     
     workspace = team.client.workspace
-    is_admin = Membership.objects.filter(
-        user=user,
-        workspace=workspace,
-        role__iexact='admin'
-    ).exists()
+    is_admin = is_workspace_admin(user, workspace)
     
     is_lead = team.team_lead == user
     
@@ -338,17 +305,15 @@ def team_list(request, client_id):
     """
     client = get_object_or_404(Client, id=client_id)
     workspace = client.workspace
+    is_admin = is_workspace_admin(request.user, workspace)
 
     # Permission check
-    if not request.user.is_superuser:
-        if not Membership.objects.filter(
-                user=request.user,
-                workspace=workspace
-        ).exists():
+    if not request.user.is_superuser or not is_admin:
+        if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not a member of this workspace")
 
-    # Filter teams based on membership
-    if request.user.is_superuser:
+
+    if request.user.is_superuser or is_admin:
         teams = Team.objects.filter(client=client)
     else:
         teams = Team.objects.filter(
@@ -364,7 +329,6 @@ def team_list(request, client_id):
         )
         teams = teams.distinct()
 
-    is_admin = is_workspace_admin(request.user, workspace)
 
     return render(request, 'teams/team_list.html', {
         'teams': teams,
@@ -393,7 +357,7 @@ def delete_team(request, team_id):
     client = team.client
 
     # Permission check
-    if not is_workspace_admin(request.user, workspace):
+    if not is_workspace_admin(request.user, workspace) or not request.user.is_superuser:
         raise PermissionDenied("Only workspace admins can delete teams")
 
     team_name = team.name

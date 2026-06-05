@@ -23,11 +23,7 @@ from workspaces.models import Client, Membership
 import base64
 
 
-def role_checker(user, workspace, role):
-    """Check if user has a specific role, or is superuser"""
-    if user.is_superuser:
-        return True
-    return Membership.objects.filter(user=user, workspace=workspace, role=role).exists()
+from workspaces.services import is_workspace_admin, is_workspace_member
 
 
 # =========================
@@ -57,11 +53,7 @@ def team_tasks(request, team_id):
     is_admin = (
             request.user.is_superuser or
             request.user == team.team_lead or
-            Membership.objects.filter(
-                user=request.user,
-                workspace=workspace,
-                role='admin'
-            ).exists()
+            is_workspace_admin(request.user, workspace)
     )
 
     if is_admin:
@@ -78,6 +70,9 @@ def team_tasks(request, team_id):
         "completed_tasks": tasks_queryset.filter(status='completed'),
         "is_admin": is_admin,
     }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/task_list_fragment.html", context)
 
     return render(request, "team_tasks.html", context)
 
@@ -145,8 +140,7 @@ def task_completion_request(request, task_id):
     if not request.user.is_superuser:
         is_assigned = request.user in task.assigned_to.all()
         is_admin = (
-            request.user == team.team_lead or
-            Membership.objects.filter(user=request.user, workspace=workspace, role='admin').exists()
+            request.user == team.team_lead or is_workspace_admin(request.user, workspace)
         )
         if not (is_assigned or is_admin):
             raise PermissionDenied("Not assigned to this task")
@@ -201,7 +195,7 @@ def task_approve(request, task_id):
     is_admin = (
         request.user.is_superuser or
         request.user == team.team_lead or
-        Membership.objects.filter(user=request.user, workspace=workspace, role='admin').exists()
+        is_workspace_admin(request.user, workspace)
     )
     if not is_admin:
         raise PermissionDenied("Only admins or team leads can approve tasks.")
@@ -241,7 +235,7 @@ def task_decline(request, task_id):
     is_admin = (
         request.user.is_superuser or
         request.user == team.team_lead or
-        Membership.objects.filter(user=request.user, workspace=workspace, role='admin').exists()
+        is_workspace_admin(request.user, workspace)
     )
     if not is_admin:
         raise PermissionDenied("Only admins or team leads can decline tasks.")
@@ -278,7 +272,7 @@ def delete_task(request, task_id):
 
     # Permission checks
     is_superuser = request.user.is_superuser
-    is_admin = role_checker(request.user, workspace, "admin")
+    is_admin = is_workspace_admin(request.user, workspace)
 
     if not (is_superuser or is_admin):
         raise PermissionDenied("Not allowed")
@@ -303,13 +297,12 @@ def task_posts(request, task_id):
     team = task.team
     workspace = team.client.workspace
 
-    # 🔐 Permission check: must be workspace member (superusers always allowed)
-    if not request.user.is_superuser:
-        if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
+    if not request.user.is_superuser or not is_workspace_admin(request.user, workspace):
+        if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not allowed")
 
-    # Get all posts for this team
-    posts = Post.objects.filter(task__team=team).select_related(
+
+    posts = Post.objects.filter(task=task).select_related(
         'author',
         'task'
     ).prefetch_related('comments', 'files').order_by('-created_at')
@@ -321,6 +314,9 @@ def task_posts(request, task_id):
         "posts": posts,
         "task": task
     }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/post_list_fragment.html", context)
 
     return render(request, "task_posts.html", context)
 
@@ -336,12 +332,9 @@ def create_post(request, task_id):
     client = task.team.client
     team = task.team
 
-    if not request.user.is_superuser:
+    if not request.user.is_superuser or not is_workspace_admin(request.user, workspace):
 
-        if not Membership.objects.filter(
-                user=request.user,
-                workspace=workspace
-        ).exists():
+        if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not allowed")
 
         if request.user not in team.members.all():
@@ -464,14 +457,11 @@ def post_detail(request, post_id):
 
     team = post.task.team if post.task else None
 
-    if not request.user.is_superuser:
+    if not request.user.is_superuser or not is_workspace_admin(request.user, team.client.workspace):
         if not team:
             raise PermissionDenied("Post not linked to any team")
 
-        if not Membership.objects.filter(
-                user=request.user,
-                workspace=team.client.workspace
-        ).exists():
+        if not is_workspace_member(request.user, team.client.workspace):
             raise PermissionDenied("Not allowed")
 
     comments = Comment.objects.filter(post=post).order_by("-created_at")
@@ -547,7 +537,7 @@ def delete_post(request, post_id):
 
     is_superuser = request.user.is_superuser
     workspace = post.task.team.client.workspace if post.task else None
-    is_admin = role_checker(request.user, workspace, "admin") if workspace else False
+    is_admin = is_workspace_admin(request.user, workspace) if workspace else False
     is_author = post.author == request.user
 
     if not (is_superuser or is_admin or is_author):

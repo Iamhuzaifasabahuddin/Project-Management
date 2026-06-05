@@ -7,21 +7,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from Posts.models import Post
 from Teams.forms import TeamForm
 from Teams.models import Team
-from Teams.views import is_workspace_admin
+from workspaces.services import is_workspace_admin, is_workspace_member
 from workspaces.forms import WorkspaceForm, RoleAssignForm, ClientForm
 from workspaces.models import Workspace, Membership, Client
-
-
-# =========================
-# HELPER
-# =========================
-def role_checker(user, workspace, role):
-    """Check if user has a specific role, or is superuser"""
-    if user.is_superuser:
-        return True
-    if workspace is None:
-        return Membership.objects.filter(user=user, role=role).exists()
-    return Membership.objects.filter(user=user, workspace=workspace, role=role).exists()
 
 def get_users_by_role(workspace, role):
     return User.objects.filter(membership__workspace=workspace, membership__role=role)
@@ -120,7 +108,7 @@ def workspace_list(request):
     return render(request, "workspace_list.html", {
         "workspaces": workspaces,
         "memberships": Membership.objects.select_related("user", "workspace"),
-        "is_admin": role_checker(request.user, None, "admin") or request.user.is_superuser,
+        "is_admin": is_workspace_admin(request.user, None) or request.user.is_superuser,
     })
 
 
@@ -130,7 +118,7 @@ def workspace_detail(request, workspace_id):
 
     # Superusers can access any workspace
     if not request.user.is_superuser:
-        if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
+        if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not a member")
 
     posts = Post.objects.filter(client__workspace=workspace).order_by("-created_at")
@@ -180,9 +168,8 @@ def assign_role(request):
 def create_clients(request, workspace_id):
     workspace = get_object_or_404(Workspace, id=workspace_id)
 
-    # Superusers can create clients in any workspace
-    if not request.user.is_superuser:
-        if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
+    if not request.user.is_superuser or is_workspace_admin(request.user, workspace):
+        if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not a member of this workspace")
 
     form = ClientForm(request.POST or None)
@@ -198,7 +185,7 @@ def create_clients(request, workspace_id):
     return render(request, "create_client.html", {
         "form": form,
         "workspace": workspace,
-        "is_admin": role_checker(request.user, workspace, "admin"),
+        "is_admin": is_workspace_admin(request.user, workspace),
     })
 
 
@@ -210,7 +197,11 @@ def client_list(request, workspace_id):
     if request.user.is_superuser:
         clients = Client.objects.filter(workspace=workspace)
     else:
-        clients = Client.objects.filter(workspace=workspace, assigned_to=request.user)
+        # Get clients linked to teams the user is a member of in this workspace
+        clients = Client.objects.filter(
+            workspace=workspace,
+            teams__members=request.user
+        ).distinct()
 
     return render(request, "client_list.html", {
         "clients": clients,
@@ -218,17 +209,18 @@ def client_list(request, workspace_id):
     })
 
 
+
 @login_required
 def client_detail(request, workspace_id):
     workspace = get_object_or_404(Workspace, id=workspace_id)
 
     # Superusers can access any workspace
-    if not request.user.is_superuser:
-        if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
+    if not request.user.is_superuser or not is_workspace_admin(request.user, workspace):
+        if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not a member")
 
     # Superusers see all clients in workspace
-    if request.user.is_superuser:
+    if request.user.is_superuser or is_workspace_admin(request.user, workspace):
         clients = Client.objects.filter(workspace=workspace)
     else:
         clients = Client.objects.filter(
@@ -239,8 +231,8 @@ def client_detail(request, workspace_id):
     return render(request, "client_details.html", {
         "workspace": workspace,
         "clients": clients,
-        "is_admin": role_checker(request.user, workspace, "admin"),
-        "is_member": role_checker(request.user, workspace, "member") or request.user.is_superuser,
+        "is_admin": is_workspace_admin(request.user, workspace),
+        "is_member": is_workspace_member(request.user, workspace),
     })
 
 @login_required

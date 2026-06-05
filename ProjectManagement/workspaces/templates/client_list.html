@@ -12,9 +12,16 @@
                 <h1>All Clients<span>.</span></h1>
                 <p class="muted mb-0">Full client overview including billing and assignment details</p>
             </div>
+            {% if is_admin or request.user.is_superuser %}
             <div class="col-md-4 text-md-end mt-4 mt-md-0">
                 <a href="{% url 'create_client' workspace.id %}" class="btn-gold">
                     <i class="bi bi-person-plus me-1"></i> Add Client
+                </a>
+            </div>
+            {% endif %}
+            <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                <a href="{% url 'client_details' workspace.id %}" class="btn-gold">
+                    <i class="bi bi-arrow-left"></i> Back to Active Clients
                 </a>
             </div>
         </div>

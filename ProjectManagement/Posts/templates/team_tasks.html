@@ -41,80 +41,11 @@
     {% endfor %}
     {% endif %}
 
-    <div class="accordion border-0" id="taskAccordion">
-
-        <!-- 1. AWAITING APPROVAL -->
-        <div class="accordion-item border-0 mb-3 shadow-sm">
-            <h2 class="accordion-header" id="headingAwaiting">
-                <button class="accordion-button {% if not awaiting_tasks %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAwaiting" aria-expanded="{% if awaiting_tasks %}true{% else %}false{% endif %}" aria-controls="collapseAwaiting">
-                    <i class="bi bi-clock-history me-2 text-warning"></i>
-                    <span class="fw-bold">Awaiting Approval</span>
-                    <span class="badge bg-dark ms-2">{{ awaiting_tasks.count }}</span>
-                </button>
-            </h2>
-            <div id="collapseAwaiting" class="accordion-collapse collapse {% if awaiting_tasks %}show{% endif %}" aria-labelledby="headingAwaiting" data-bs-parent="#taskAccordion">
-                <div class="accordion-body bg-white border-top">
-                    {% if awaiting_tasks %}
-                    <div class="row">
-                        {% for task in awaiting_tasks %}
-                        {% include "includes/task_card.html" with task=task %}
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="muted mb-0">No tasks awaiting approval.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. PENDING TASKS -->
-        <div class="accordion-item border-0 mb-3 shadow-sm">
-            <h2 class="accordion-header" id="headingPending">
-                <button class="accordion-button {% if awaiting_tasks and not pending_tasks %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePending" aria-expanded="{% if not awaiting_tasks or pending_tasks %}true{% else %}false{% endif %}" aria-controls="collapsePending">
-                    <i class="bi bi-list-task me-2 text-primary"></i>
-                    <span class="fw-bold">Pending Tasks</span>
-                    <span class="badge bg-dark ms-2">{{ pending_tasks.count }}</span>
-                </button>
-            </h2>
-            <div id="collapsePending" class="accordion-collapse collapse {% if not awaiting_tasks or pending_tasks %}show{% endif %}" aria-labelledby="headingPending" data-bs-parent="#taskAccordion">
-                <div class="accordion-body bg-white border-top">
-                    {% if pending_tasks %}
-                    <div class="row">
-                        {% for task in pending_tasks %}
-                        {% include "includes/task_card.html" with task=task %}
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="muted mb-0">No pending tasks.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. COMPLETED TASKS -->
-        <div class="accordion-item border-0 mb-3 shadow-sm">
-            <h2 class="accordion-header" id="headingCompleted">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCompleted" aria-expanded="false" aria-controls="collapseCompleted">
-                    <i class="bi bi-check-circle me-2 text-success"></i>
-                    <span class="fw-bold">Completed Tasks</span>
-                    <span class="badge bg-dark ms-2">{{ completed_tasks.count }}</span>
-                </button>
-            </h2>
-            <div id="collapseCompleted" class="accordion-collapse collapse" aria-labelledby="headingCompleted" data-bs-parent="#taskAccordion">
-                <div class="accordion-body bg-white border-top">
-                     {% if completed_tasks %}
-                    <div class="row">
-                        {% for task in completed_tasks %}
-                        {% include "includes/task_card.html" with task=task %}
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <p class="muted mb-0">No completed tasks.</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
+    <div class="accordion border-0" id="taskAccordion" 
+         hx-get="{% url 'team_tasks' team.id %}" 
+         hx-trigger="every 2s"
+         hx-swap="innerHTML">
+        {% include "includes/task_list_fragment.html" %}
     </div>
 </div>
 
