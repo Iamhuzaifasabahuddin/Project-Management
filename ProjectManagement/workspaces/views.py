@@ -58,10 +58,15 @@ def dashboard_view(request):
         role="admin"
     ).exists()
 
-    return render(request, "dashboard.html", {
+    context = {
         "workspaces": workspaces,
         "is_admin": is_admin,
-    })
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/dashboard_workspace_list.html", context)
+
+    return render(request, "dashboard.html", context)
 
 
 # =========================
@@ -233,12 +238,17 @@ def client_detail(request, workspace_id):
             teams__members=request.user
         ).distinct()
 
-    return render(request, "client_details.html", {
+    context = {
         "workspace": workspace,
         "clients": clients,
         "is_admin": is_workspace_admin(request.user, workspace),
         "is_member": is_workspace_member(request.user, workspace),
-    })
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/client_list_fragment.html", context)
+
+    return render(request, "client_details.html", context)
 
 @login_required
 def view_client_details(request, client_id):
