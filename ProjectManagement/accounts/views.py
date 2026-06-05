@@ -58,7 +58,6 @@ def check_email(request):
     data = {
         'emailExists': User.objects.filter(email__iexact=email_part).exists()
     }
-    print(data)
     return JsonResponse(data)
 
 def check_reset_email(request):

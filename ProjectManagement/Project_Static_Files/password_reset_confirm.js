@@ -12,18 +12,6 @@ function changeValidity(input, feedback, validity) {
     }
 }
 
-// Function to validate if an input field is not empty
-function validateNotEmpty(id) {
-    const input = document.querySelector(`#${id}`);
-    const feedback = document.querySelector(`.invalid-feedback.${id}`);
-    if (!input || !feedback) return false;
-    if (input.value.length === 0) {
-        feedback.textContent = 'Cannot be empty!';
-        return false;
-    }
-    return true;
-}
-
 function updatePasswordMeter(strength) {
     const meterSections = document.querySelectorAll('.meter-section');
     if (meterSections.length === 0) return;
@@ -63,7 +51,7 @@ function checkPasswordStrength() {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasDigit = /\d/.test(password);
-    const hasSpecialChar = /[!@#£$%^&*()_+{}:;<>,.?~='/-]/.test(password);
+    const hasSpecialChar = /[! @#£$%^&*()_+{}:;<>,.?~='/-]/.test(password);
 
     if (password.length >= 8 && password.length <= 32) {
         if (hasUpperCase && hasLowerCase && hasDigit && hasSpecialChar) {
@@ -88,101 +76,133 @@ function checkPasswordStrength() {
     return {strength: strength, missing: missing, length: lengthMsg};
 }
 
-function validatePassword() {
+function validatePassword(silent = false) {
     const id = 'id_new_password1';
     const input = document.querySelector(`#${id}`);
     const feedback = document.querySelector(`.invalid-feedback.${id}`);
     if (!input || !feedback) return false;
     
-    changeValidity(input, feedback, false);
+    const result = checkPasswordStrength();
+    const isNotEmpty = input.value.length > 0;
+    const isVeryStrong = result.strength === 'Very Strong';
 
-    if (validateNotEmpty(id)) {
-        const result = checkPasswordStrength();
-        if (result.strength === 'Very Strong') {
+    if (!silent) {
+        if (isVeryStrong) {
             changeValidity(input, feedback, true);
             feedback.textContent = '';
-            return true;
-        } else if (input.value.length > 0 && input.value.length >= 8 && input.value.length <= 32) {
-            feedback.textContent = 'Password is missing: ' + result.missing.join(', ');
-        } else if(input.value.length > 0) {
-            feedback.textContent = 'Password must be ' + result.length.join(', ');
+        } else {
+            changeValidity(input, feedback, false);
+            if (!isNotEmpty) {
+                feedback.textContent = 'Cannot be empty!';
+                updatePasswordMeter('Empty');
+            } else if (input.value.length >= 8 && input.value.length <= 32) {
+                feedback.textContent = 'Password is missing: ' + result.missing.join(', ');
+            } else {
+                feedback.textContent = 'Password must be ' + result.length.join(', ');
+            }
         }
-    } else {
-        updatePasswordMeter('Empty');
     }
-    return false;
+    return isVeryStrong;
 }
 
-function validateConfirmPassword() {
+function validateConfirmPassword(silent = false) {
     const id = 'id_new_password2';
     const input = document.querySelector(`#${id}`);
     const feedback = document.querySelector(`.invalid-feedback.${id}`);
     if (!input || !feedback) return false;
 
-    changeValidity(input, feedback, false);
-    if (validateNotEmpty(id)) {
-        if (document.querySelector('#id_new_password1').value !== input.value) {
-            feedback.textContent = 'Passwords must be the same!'
-        } else {
+    const p1Value = document.querySelector('#id_new_password1').value;
+    const isNotEmpty = input.value.length > 0;
+    const matches = p1Value === input.value;
+    const isValid = isNotEmpty && matches;
+
+    if (!silent) {
+        if (isValid) {
             changeValidity(input, feedback, true);
             feedback.textContent = '';
-            return true;
+        } else {
+            changeValidity(input, feedback, false);
+            if (!isNotEmpty) {
+                feedback.textContent = 'Cannot be empty!';
+            } else if (!matches) {
+                feedback.textContent = 'Passwords must be the same!';
+            }
         }
     }
-    return false;
+    return isValid;
 }
 
 let submitted = false;
 
-function validateForm(submit = false) {
-    const p1 = validatePassword();
-    const p2 = validateConfirmPassword();
-    
-    const isValid = p1 && p2;
+function validateForm(submit = false, silent = false) {
     const submitBtn = document.querySelector('button[type="submit"]');
-    
+
+    const p1Valid = validatePassword(silent);
+    const p2Valid = validateConfirmPassword(silent);
+
+    const isValid = p1Valid && p2Valid;
+
     if (submitBtn) {
-        if (isValid) {
-            submitBtn.disabled = false;
-            if (submit && !submitted) {
-                submitted = true;
-                document.querySelector('form').submit();
-            }
-        } else {
-            submitBtn.disabled = true;
+        submitBtn.disabled = !isValid;
+
+        if (isValid && submit && !submitted) {
+            submitted = true;
+            document.querySelector('form').submit();
         }
     }
-    
+
     return isValid;
 }
 
-$(document).ready(function() {
-    'use strict'
-    
+$(document).ready(function () {
+    'use strict';
+
     const p1 = $('#id_new_password1');
     const p2 = $('#id_new_password2');
-    
+
+    function refreshFormState() {
+        validateForm(false, true);
+    }
+
+    // Password 1 typing
     if (p1.length) {
-        p1.on('input', function() {
-            validateForm(false);
+        p1.on('input', function () {
+            validatePassword(false);
+            refreshFormState(); // 🔥 IMPORTANT
         });
     }
+
+    // Password 2 typing
     if (p2.length) {
-        p2.on('input', function() {
-            validateForm(false);
+        p2.on('input', function () {
+            validateConfirmPassword(false);
+            refreshFormState(); // 🔥 IMPORTANT
         });
     }
 
-    // Run once on load to ensure button state is correct if fields are pre-filled (unlikely but safe)
-    if (p1.length || p2.length) {
-        validateForm(false);
+    // blur (optional)
+    if (p1.length) {
+        p1.on('blur', function () {
+            validatePassword(false);
+            refreshFormState();
+        });
     }
 
-    $('form').on('submit', function(event) {
+    if (p2.length) {
+        p2.on('blur', function () {
+            validateConfirmPassword(false);
+            refreshFormState();
+        });
+    }
+
+    // initial state
+    refreshFormState();
+
+    // submit handler
+    $('form').on('submit', function (event) {
         if (!submitted) {
             event.preventDefault();
-            event.stopPropagation();
-            validateForm(true);
+            validateForm(true, false);
         }
     });
 });

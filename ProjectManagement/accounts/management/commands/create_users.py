@@ -1,3 +1,5 @@
+import os
+
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 
@@ -10,53 +12,25 @@ class Command(BaseCommand):
 
         sample_users = [
             {
-                "username": "zeeshan.rajput",
-                "first_name": "Zeeshan",
-                "last_name": "Rajput",
-                "email": "zeeshan.rajput@topsoftdigitals.pk",
-                "password": "test12345"
-            },
-            {
                 "username": "ammar.naveed",
                 "first_name": "Ammar",
                 "last_name": "Naveed",
                 "email": "user2@example.com",
-                "password": "test12345"
+                "password": os.environ.get("USER_CREATION_PWD")
             },
             {
                 "username": "muhammad.umar",
                 "first_name": "Muhammad",
                 "last_name": "Umar",
                 "email": "user3@example.com",
-                "password": "test12345"
+                "password": os.environ.get("USER_CREATION_PWD")
             },
             {
                 "username": "farman.ali",
                 "first_name": "Farman",
                 "last_name": "Ali",
-                "email": "designer@example.com",
-                "password": "test12345"
-            },
-            {
-                "username": "farman.ali",
-                "first_name": "Farman",
-                "last_name": "Ali",
-                "email": "designer@example.com",
-                "password": "test12345"
-            },
-            {
-                "username": "farman.ali",
-                "first_name": "Farman",
-                "last_name": "Ali",
-                "email": "designer@example.com",
-                "password": "test12345"
-            },
-            {
-                "username": "farman.ali",
-                "first_name": "Farman",
-                "last_name": "Ali",
-                "email": "designer@example.com",
-                "password": "test12345"
+                "email": "farmanali@topsoftdigitals.pk",
+                "password": os.environ.get("USER_CREATION_PWD")
             },
         ]
 

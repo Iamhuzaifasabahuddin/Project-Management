@@ -86,15 +86,14 @@ const HEXZ_VALIDATION = (function() {
             }
         }
 
-        // 4. File Size Safety (10MB limit)
-        if (field.type === 'file' && field.files.length > 0) {
-            for (let i = 0; i < field.files.length; i++) {
-                if (field.files[i].size > 10 * 1024 * 1024) {
-                    if (!silent) changeValidity(field, 'File exceeds 10MB limit.', false);
-                    return false;
-                }
-            }
+if (field.type === 'file' && field.files.length > 0) {
+    for (let i = 0; i < field.files.length; i++) {
+        if (field.files[i].size > 1 * 1024 * 1024 * 1024) {
+            if (!silent) changeValidity(field, 'File exceeds 1GB limit.', false);
+            return false;
         }
+    }
+}
 
         // If field has data and passed checks, mark as valid
         if (!silent) {

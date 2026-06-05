@@ -102,7 +102,7 @@ function checkPasswordStrength(val) {
     let strength = 'Weak';
     let missing = [];
     let lengthMsg = [];
-    
+
     const hasUpperCase = /[A-Z]/.test(val);
     const hasLowerCase = /[a-z]/.test(val);
     const hasDigit = /\d/.test(val);
@@ -134,10 +134,10 @@ function validatePassword(silent = false) {
     const input = document.querySelector(`#${id}`);
     const feedback = document.querySelector(`.invalid-feedback.${id}`);
     if (!input) return false;
-    
+
     const val = input.value;
     const result = checkPasswordStrength(val);
-    
+
     if (!silent) updatePasswordMeter(result.strength);
 
     let valid = false;
@@ -287,10 +287,10 @@ function updateSubmitBtnState() {
     const ln = validateLastname(true);
     const p1 = validatePassword(true);
     const p2 = validateConfirmPassword(true);
-    
+
     const isAllValid = fn && ln && p1 && p2 && usernameState.valid && emailState.valid;
     const submitBtn = document.querySelector('button[type="submit"]');
-    
+
     if (submitBtn) {
         submitBtn.disabled = !isAllValid;
     }
@@ -300,28 +300,32 @@ let submitted = false;
 
 $(document).ready(function() {
     'use strict'
-    
+
     const inputs = document.querySelectorAll('input.form-control');
-    
+
     inputs.forEach(input => {
-        input.addEventListener('input', () => {
-            // Update button state silently on every keystroke
-            if (input.id === 'id_username') checkUsername(true);
-            else if (input.id === 'id_email') checkEmail(true);
+    input.addEventListener('input', () => {
+        // Update async checks silently
+        if (input.id === 'id_username') checkUsername(true);
+        else if (input.id === 'id_email') checkEmail(true);
+
+        // Show live feedback if field already marked invalid
+        if (input.classList.contains('is-invalid')) {
+            if (input.id === 'id_first_name') validateFirstname();
+            else if (input.id === 'id_last_name') validateLastname();
+            else if (input.id === 'id_username') checkUsername();
+            else if (input.id === 'id_email') checkEmail();
             else if (input.id === 'id_password1') validatePassword();
             else if (input.id === 'id_password2') validateConfirmPassword();
-            else updateSubmitBtnState();
-            
-            // Only show/update errors if the field is already marked invalid
-            if (input.classList.contains('is-invalid')) {
-                if (input.id === 'id_first_name') validateFirstname();
-                else if (input.id === 'id_last_name') validateLastname();
-                else if (input.id === 'id_username') checkUsername();
-                else if (input.id === 'id_email') checkEmail();
-                else if (input.id === 'id_password1') validatePassword();
-                else if (input.id === 'id_password2') validateConfirmPassword();
-            }
-        });
+        } else {
+            // Still run visual update for password meter etc.
+            if (input.id === 'id_password1') validatePassword();
+            else if (input.id === 'id_password2') validateConfirmPassword();
+        }
+
+        // Always update button state on every keystroke
+        updateSubmitBtnState();
+    });
 
         input.addEventListener('blur', () => {
             // Show full validation feedback on blur
@@ -334,7 +338,6 @@ $(document).ready(function() {
         });
     });
 
-    // Initial button state
     updateSubmitBtnState();
 
     $('form').on('submit', function(event) {
@@ -342,7 +345,7 @@ $(document).ready(function() {
             event.preventDefault();
             return;
         }
-        
+
         // Final sanity check
         const fn = validateFirstname();
         const ln = validateLastname();
