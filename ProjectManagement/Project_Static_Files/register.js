@@ -306,8 +306,8 @@ $(document).ready(function() {
     inputs.forEach(input => {
     input.addEventListener('input', () => {
         // Update async checks silently
-        if (input.id === 'id_username') checkUsername(true);
-        else if (input.id === 'id_email') checkEmail(true);
+        if (input.id === 'id_username') checkUsername(false);
+        else if (input.id === 'id_email') checkEmail(false);
 
         // Show live feedback if field already marked invalid
         if (input.classList.contains('is-invalid')) {
