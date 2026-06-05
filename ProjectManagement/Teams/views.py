@@ -114,15 +114,17 @@ def client_teams(request, client_id):
             "members"
         ).distinct().order_by("roles", "name")
 
-    # =========================================
-    # RENDER
-    # =========================================
-    return render(request, "client_teams.html", {
+    context = {
         "client": client,
         "workspace": workspace,
         "teams": teams,
         "is_admin": is_admin,
-    })
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/team_list_fragment.html", context)
+
+    return render(request, "client_teams.html", context)
 
 
 def can_manage_team(user, team):

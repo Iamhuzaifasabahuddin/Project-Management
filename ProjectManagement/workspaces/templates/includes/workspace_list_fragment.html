@@ -1,0 +1,53 @@
+<div class="row g-4">
+    {% for workspace in workspaces %}
+    <div class="col-lg-6">
+        <div class="hexz-card h-100">
+            <div class="mb-4">
+                <h3 class="font-syne fw-bold mb-1">
+                    <a href="{% url 'client_list' workspace.id %}" class="text-dark text-decoration-none hover-gold">
+                        {{ workspace.name }}
+                    </a>
+                </h3>
+                <div class="muted small">Parent: {{ workspace.parent.name|default:"None" }}</div>
+            </div>
+
+            <div>
+                <div class="eyebrow mb-3" style="font-size: 0.65rem;">Workspace Members</div>
+                <div class="d-flex flex-column gap-2">
+                    {% for m in memberships %}
+                        {% if m.workspace_id == workspace.id %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-person-circle text-muted"></i>
+                                <span class="fw-bold">{{ m.user.username }}</span>
+                            </div>
+                            {% if m.role == "admin" %}
+                                <span class="badge bg-black text-white px-2 py-1 small" style="font-size: 0.7rem;">ADMIN</span>
+                            {% else %}
+                                <span class="badge bg-light text-dark border px-2 py-1 small" style="font-size: 0.7rem;">{{ m.role | title }}</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 text-end">
+                <a href="{% url 'client_list' workspace.id %}" class="btn-black btn-sm">
+                    View Details <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="hexz-card bg-light border-0">
+            <i class="bi bi-building muted mb-3" style="font-size: 3rem;"></i>
+            <h4 class="font-syne muted">No workspaces available.</h4>
+            {% if is_admin or request.user.is_superuser %}
+            <a href="{% url 'create_workspace' %}" class="btn-gold mt-3">Create First Workspace</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>

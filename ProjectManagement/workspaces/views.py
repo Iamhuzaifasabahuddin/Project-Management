@@ -105,11 +105,16 @@ def workspace_list(request):
     else:
         workspaces = Workspace.objects.filter(membership__user=request.user)
 
-    return render(request, "workspace_list.html", {
+    context = {
         "workspaces": workspaces,
         "memberships": Membership.objects.select_related("user", "workspace"),
         "is_admin": is_workspace_admin(request.user, None) or request.user.is_superuser,
-    })
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/workspace_list_fragment.html", context)
+
+    return render(request, "workspace_list.html", context)
 
 
 @login_required

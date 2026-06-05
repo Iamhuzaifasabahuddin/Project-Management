@@ -1,0 +1,67 @@
+<div class="row g-4">
+    {% for team in teams %}
+    <div class="col-lg-6">
+        <div class="hexz-card h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h3 class="font-syne fw-bold mb-1">
+                        <a href="{% url 'team_tasks' team.id %}" class="text-dark text-decoration-none hover-gold">
+                            {{ team.name }}
+                        </a>
+                    </h3>
+                    <div class="muted">Team collaboration channel</div>
+                </div>
+                <div class="text-end">
+                    <div class="eyebrow" style="font-size: 0.6rem;">Role / Lead</div>
+                    <span class="badge bg-black text-white px-2 py-1 small">
+                        {% if team.roles %}{{ team.roles|capfirst }}{% else %}Team{% endif %} 
+                        {% if team.team_lead %} | {{ team.team_lead.username|capfirst }}{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="eyebrow mb-2">Team Members</div>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if team.members.all %}
+                        {% for user in team.members.all %}
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            <i class="bi bi-person"></i> {{ user.username }} 
+                            {% if user == team.team_lead %}<small class="text-gold fw-bold ms-1">(LEAD)</small>{% endif %}
+                        </span>
+                        {% endfor %}
+                    {% else %}
+                        <p class="muted small mb-0">No members assigned</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2 mt-auto pt-3 border-top">
+                <a href="{% url 'team_tasks' team.id %}" class="btn-black">
+                    Team Tasks
+                </a>
+                {% if is_admin or request.user == team.team_lead or request.user.is_superuser %}
+                <a href="{% url 'manage_team_members' team.id %}" class="btn-outline-custom">
+                    Manage Members
+                </a>
+                {% endif %}
+                {% if team.team_lead %}
+                <a href="mailto:{{ team.team_lead.email }}" class="btn-outline-custom">
+                    <i class="bi bi-envelope"></i> Contact Lead
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="hexz-card bg-light border-0">
+            <i class="bi bi-people muted mb-3" style="font-size: 3rem;"></i>
+            <h4 class="font-syne muted">No teams available for this client.</h4>
+            {% if is_admin or request.user.is_superuser %}
+            <a href="{% url 'create_team' client.id %}" class="btn-gold mt-3">Create First Team</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
