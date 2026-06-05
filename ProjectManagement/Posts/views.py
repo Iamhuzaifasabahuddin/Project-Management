@@ -7,7 +7,6 @@ from django.db import transaction
 from django.urls import reverse
 
 from Teams.models import Team
-from script import client
 from .forms import CommentForm, PostForm, TaskForm
 from .models import Post, Comment, PostFile, CommentFile, Task
 from .tasks import (
@@ -102,6 +101,12 @@ def create_task(request, team_id):
         task.created_by = request.user
         task.save()
         form.save_m2m()
+
+        # Reactivate client if it was archived
+        if client.is_archived:
+            client.is_archived = False
+            client.save()
+
         messages.success(request, f"Task '{task.name}' created successfully.")
         task_url = request.build_absolute_uri(
             reverse('team_tasks', kwargs={'team_id': team.id})
@@ -203,6 +208,10 @@ def task_approve(request, task_id):
     task.status = 'completed'
     task.save()
 
+    # Trigger auto-archive check for the client
+    from workspaces.services import auto_archive_client_if_done
+    auto_archive_client_if_done(team.client)
+
     # Notify assignees
     to_emails = [user.email for user in task.assigned_to.all() if user.email]
     if to_emails:
@@ -243,6 +252,11 @@ def task_decline(request, task_id):
     task.status = 'pending'
     task.save()
 
+    # Reactivate client if it was archived
+    if team.client.is_archived:
+        team.client.is_archived = False
+        team.client.save()
+
     # Notify assignees
     to_emails = [user.email for user in task.assigned_to.all() if user.email]
     if to_emails:
@@ -277,7 +291,11 @@ def delete_task(request, task_id):
     if not (is_superuser or is_admin):
         raise PermissionDenied("Not allowed")
 
+    client = task.team.client
     task.delete()
+    from workspaces.services import auto_archive_client_if_done
+    auto_archive_client_if_done(client)
+
     messages.success(request, "Task deleted successfully.")
     return redirect("team_tasks", team_id=team_id)
 

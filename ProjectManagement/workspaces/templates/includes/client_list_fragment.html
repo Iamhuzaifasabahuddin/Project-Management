@@ -1,27 +1,37 @@
-<div class="row g-4">
-    {% for client in clients %}
+<!-- ACTIVE CLIENTS -->
+<div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+        <h4 class="section-title mb-1">Active Clients</h4>
+        <p class="text-muted small">Access specific client teams and project data.</p>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    {% for client in active_clients %}
     <div class="col-lg-4 col-md-6">
         <div class="hexz-card h-100 d-flex flex-column">
             <div class="mb-3">
-                <div class="eyebrow" style="font-size: 0.6rem; color: var(--gold-dim);">Client ID: {{ client.id|add:"0000" }}</div>
+                <div class="eyebrow" style="font-size: 0.6rem; color: var(--gold-dim);">Client ID: {{ client.id|add:"0000" }}
+                </div>
                 <h3 class="mb-1">{{ client.name }}</h3>
                 <p class="muted small mb-0">{{ client.email }}</p>
             </div>
-            
+
             <div class="mt-auto pt-4 border-top">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <div class="small">
                         {% if client.paid %}
-                            <span class="badge-custom badge-status-completed">Paid</span>
+                        <span class="badge-custom badge-status-completed">Paid</span>
                         {% else %}
-                            <span class="badge-custom badge-status-pending">Pending</span>
+                        <span class="badge-custom badge-status-pending">Pending</span>
                         {% endif %}
                     </div>
                     <div class="fw-bold text-dark small">${{ client.amount_paid }}</div>
                 </div>
-                
+
                 <div class="d-flex gap-2">
-                    <button type="button" class="btn-outline-custom btn-sm flex-grow-1" data-bs-toggle="modal" data-bs-target="#clientModal{{ client.id }}">
+                    <button type="button" class="btn-outline-custom btn-sm flex-grow-1" data-bs-toggle="modal"
+                            data-bs-target="#clientModalActive{{ client.id }}">
                         <i class="bi bi-search me-1"></i> Preview
                     </button>
                     <a href="{% url 'client_teams' client.id %}" class="btn-black btn-sm flex-grow-1">
@@ -33,7 +43,7 @@
     </div>
 
     <!-- MODAL -->
-    <div class="modal fade" id="clientModal{{ client.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="clientModalActive{{ client.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0" style="border-radius: 4px; overflow: hidden;">
                 <div class="modal-header bg-black text-white px-4 py-3 border-0">
@@ -41,7 +51,8 @@
                         <div class="hex-icon" style="width: 28px; height: 28px; font-size: 12px;">H</div>
                         <h5 class="modal-title font-syne fw-bold mb-0">{{ client.name }}</h5>
                     </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4 bg-off-white">
                     <div class="row g-4">
@@ -57,8 +68,12 @@
                                     <div class="fw-bold text-dark">{{ client.number }}</div>
                                 </div>
                                 <div>
-                                    <div class="muted small">Business Address</div>
+                                    <div class="muted small">Address</div>
                                     <div class="fw-bold text-dark">{{ client.address|default:"Not provided" }}</div>
+                                </div>
+                                <div>
+                                    <div class="muted small">Notes</div>
+                                    <div class="fw-bold text-dark">{{ client.notes|default:"N/A" }}</div>
                                 </div>
                             </div>
                         </div>
@@ -100,7 +115,7 @@
     <div class="col-12">
         <div class="text-center py-5 bg-white border rounded">
             <i class="bi bi-inbox text-muted display-4"></i>
-            <h5 class="mt-3 font-syne fw-bold">No clients active</h5>
+            <h5 class="mt-3 font-syne fw-bold">No active clients</h5>
             <p class="text-muted">Register your first client to start project management.</p>
             {% if is_admin or request.user.is_superuser %}
             <a href="{% url 'create_client' workspace.id %}" class="btn-outline-custom mt-2">Register Client</a>
@@ -109,3 +124,137 @@
     </div>
     {% endfor %}
 </div>
+
+<!-- ARCHIVED CLIENTS -->
+{% if archived_clients %}
+<div class="mt-5 pt-4 border-top">
+    <div class="mb-4">
+        <h4 class="section-title mb-1">Archived Clients</h4>
+        <p class="text-muted small">Completed projects and inactive client environments.</p>
+    </div>
+    <div class="row g-4">
+        {% for client in archived_clients %}
+        <div class="col-lg-4 col-md-6 archived-card">
+            <div class="hexz-card h-100 d-flex flex-column bg-light border-dashed">
+                <div class="mb-3">
+                    <div class="eyebrow" style="font-size: 0.6rem; color: #6c757d;">ARCHIVED</div>
+                    <div class="eyebrow" style="font-size: 0.6rem; color: #6c757d;">Client ID: {{ client.id|add:"0000" }}
+                </div>
+                    <h3 class="mb-1 text-muted">{{ client.name }}</h3>
+                    <p class="muted small mb-0">{{ client.email }}</p>
+                </div>
+
+                <div class="mt-auto pt-4 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="badge bg-secondary text-white px-2 py-1 small">Inactive</span>
+                        <div class="fw-bold text-muted small">${{ client.amount_paid }}</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn-outline-custom btn-sm flex-grow-1" data-bs-toggle="modal"
+                                data-bs-target="#clientModalArchived{{ client.id }}">
+                            <i class="bi bi-search me-1"></i> Preview
+                        </button>
+                        <a href="{% url 'client_teams' client.id %}" class="btn-outline-custom btn-sm flex-grow-1">
+                            <span>View Archive</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL (Archived) -->
+        <div class="modal fade" id="clientModalArchived{{ client.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0" style="border-radius: 4px; overflow: hidden;">
+                    <div class="modal-header bg-secondary text-white px-4 py-3 border-0">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-archive"></i>
+                            <h5 class="modal-title font-syne fw-bold mb-0">{{ client.name }} (Archived)</h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-off-white">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="bg-white p-4 border rounded-1">
+                                    <div class="field-label text-muted">Final Contact Profile</div>
+                                    <div class="mb-3">
+                                        <div class="muted small">Email Address</div>
+                                        <div class="fw-bold text-dark">{{ client.email }}</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="muted small">Phone Number</div>
+                                        <div class="fw-bold text-dark">{{ client.number }}</div>
+                                    </div>
+                                    <div>
+                                        <div class="mb-3">
+                                            <div class="muted small">Brand</div>
+                                            <div class="fw-bold text-dark">{{ client.workspace.name }}</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="muted small">Notes</div>
+                                            <div class="fw-bold text-dark">{{ client.notes|default:"N/A" }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="bg-white p-4 border rounded-1">
+                                    <div class="field-label text-muted">Financial Settlement</div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-6">
+                                            <div class="muted small">Amount Paid</div>
+                                            <div class="fw-bold text-dark">${{ client.amount_paid }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="muted small">Total Billing</div>
+                                            <div class="fw-bold text-dark">${{ client.total_amount }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="muted small">Outstanding Balance</div>
+                                        <div class="fw-bold {% if client.outstanding > 0 %}text-danger{% else %}text-success{% endif %}">
+                                            ${{ client.outstanding }}
+                                        </div>
+
+                                    </div>
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-6">
+                                            <div class="muted small">Payment Date</div>
+                                            <div class="fw-bold text-dark">{{ client.payment_date }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="muted small">Payment Type</div>
+                                            <div class="fw-bold text-dark">{{ client.paid_type| title }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer px-4 py-3 bg-white border-top">
+                        <button type="button" class="btn-outline-custom" data-bs-dismiss="modal">Close</button>
+                        <a href="{% url 'client_teams' client.id %}" class="btn-black">View Team Data</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<style>
+    .archived-card {
+        opacity: 0.8;
+        transition: all 0.3s ease;
+    }
+    .archived-card:hover {
+        opacity: 1;
+    }
+    .border-dashed {
+        border-style: dashed !important;
+    }
+</style>

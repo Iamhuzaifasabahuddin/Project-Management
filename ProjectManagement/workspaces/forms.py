@@ -73,7 +73,7 @@ class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ['name', 'address', 'number', 'email', 'total_amount', 'amount_paid', 'payment_date', 'paid_type'
-                  ,'paid', 'assigned_to']
+                  ,'paid', 'notes']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -121,21 +121,27 @@ class ClientForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date',
             }),
-            'assigned_to': Select2MultipleWidget(attrs={
+            'notes': forms.Textarea(attrs={
                 'class': 'form-control',
-                'data-placeholder': 'Search and select users...',
-                'data-allow-clear': 'true',
-                'data-minimum-input-length': 0,
-                'data-close-on-select': False,
-            }),
+                'placeholder': 'Enter notes',
+                'autocomplete': 'off',
+            })
+            # 'assigned_to': Select2MultipleWidget(attrs={
+            #     'class': 'form-control',
+            #     'data-placeholder': 'Search and select users...',
+            #     'data-allow-clear': 'true',
+            #     'data-minimum-input-length': 0,
+            #     'data-close-on-select': False,
+            # }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['assigned_to'].label_from_instance = self._user_label
-        self.fields['assigned_to'].required = False
+        # self.fields['assigned_to'].label_from_instance = self._user_label
+        # self.fields['assigned_to'].required = False
+        # self.fields['assigned_to'].help_text = 'Select one or more users to assign this client'
+        self.fields['notes'].required = False
         self.fields['payment_date'].required = True
-        self.fields['assigned_to'].help_text = 'Select one or more users to assign this client'
         self.fields['amount_paid'].help_text = 'Amount the client has paid so far'
         self.fields['total_amount'].help_text = 'Total amount owed by the client'
 
@@ -151,21 +157,20 @@ class ClientForm(forms.ModelForm):
         full_name = user.get_full_name()
         return full_name if full_name.strip() else user.username
 
-    def clean_name(self):
-        """Validate that client name doesn't already exist"""
-        name = self.cleaned_data['name'].strip()
-
-        # Exclude current instance if editing
-        query = Client.objects.filter(name__iexact=name)
-        if self.instance.pk:
-            query = query.exclude(pk=self.instance.pk)
-
-        if query.exists():
-            raise forms.ValidationError(
-                f"A client with the name '{name}' already exists."
-            )
-
-        return name
+    # def clean_name(self):
+    #     """Validate that client name doesn't already exist"""
+    #     name = self.cleaned_data['name'].strip()
+    #
+    #     query = Client.objects.filter(name__iexact=name)
+    #     if self.instance.pk:
+    #         query = query.exclude(pk=self.instance.pk)
+    #
+    #     if query.exists():
+    #         raise forms.ValidationError(
+    #             f"A client with the name '{name}' already exists."
+    #         )
+    #
+    #     return name
 
     def clean_email(self):
         """Validate that email doesn't already exist"""
@@ -173,8 +178,6 @@ class ClientForm(forms.ModelForm):
 
         if not email:
             return email
-
-        # Exclude current instance if editing
         query = Client.objects.filter(email__iexact=email)
         if self.instance.pk:
             query = query.exclude(pk=self.instance.pk)

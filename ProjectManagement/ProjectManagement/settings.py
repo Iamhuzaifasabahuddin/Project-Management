@@ -261,6 +261,6 @@ CELERY_TASK_ROUTES = {
     'Posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
     'Posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
 }
-
+# CELERY_WORKER_CANCEL_LONG_RUNNING_TASKS_ON_CONNECTION_LOSS = True
 # Task rate limiting using kombubu
 CELERY_TASK_DEFAULT_RATE_LIMIT = '100/m'  # 100 tasks per minute globally

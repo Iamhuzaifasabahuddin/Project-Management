@@ -12,11 +12,22 @@
                     <div class="muted">Team collaboration channel</div>
                 </div>
                 <div class="text-end">
-                    <div class="eyebrow" style="font-size: 0.6rem;">Role / Lead</div>
-                    <span class="badge bg-black text-white px-2 py-1 small">
-                        {% if team.roles %}{{ team.roles|capfirst }}{% else %}Team{% endif %} 
-                        {% if team.team_lead %} | {{ team.team_lead.username|capfirst }}{% endif %}
-                    </span>
+                    <div class="eyebrow" style="font-size: 0.6rem;">Status / Role</div>
+                    <div class="d-flex flex-column align-items-end gap-1">
+                        <span class="badge {% if team.total_tasks > 0 and team.total_tasks == team.completed_tasks %}bg-success{% elif team.total_tasks > 0 %}bg-warning text-dark{% else %}bg-light text-muted{% endif %} px-2 py-1 small w-100">
+                            {% if team.total_tasks == 0 %}
+                                <i class="bi bi-dash-circle"></i> No Tasks
+                            {% elif team.total_tasks == team.completed_tasks %}
+                                <i class="bi bi-check-circle"></i> Completed
+                            {% else %}
+                                <i class="bi bi-clock-history"></i> Pending ({{ team.completed_tasks }}/{{ team.total_tasks }})
+                            {% endif %}
+                        </span>
+                        <span class="badge bg-black text-white px-2 py-1 small w-100">
+                            {% if team.roles %}{{ team.roles|capfirst }}{% else %}Team{% endif %} 
+                            {% if team.team_lead %} | {{ team.team_lead.username|capfirst }}{% endif %}
+                        </span>
+                    </div>
                 </div>
             </div>
 

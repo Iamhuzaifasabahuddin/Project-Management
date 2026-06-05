@@ -22,3 +22,28 @@ def is_workspace_member(user, workspace):
         user=user,
         workspace=workspace
     ).exists()
+
+def auto_archive_client_if_done(client):
+    """
+    Checks if all tasks for all teams of the client are completed.
+    If so, sets is_archived to True.
+    """
+    from Posts.models import Task
+    
+    # Check if the client actually has tasks (to avoid archiving empty clients immediately)
+    has_tasks = Task.objects.filter(team__client=client).exists()
+    
+    if not has_tasks:
+        return False
+
+    # Check if there are any tasks that are NOT completed
+    has_pending = Task.objects.filter(
+        team__client=client
+    ).exclude(status='completed').exists()
+
+    if not has_pending:
+        client.is_archived = True
+        client.save()
+        return True
+        
+    return False

@@ -28,16 +28,9 @@
 </header>
 
 <div class="container pb-5">
-    <div class="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-            <h4 class="section-title mb-1">Active Client Portfolios</h4>
-            <p class="text-muted small">Access specific client teams and project data.</p>
-        </div>
-    </div>
-
     <div id="clientGrid" 
          hx-get="{% url 'client_details' workspace.id %}" 
-         hx-trigger="every 5s" 
+         hx-trigger="every 5s [!document.querySelector('.modal.show')]"
          hx-swap="innerHTML">
         {% include "includes/client_list_fragment.html" %}
     </div>

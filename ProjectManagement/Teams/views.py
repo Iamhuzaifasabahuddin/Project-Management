@@ -10,7 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db import transaction
+from django.db import transaction, models
+from django.db.models import Count, Q
 from django.views.decorators.http import require_http_methods
 
 from Posts.models import Task
@@ -104,6 +105,9 @@ def client_teams(request, client_id):
 
         teams = client.teams.prefetch_related(
             "members"
+        ).annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).order_by("roles", "name")
 
     else:
@@ -112,8 +116,12 @@ def client_teams(request, client_id):
             members=request.user
         ).prefetch_related(
             "members"
+        ).annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).distinct().order_by("roles", "name")
 
+    tasks = teams
     context = {
         "client": client,
         "workspace": workspace,

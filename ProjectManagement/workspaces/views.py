@@ -188,7 +188,7 @@ def create_clients(request, workspace_id):
         client = form.save(commit=False)
         client.workspace = workspace
         client.save()
-        form.save_m2m()
+        # form.save_m2m()
         # create_default_teams_for_client(client, workspace)
         return redirect("client_details", workspace_id=workspace.id)
 
@@ -205,16 +205,20 @@ def client_list(request, workspace_id):
 
     # Superusers see all clients in workspace
     if request.user.is_superuser:
-        clients = Client.objects.filter(workspace=workspace)
+        all_clients = Client.objects.filter(workspace=workspace)
     else:
         # Get clients linked to teams the user is a member of in this workspace
-        clients = Client.objects.filter(
+        all_clients = Client.objects.filter(
             workspace=workspace,
             teams__members=request.user
         ).distinct()
 
+    active_clients = all_clients.filter(is_archived=False)
+    archived_clients = all_clients.filter(is_archived=True)
+
     return render(request, "client_list.html", {
-        "clients": clients,
+        "active_clients": active_clients,
+        "archived_clients": archived_clients,
         "workspace": workspace,
     })
 
@@ -231,16 +235,20 @@ def client_detail(request, workspace_id):
 
     # Superusers see all clients in workspace
     if request.user.is_superuser or is_workspace_admin(request.user, workspace):
-        clients = Client.objects.filter(workspace=workspace)
+        all_clients = Client.objects.filter(workspace=workspace)
     else:
-        clients = Client.objects.filter(
+        all_clients = Client.objects.filter(
             workspace=workspace,
             teams__members=request.user
         ).distinct()
 
+    active_clients = all_clients.filter(is_archived=False)
+    archived_clients = all_clients.filter(is_archived=True)
+
     context = {
         "workspace": workspace,
-        "clients": clients,
+        "active_clients": active_clients,
+        "archived_clients": archived_clients,
         "is_admin": is_workspace_admin(request.user, workspace),
         "is_member": is_workspace_member(request.user, workspace),
     }
