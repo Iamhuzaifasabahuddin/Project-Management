@@ -1,19 +1,12 @@
 /**
- * HEXZ CONNECT - Global Form Validation
- * Modular engine inspired by register.js.
- * Provides real-time feedback and protects the database from invalid submissions.
+ * HEXZ CONNECT - Client Form Specific Validation
  */
 
-const HEXZ_VALIDATION = (function() {
+const CLIENT_VALIDATION = (function() {
     'use strict';
 
-    // Helper: Email Regex
     const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    /**
-     * Updates the UI state of a field.
-     * Toggles is-valid/is-invalid classes and manages feedback messages.
-     */
     const changeValidity = (input, message, isValid) => {
         const fieldGroup = input.closest('.field-group') || input.closest('.mb-3') || input.parentElement;
         let feedback = fieldGroup.querySelector('.invalid-feedback');
@@ -21,7 +14,6 @@ const HEXZ_VALIDATION = (function() {
         if (!feedback) {
             feedback = document.createElement('div');
             feedback.className = 'invalid-feedback';
-            // Insert after input or its wrapper
             const insertAfter = input.closest('.field-wrap') || input;
             if (insertAfter.nextSibling) {
                 insertAfter.parentNode.insertBefore(feedback, insertAfter.nextSibling);
@@ -41,7 +33,6 @@ const HEXZ_VALIDATION = (function() {
             feedback.style.display = 'block';
         }
         
-        // Handle Select2 specific UI integration
         if (input.classList.contains('django-select2') && typeof $ !== 'undefined') {
             const s2Container = $(input).next('.select2-container');
             if (s2Container.length) {
@@ -54,11 +45,6 @@ const HEXZ_VALIDATION = (function() {
         }
     };
 
-    /**
-     * Validates an individual field based on its attributes and type.
-     * @param {HTMLElement} field - The input element to validate.
-     * @param {boolean} silent - If true, checks validity without updating UI.
-     */
     const validateField = (field, silent = false) => {
         const isRequired = field.required || field.hasAttribute('required');
         const val = field.value ? field.value.trim() : '';
@@ -75,50 +61,58 @@ const HEXZ_VALIDATION = (function() {
             return false;
         }
 
-        // 3. Date Integrity Check (Prevent past dates for due_date)
-        if ((field.id.includes('due_date') || field.name.includes('due_date')) && val) {
-            const selectedDate = new Date(val);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            if (selectedDate < today) {
-                if (!silent) changeValidity(field, 'Date cannot be in the past.', false);
+        // 3. Phone Number Check
+        if (field.name === 'number' && val) {
+            if (val.length < 10 || val.length > 15 || !/^\d+$/.test(val)) {
+                if (!silent) changeValidity(field, 'Phone number must be 10-15 digits.', false);
                 return false;
             }
         }
 
-if (field.type === 'file' && field.files.length > 0) {
-    for (let i = 0; i < field.files.length; i++) {
-        if (field.files[i].size > 1 * 1024 * 1024 * 1024) {
-            if (!silent) changeValidity(field, 'File exceeds 1GB limit.', false);
-            return false;
-        }
-    }
-}
+        // 4. Amount Validation
+        if (field.name === 'total_amount' || field.name === 'amount_paid') {
+            const form = field.form;
+            const totalField = form.querySelector('[name="total_amount"]');
+            const paidField = form.querySelector('[name="amount_paid"]');
+            const totalVal = parseFloat(totalField.value) || 0;
+            const paidVal = parseFloat(paidField.value) || 0;
 
-        // If field has data and passed checks, mark as valid
+            if (val && (isNaN(parseFloat(val)) || parseFloat(val) < 0)) {
+                if (!silent) changeValidity(field, 'Enter a valid non-negative number.', false);
+                return false;
+            }
+
+            if (paidVal > totalVal) {
+                const msg = field.name === 'total_amount' 
+                    ? 'Total cannot be less than paid amount.' 
+                    : 'Paid amount cannot exceed total.';
+                if (!silent) changeValidity(field, msg, false);
+                return false;
+            }
+        }
+
         if (!silent) {
-            if (val) {
+            if (val || field.type === 'checkbox') {
                 changeValidity(field, '', true);
             } else {
-                // Not required and empty: clean state
                 field.classList.remove('is-invalid', 'is-valid');
                 const fieldGroup = field.closest('.field-group') || field.closest('.mb-3') || field.parentElement;
                 const feedback = fieldGroup.querySelector('.invalid-feedback');
                 if (feedback) feedback.style.display = 'none';
             }
         }
-
+        
         return true;
     };
 
-    /**
-     * Initializes all forms marked with 'novalidate'.
-     */
     const init = () => {
-        console.log("HEXZ Validation Engine active.");
         const forms = document.querySelectorAll('form[novalidate]');
-
+        
         forms.forEach(form => {
+            // Only apply if it's a client form (detect by fields)
+            if (!form.querySelector('[name="total_amount"]') || !form.querySelector('[name="amount_paid"]')) return;
+
+            console.log("HEXZ Client Validation active.");
             const inputs = form.querySelectorAll('input, textarea, select');
             const submitBtn = form.querySelector('[type="submit"]');
 
@@ -131,79 +125,36 @@ if (field.type === 'file' && field.files.length > 0) {
             };
 
             inputs.forEach(input => {
-                // Real-time validation on loss of focus
                 input.addEventListener('blur', () => {
                     validateField(input);
                     updateSubmitBtnState();
                 });
-
-                // Immediate correction check & Button update
+                
                 input.addEventListener('input', () => {
                     updateSubmitBtnState();
-                    if (input.classList.contains('is-invalid')) {
+                    if (input.classList.contains('is-invalid') || input.name === 'total_amount' || input.name === 'amount_paid') {
                         validateField(input);
+                    }
+
+                    // Cross-validate amounts
+                    if (input.name === 'total_amount' || input.name === 'amount_paid') {
+                        const otherName = input.name === 'total_amount' ? 'amount_paid' : 'total_amount';
+                        const otherField = form.querySelector(`[name="${otherName}"]`);
+                        if (otherField) validateField(otherField, false);
                     }
                 });
 
-                // Handle changes for select and file inputs
                 input.addEventListener('change', () => {
                     validateField(input);
                     updateSubmitBtnState();
                 });
-
-                // Periodic check for Select2 availability
-                if (input.classList.contains('django-select2')) {
-                    const checkS2 = setInterval(() => {
-                        if (typeof $ !== 'undefined') {
-                            $(input).on('change', () => {
-                                validateField(input);
-                                updateSubmitBtnState();
-                            });
-                            clearInterval(checkS2);
-                        }
-                    }, 500);
-                    setTimeout(() => clearInterval(checkS2), 5000);
-                }
             });
 
-            // Initial check to set button state on load
             updateSubmitBtnState();
-
-            form.addEventListener('submit', function(e) {
-                let isFormValid = true;
-                
-                // Final check of all fields
-                inputs.forEach(input => {
-                    if (!validateField(input)) isFormValid = false;
-                });
-
-                if (!isFormValid) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.warn("HEXZ: Form invalid. Submission blocked.");
-                    
-                    const firstErr = form.querySelector('.is-invalid');
-                    if (firstErr) {
-                        firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                } else {
-                    console.log("HEXZ: Form valid. Processing...");
-                    if (submitBtn) {
-                        // Enter static processing state
-                        submitBtn.disabled = true;
-                        submitBtn.classList.add('btn-processing'); 
-                        submitBtn.innerHTML = `
-                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
-                            <span>Processing...</span>
-                        `;
-                    }
-                }
-            });
         });
     };
 
     return { init };
 })();
 
-// Auto-boot
-document.addEventListener('DOMContentLoaded', HEXZ_VALIDATION.init);
+document.addEventListener('DOMContentLoaded', CLIENT_VALIDATION.init);
