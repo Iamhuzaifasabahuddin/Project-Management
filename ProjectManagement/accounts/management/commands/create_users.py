@@ -19,35 +19,35 @@ class Command(BaseCommand):
                 "password": os.environ.get("USER_CREATION_PWD_LEAD")
             },
             {
-                "username": "Yousuf.shaikh",
+                "username": "yousuf.shaikh",
                 "first_name": "Yousuf",
                 "last_name": "Shaikh",
                 "email": "yousuf.sheikh@topsoftdigitals.pk",
                 "password": os.environ.get("USER_CREATION_PWD_LEAD")
             },
             {
-                "username": "Tazeen.ali",
+                "username": "tazeen.ali",
                 "first_name": "Tazeen",
                 "last_name": "Ali",
                 "email": "tazeen.hassan@topsoftdigitals.pk",
                 "password": os.environ.get("USER_CREATION_PWD_LEAD")
             },
             {
-                "username": "Jazib.ullah",
+                "username": "jazib.ullah",
                 "first_name": "Jazib",
                 "last_name": "Ullah",
                 "email": "jazibullah@topsoftdigitals.pk",
                 "password": os.environ.get("USER_CREATION_PWD_LEAD")
             },
             {
-                "username": "Asad.waqas",
+                "username": "asad.waqas",
                 "first_name": "Asad",
                 "last_name": "Waqas",
                 "email": "asad.waqas@topsoftdigitals.pk",
                 "password": os.environ.get("USER_CREATION_PWD_LEAD")
             },
             {
-                "username": "Suhaib.khan",
+                "username": "suhaib.khan",
                 "first_name": "Suhaib",
                 "last_name": "Khan",
                 "email": "suhaib.khan@topsoftdigitals.pk",
