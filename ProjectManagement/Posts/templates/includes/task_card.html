@@ -26,6 +26,7 @@
                         {% endif %}
                     {% endif %}
                     <span class="muted"><i class="bi bi-calendar3"></i> {{ task.due_date|date:"M d" }}</span>
+                    <span class="muted"><i class="bi bi-layers"></i> {{ task.team.name }}</span>
                 </div>
             </div>
             <div class="text-end">

@@ -1,224 +1,42 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
 {% load static %}
 {% load bootstrap5 %}
-{% bootstrap_css %}
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Hexz Connect</title>
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    
-    <style>
-        :root {
-            --black: #0a0a0a;
-            --gold: #FFD700;
-            --gold-dim: #c9a800;
-            --white: #ffffff;
-            --off-white: #f7f6f2;
-            --muted: #888;
-            --border: #e0ddd6;
-        }
+{% block title %}Dashboard - Hexz Connect{% endblock %}
 
-        body {
-            background: var(--off-white);
-            font-family: 'DM Sans', sans-serif;
-            color: var(--black);
-        }
-
-        /* ── Navbar ── */
-        .navbar-custom {
-            background: var(--black);
-            border-bottom: 1px solid rgba(255,215,0,0.15);
-        }
-        .brand-badge {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-        .hex-icon {
-            width: 32px; height: 32px;
-            background: var(--gold);
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            color: var(--black);
-            font-size: 14px;
-        }
-        .brand-name {
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            color: var(--white);
-            letter-spacing: 0.04em;
-            font-size: 1rem;
-        }
-        .nav-link-custom {
-            color: rgba(255,255,255,0.7);
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
-        .nav-link-custom:hover { color: var(--gold); }
-
-        /* ── Header ── */
-        .dashboard-header {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 3rem 0;
-            margin-bottom: 3rem;
-        }
-        .eyebrow {
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: var(--gold-dim);
-            margin-bottom: 0.5rem;
-        }
-        .dashboard-header h1 {
-            font-family: 'Syne', sans-serif;
-            font-weight: 800;
-            font-size: 2.5rem;
-            letter-spacing: -0.02em;
-        }
-
-        /* ── Cards ── */
-        .workspace-card {
-            background: var(--white);
-            border: 1.5px solid var(--border);
-            border-radius: 4px;
-            padding: 2rem;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            text-decoration: none;
-        }
-        .workspace-card:hover {
-            border-color: var(--black);
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.05);
-        }
-        .workspace-card h3 {
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--black);
-            margin-bottom: 1rem;
-        }
-        .workspace-card .meta {
-            font-size: 0.8rem;
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .btn-gold {
-            background: var(--gold);
-            color: var(--black);
-            font-family: 'Syne', sans-serif;
-            font-weight: 700;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 20px;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
-            transition: all 0.2s;
-        }
-        .btn-gold:hover {
-            background: var(--black);
-            color: var(--gold);
-        }
-
-        .btn-outline-custom {
-            border: 1.5px solid var(--border);
-            background: transparent;
-            color: var(--black);
-            font-family: 'Syne', sans-serif;
-            font-weight: 600;
-            border-radius: 4px;
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: all 0.2s;
-        }
-        .btn-outline-custom:hover {
-            border-color: var(--black);
-            background: var(--black);
-            color: var(--white);
-        }
-    </style>
-</head>
-
-<body>
-{% bootstrap_javascript %}
-
-<nav class="navbar navbar-custom px-4 py-2 sticky-top">
-    <div class="container-fluid">
-        <a href="{% url 'dashboard' %}" class="brand-badge">
-            <div class="hex-icon">H</div>
-            <span class="brand-name">HEXZ CONNECT</span>
-        </a>
-
-        <div class="d-flex align-items-center gap-4">
-            <a href="{% url 'workspace_list' %}" class="nav-link-custom text-decoration-none d-none d-md-block">
-                Workspaces
-            </a>
-            
-            {% if is_admin or request.user.is_superuser %}
-            <a href="{% url 'assign_role' %}" class="nav-link-custom text-decoration-none d-none d-md-block">
-                Assign Role
-            </a>
-            <a href="/admin" target="_blank" class="nav-link-custom text-decoration-none d-none d-md-block text-danger">
-                Admin Portal
-            </a>
-            {% endif %}
-
-            <div class="vr mx-2 bg-secondary d-none d-md-block" style="height: 20px; opacity: 0.3;"></div>
-
-            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">
-                Logout
-            </a>
-        </div>
-    </div>
-</nav>
-
-<header class="dashboard-header">
+{% block content %}
+<header class="page-header">
     <div class="container">
-        <div class="row align-items-end">
-            <div class="col-md-8">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
+            <div>
                 <div class="eyebrow">Project Intelligence Overview</div>
-                <h1>Welcome back, {{ request.user.username }}<span>.</span></h1>
+                <h1 class="section-title mb-0">Welcome back, {{ request.user.username }}<span>.</span></h1>
             </div>
-            <div class="col-md-4 text-md-end mt-4 mt-md-0">
+            <div class="d-flex flex-wrap gap-2">
                 {% if is_admin or request.user.is_superuser %}
-                <a href="{% url 'create_workspace' %}" class="btn-gold text-decoration-none">
-                    <i class="bi bi-plus-lg me-1"></i> New Workspace
+                <a href="{% url 'create_workspace' %}" class="btn-gold">
+                    <i class="bi bi-plus-lg"></i> New Workspace
+                </a>
+                <a href="{% url 'assign_role' %}" class="btn-black">
+                    <i class="bi bi-person-gear"></i> Assign Role
+                </a>
+                <a href="/admin" class="btn-black ">
+                    <i class="bi bi-person"></i> Admin
                 </a>
                 {% endif %}
+                <a href="{% url 'workspace_list' %}" class="btn-outline-custom" target="_blank">
+                    <i class="bi bi-layers"></i> Workspaces
+                </a>
             </div>
         </div>
     </div>
 </header>
 
 <main class="container pb-5">
-    <div class="mb-4 d-flex justify-content-between align-items-center">
-        <div>
-            <h4 class="font-syne fw-bold mb-1" style="font-family: 'Syne', sans-serif;">Active Workspaces</h4>
-            <p class="text-muted small">Select an environment to continue your progress.</p>
-        </div>
+    <!-- Active Workspaces -->
+    <div class="mb-4">
+        <h2 class="section-title mb-1">Active Workspaces</h2>
+        <p class="muted">Select an environment to continue your progress.</p>
     </div>
 
     <div id="workspaceGrid" 
@@ -227,7 +45,127 @@
          hx-swap="innerHTML">
         {% include "includes/dashboard_workspace_list.html" %}
     </div>
-</main>
 
-</body>
-</html>
+    <!-- Latest Teams Section -->
+    <div class="mt-5 mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="section-title mb-1">Latest Teams</h2>
+            <p class="muted">The most recent teams you are participating in.</p>
+        </div>
+        <a href="{% url 'all_user_teams' %}" class="btn-outline-custom">View All Teams</a>
+    </div>
+
+    <div class="row g-4">
+        {% for team in latest_teams %}
+        <div class="col-lg-6">
+            <div class="hexz-card h-100 d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-4">
+                    <div>
+                        <h3 class="font-syne fw-bold mb-1">
+                            <a href="{% url 'team_tasks' team.id %}" class="text-dark text-decoration-none hover-gold">
+                                {{ team.name }}
+                            </a>
+                        </h3>
+                        <div class="muted">{{ team.client.name }} collaboration channel</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="eyebrow" style="font-size: 0.6rem;">Status / Role</div>
+                        <div class="d-flex flex-column align-items-end gap-1">
+                            <span class="badge {% if team.total_tasks > 0 and team.total_tasks == team.completed_tasks %}bg-success{% elif team.total_tasks > 0 %}bg-warning text-dark{% else %}bg-light text-muted{% endif %} px-2 py-1 small w-100">
+                                {% if team.total_tasks == 0 %}
+                                    <i class="bi bi-dash-circle"></i> No Tasks
+                                {% elif team.total_tasks == team.completed_tasks %}
+                                    <i class="bi bi-check-circle"></i> Completed
+                                {% else %}
+                                    <i class="bi bi-clock-history"></i> Pending ({{ team.completed_tasks }}/{{ team.total_tasks }})
+                                {% endif %}
+                            </span>
+                            <span class="badge bg-black text-white px-2 py-1 small w-100">
+                                {% if team.roles %}{{ team.roles|capfirst }}{% else %}Team{% endif %} 
+                                {% if team.team_lead %} | {{ team.team_lead.username|capfirst }}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="eyebrow mb-2">Team Members</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if team.members.all %}
+                            {% for user in team.members.all %}
+                            <span class="badge bg-light text-dark border px-2 py-1">
+                                <i class="bi bi-person"></i> {{ user.username }} 
+                                {% if user == team.team_lead %}<small class="text-gold fw-bold ms-1">(LEAD)</small>{% endif %}
+                            </span>
+                            {% endfor %}
+                        {% else %}
+                            <p class="muted small mb-0">No members assigned</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-auto pt-3 border-top">
+                    <a href="{% url 'team_tasks' team.id %}" class="btn-black">
+                        Team Tasks
+                    </a>
+                    {% if team.team_lead %}
+                    <a href="mailto:{{ team.team_lead.email }}" class="btn-outline-custom">
+                        <i class="bi bi-envelope"></i> Contact Lead
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+
+        <div class="col-12">
+            <p class="muted text-center py-4 bg-white border rounded">No teams found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Latest Tasks Section -->
+    <div class="mt-5 mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="section-title mb-1">Latest Tasks</h2>
+            <p class="muted">Your most recent assigned tasks.</p>
+        </div>
+        <a href="{% url 'all_user_tasks' %}" class="btn-outline-custom">View All Tasks</a>
+    </div>
+
+    <div class="row g-4">
+        {% for task in latest_tasks %}
+        <div class="col-md-4">
+            <div class="hexz-card">
+                <div class="mb-4">
+                    <h3 class="h5 font-syne fw-bold mb-2">{{ task.name }}</h3>
+                    <div class="mb-3">
+                        <span class="badge-custom 
+                            {% if task.status == 'completed' %}badge-status-completed
+                            {% elif task.status == 'pending' %}badge-status-pending
+                            {% else %}badge-status-awaiting{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="muted d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-people"></i> Team: {{ task.team.name }}
+                    </div>
+                    <div class="muted d-flex align-items-center gap-2">
+                        <i class="bi bi-calendar-event"></i> Due: {{ task.due_date|default:"N/A" }}
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a href="{% url 'team_tasks' task.team.id %}" class="btn-black w-100 justify-content-center">
+                        View Task Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="muted text-center py-4 bg-white border rounded">No tasks found.</p>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+{% endblock %}

@@ -30,7 +30,7 @@
 <div class="container pb-5">
     <div id="clientGrid" 
          hx-get="{% url 'client_details' workspace.id %}" 
-         hx-trigger="every 5s [!document.querySelector('.modal.show')]"
+         hx-trigger="every 10s [!document.querySelector('.modal.show')]"
          hx-swap="innerHTML">
         {% include "includes/client_list_fragment.html" %}
     </div>

@@ -1,3 +1,6 @@
+import os
+
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -7,51 +10,34 @@ from django.shortcuts import render, redirect, get_object_or_404
 from Posts.models import Post
 from Teams.forms import TeamForm
 from Teams.models import Team
-from workspaces.services import is_workspace_admin, is_workspace_member
 from workspaces.forms import WorkspaceForm, RoleAssignForm, ClientForm
 from workspaces.models import Workspace, Membership, Client
+from workspaces.services import is_workspace_admin, is_workspace_member
 
-def get_users_by_role(workspace, role):
-    return User.objects.filter(membership__workspace=workspace, membership__role=role)
-
-def create_default_teams_for_client(client, workspace):
-    TEAM_ROLES = [
-        "marketing",
-        "designer",
-        "developer",
-        "publisher",
-    ]
-
-    for role_name in TEAM_ROLES:
-
-        membership = Membership.objects.filter(
-            role__iexact=role_name,
-            workspace=workspace
-        ).first()
-
-        if not membership:
-            continue
-
-        team = Team.objects.create(
-            client=client,
-            name=f"{role_name.title()} Team",
-            roles=role_name
-        )
-
-        users = get_users_by_role(workspace, role_name)
-        team.members.set(users)
 
 # =========================
 # DASHBOARD
 # =========================
-
 @login_required
 def dashboard_view(request):
+    from Posts.models import Task
+    from django.db.models import Count, Q
 
     if request.user.is_superuser:
         workspaces = Workspace.objects.all()
+        latest_teams = Team.objects.all().annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
+        ).order_by('-id')[:5]
+        latest_tasks = Task.objects.filter(status="pending").order_by('-created_at')[:5]
     else:
         workspaces = Workspace.objects.filter(membership__user=request.user)
+        latest_teams = Team.objects.filter(members=request.user).annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
+        ).distinct().order_by('-id')[:5]
+        latest_tasks = Task.objects.filter(assigned_to=request.user, status="pending").distinct().order_by(
+            '-created_at')[:5]
 
     is_admin = request.user.is_superuser or Membership.objects.filter(
         user=request.user,
@@ -60,6 +46,8 @@ def dashboard_view(request):
 
     context = {
         "workspaces": workspaces,
+        "latest_teams": latest_teams,
+        "latest_tasks": latest_tasks,
         "is_admin": is_admin,
     }
 
@@ -141,6 +129,7 @@ def workspace_detail(request, workspace_id):
 
 from django.db import transaction
 
+
 # =========================
 # ROLE ASSIGNMENT
 # =========================
@@ -156,14 +145,14 @@ def assign_role(request):
         users = form.cleaned_data['users']
         workspace = form.cleaned_data['workspace']
         role = form.cleaned_data['role']
-        
+
         with transaction.atomic():
             memberships = [
                 Membership(user=user, workspace=workspace, role=role)
                 for user in users
             ]
             Membership.objects.bulk_create(memberships)
-            
+
         messages.success(request, f"Successfully assigned '{role}' role to {len(users)} users.")
         return redirect("workspace_list")
 
@@ -173,6 +162,79 @@ def assign_role(request):
 # =========================
 # CLIENTS
 # =========================
+def get_users_by_role(workspace, role):
+    return User.objects.filter(membership__workspace=workspace, membership__role=role)
+
+def get_team_lead_by_email(email):
+    """Get a user by email, returns None if not found"""
+    if not email:
+        return None
+    try:
+        return User.objects.get(email__iexact=email.strip())
+    except User.DoesNotExist:
+        return None
+
+def add_user_to_workspace(user, workspace, role):
+    """Add a user to workspace if not already a member. Returns the membership."""
+    membership, created = Membership.objects.get_or_create(
+        user=user,
+        workspace=workspace,
+        defaults={'role': role}
+    )
+    return membership, created
+
+def create_default_teams_for_client(client, workspace):
+    """
+    Create default teams for a client with team leads from environment variables.
+
+    Environment variables expected:
+    - MARKETING_LEAD_EMAIL
+    - DEVELOPER_LEAD_EMAIL
+    - DESIGN_LEAD_EMAIL
+    - EDITORIAL_LEAD_EMAIL
+    - PUBLISHING_LEAD_EMAIL
+
+    If team lead is not in workspace, they will be added.
+    """
+    TEAM_ROLES = [
+        "marketing",
+        "designer",
+        "developer",
+        "editor",
+        "publisher",
+    ]
+    lead_email_env_map = {
+        "marketing": "MARKETING_LEAD_EMAIL",
+        "designer": "DESIGN_LEAD_EMAIL",
+        "developer": "DEVELOPER_LEAD_EMAIL",
+        "editor": "EDITORIAL_LEAD_EMAIL",
+        "publisher": "PUBLISHING_LEAD_EMAIL",
+    }
+
+    for role_name in TEAM_ROLES:
+        lead_email = os.getenv(lead_email_env_map.get(role_name))
+        team_lead = None
+
+        if lead_email:
+            team_lead = get_team_lead_by_email(lead_email)
+            if team_lead:
+                # Add lead to workspace if not already a member
+                add_user_to_workspace(team_lead, workspace, role=role_name)
+            else:
+                print(f"Warning: Team lead with email {lead_email} for {role_name} not found")
+
+        # Create the team
+        team = Team.objects.create(
+            client=client,
+            name=f"{role_name.title()} Team",
+            roles=role_name,
+            team_lead=team_lead
+        )
+        
+        # Add team lead as the first member if available
+        if team_lead:
+            team.members.add(team_lead)
+
 
 @login_required
 def create_clients(request, workspace_id):
@@ -189,7 +251,7 @@ def create_clients(request, workspace_id):
         client.workspace = workspace
         client.save()
         # form.save_m2m()
-        # create_default_teams_for_client(client, workspace)
+        create_default_teams_for_client(client, workspace)
         return redirect("client_details", workspace_id=workspace.id)
 
     return render(request, "create_client.html", {
@@ -221,7 +283,6 @@ def client_list(request, workspace_id):
         "archived_clients": archived_clients,
         "workspace": workspace,
     })
-
 
 
 @login_required
@@ -258,6 +319,7 @@ def client_detail(request, workspace_id):
 
     return render(request, "client_details.html", context)
 
+
 @login_required
 def view_client_details(request, client_id):
     client = get_object_or_404(Client, id=client_id)
@@ -271,6 +333,7 @@ def view_client_details(request, client_id):
     return render(request, "view_client_details.html", {
         "client": client,
     })
+
 
 @login_required
 def client_posts(request, client_id):
@@ -287,17 +350,17 @@ def client_posts(request, client_id):
         "posts": client.posts.all().order_by("-created_at"),
     })
 
+
 @login_required
 def team_posts(request, team_id):
-
     team = get_object_or_404(Team, id=team_id)
 
     workspace = team.client.workspace
 
     # 🔐 workspace membership check
     if not Membership.objects.filter(
-        user=request.user,
-        workspace=workspace
+            user=request.user,
+            workspace=workspace
     ).exists():
         raise PermissionDenied("Not a member")
 
@@ -326,9 +389,10 @@ def team_posts(request, team_id):
         "posts": posts,
         "is_admin": is_admin,
     })
+
+
 @login_required
 def client_teams(request, client_id):
-
     client = get_object_or_404(Client, id=client_id)
     workspace = client.workspace
 
@@ -349,13 +413,13 @@ def client_teams(request, client_id):
     # ADMIN CHECK
     # =========================================
     is_admin = (
-        request.user.is_superuser
-        or
-        Membership.objects.filter(
-            user=request.user,
-            workspace=workspace,
-            role__iexact="admin"
-        ).exists()
+            request.user.is_superuser
+            or
+            Membership.objects.filter(
+                user=request.user,
+                workspace=workspace,
+                role__iexact="admin"
+            ).exists()
     )
 
     # =========================================
@@ -408,16 +472,16 @@ def create_team(request, client_id):
     form = TeamForm(request.POST or None, workspace=workspace)
 
     if form.is_valid():
-            team = form.save(commit=False)
-            team.client = client
-            team.save()
-            form.save_m2m()
+        team = form.save(commit=False)
+        team.client = client
+        team.save()
+        form.save_m2m()
 
-            messages.success(
-                request,
-                f"Team '{team.name}' created successfully with {team.members.count()} members"
-            )
-            return redirect('client_teams', client_id=client.id)
+        messages.success(
+            request,
+            f"Team '{team.name}' created successfully with {team.members.count()} members"
+        )
+        return redirect('client_teams', client_id=client.id)
 
     return render(request, 'teams/create_team.html', {
         'form': form,

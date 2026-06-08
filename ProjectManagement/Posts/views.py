@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db import transaction
 from django.urls import reverse
@@ -299,6 +300,31 @@ def delete_task(request, task_id):
     messages.success(request, "Task deleted successfully.")
     return redirect("team_tasks", team_id=team_id)
 
+
+
+@login_required
+def all_user_tasks(request):
+    """
+    List all tasks for the logged-in user across all teams and clients.
+    """
+    if request.user.is_superuser:
+        tasks_queryset = Task.objects.all().prefetch_related('assigned_to', 'posts', 'team__client__workspace').order_by('-created_at')
+    else:
+        tasks_queryset = Task.objects.filter(
+            Q(assigned_to=request.user) |
+            Q(created_by=request.user) |
+            Q(team__team_lead=request.user) |
+            Q(team__client__workspace__membership__user=request.user, team__client__workspace__membership__role='admin')
+        ).distinct().prefetch_related('assigned_to', 'posts', 'team__client__workspace').order_by('-created_at')
+
+    context = {
+        "pending_tasks": tasks_queryset.filter(status='pending'),
+        "awaiting_tasks": tasks_queryset.filter(status='awaiting_approval'),
+        "completed_tasks": tasks_queryset.filter(status='completed'),
+        "is_admin": request.user.is_superuser,  # Global admin status; per-task checks could be more granular
+    }
+
+    return render(request, 'all_tasks.html', context)
 
 
 # =========================

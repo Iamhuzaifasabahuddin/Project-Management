@@ -12,28 +12,48 @@ class Command(BaseCommand):
 
         sample_users = [
             {
-                "username": "ammar.naveed",
-                "first_name": "Ammar",
-                "last_name": "Naveed",
-                "email": "user2@example.com",
-                "password": os.environ.get("USER_CREATION_PWD")
-            },
-            {
                 "username": "muhammad.umar",
                 "first_name": "Muhammad",
                 "last_name": "Umar",
-                "email": "user3@example.com",
-                "password": os.environ.get("USER_CREATION_PWD")
+                "email": "raheel.bari@topsoftdigitals.pk",
+                "password": os.environ.get("USER_CREATION_PWD_LEAD")
             },
             {
-                "username": "farman.ali",
-                "first_name": "Farman",
+                "username": "Yousuf.shaikh",
+                "first_name": "Yousuf",
+                "last_name": "Shaikh",
+                "email": "yousuf.sheikh@topsoftdigitals.pk",
+                "password": os.environ.get("USER_CREATION_PWD_LEAD")
+            },
+            {
+                "username": "Tazeen.ali",
+                "first_name": "Tazeen",
                 "last_name": "Ali",
-                "email": "farmanali@topsoftdigitals.pk",
-                "password": os.environ.get("USER_CREATION_PWD")
+                "email": "tazeen.hassan@topsoftdigitals.pk",
+                "password": os.environ.get("USER_CREATION_PWD_LEAD")
+            },
+            {
+                "username": "Jazib.ullah",
+                "first_name": "Jazib",
+                "last_name": "Ullah",
+                "email": "jazibullah@topsoftdigitals.pk",
+                "password": os.environ.get("USER_CREATION_PWD_LEAD")
+            },
+            {
+                "username": "Asad.waqas",
+                "first_name": "Asad",
+                "last_name": "Waqas",
+                "email": "asad.waqas@topsoftdigitals.pk",
+                "password": os.environ.get("USER_CREATION_PWD_LEAD")
+            },
+            {
+                "username": "Suhaib.khan",
+                "first_name": "Suhaib",
+                "last_name": "Khan",
+                "email": "suhaib.khan@topsoftdigitals.pk",
+                "password": os.environ.get("USER_CREATION_PWD_LEAD")
             },
         ]
-
         created_count = 0
 
         for u in sample_users:

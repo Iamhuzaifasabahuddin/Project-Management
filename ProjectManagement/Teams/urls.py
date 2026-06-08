@@ -11,6 +11,7 @@ urlpatterns = [
     # =========================
     # TEAM LISTS & DASHBOARD
     # =========================
+    path('teams/all/', views.all_user_teams, name='all_user_teams'),
     path('clients/<int:client_id>/teams/', views.client_teams, name='client_teams'),
     path('teams/client/<int:client_id>/list/', views.team_list, name='team_list'),
 

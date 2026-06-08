@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
-from django.db import transaction, models
+from django.db import transaction
 from django.db.models import Count, Q
 from django.views.decorators.http import require_http_methods
 
@@ -344,6 +344,34 @@ def team_list(request, client_id):
         'teams': teams,
         'client': client,
         'workspace': workspace,
+        'is_admin': is_admin,
+    })
+
+
+@login_required
+def all_user_teams(request):
+    """
+    List all teams for the logged-in user across all clients and workspaces.
+    """
+    if request.user.is_superuser:
+        teams = Team.objects.all().prefetch_related("members").annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
+        ).order_by('name')
+        is_admin = True
+    else:
+        teams = Team.objects.filter(
+            Q(members=request.user) |
+            Q(team_lead=request.user) |
+            Q(client__workspace__membership__user=request.user, client__workspace__membership__role='admin')
+        ).distinct().prefetch_related("members").annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
+        ).order_by('name')
+        is_admin = False  # Global admin status; template handles lead check
+
+    return render(request, 'teams/all_teams.html', {
+        'teams': teams,
         'is_admin': is_admin,
     })
 

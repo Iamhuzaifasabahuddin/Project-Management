@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
-{% load bootstrap5 %}
 {% load static %}
+{% load bootstrap5 %}
 
-{% block title %}Tasks - {{ team.name }}{% endblock %}
+{% block title %}All Tasks - Hexz Connect{% endblock %}
 
 {% block content %}
 <!-- HEADER -->
@@ -10,20 +10,12 @@
     <div class="container">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-4">
             <div>
-                <div class="eyebrow">Workspace: {{ workspace.name }} | Team: {{ team.name }}</div>
-                <h1 class="section-title mb-0">{{ team.name }} Tasks</h1>
+                <div class="eyebrow">Task Overview</div>
+                <h1 class="section-title mb-0">All Tasks<span>.</span></h1>
             </div>
             <div class="d-flex flex-wrap gap-2">
-                {% if is_admin %}
-                <a href="{% url 'create_task' team.id %}" class="btn-gold">
-                    <i class="bi bi-plus-lg"></i> Create Task
-                </a>
-                {% endif %}
-                <a href="{% url 'client_teams' client.id %}" class="btn-black">
-                    <i class="bi bi-people"></i> Team
-                </a>
-                <a href="{% url 'dashboard' %}" class="btn-outline-custom">
-                    Dashboard
+                <a href="{% url 'dashboard' %}" class="btn-black">
+                    <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </div>
         </div>
@@ -41,10 +33,7 @@
     {% endfor %}
     {% endif %}
 
-    <div class="accordion border-0" id="taskAccordion" 
-         hx-get="{% url 'team_tasks' team.id %}" 
-         hx-trigger="every 10s [!document.querySelector('.modal.show')]"
-         hx-swap="innerHTML">
+    <div class="accordion border-0" id="taskAccordion">
         {% include "includes/task_list_fragment.html" %}
     </div>
 </div>

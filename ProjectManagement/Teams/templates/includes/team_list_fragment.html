@@ -68,9 +68,11 @@
     <div class="col-12 text-center py-5">
         <div class="hexz-card bg-light border-0">
             <i class="bi bi-people muted mb-3" style="font-size: 3rem;"></i>
-            <h4 class="font-syne muted">No teams available for this client.</h4>
-            {% if is_admin or request.user.is_superuser %}
-            <a href="{% url 'create_team' client.id %}" class="btn-gold mt-3">Create First Team</a>
+            <h4 class="font-syne muted">No teams available.</h4>
+            {% if client %}
+                {% if is_admin or request.user.is_superuser %}
+                <a href="{% url 'create_team' client.id %}" class="btn-gold mt-3">Create First Team</a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
