@@ -8,7 +8,7 @@ from django.db import transaction
 from django.urls import reverse
 
 from Teams.models import Team
-from .forms import CommentForm, PostForm, TaskForm
+from .forms import CommentForm, PostForm, TaskForm, PrintTaskForm
 from .models import Post, Comment, PostFile, CommentFile, Task
 from .tasks import (
     send_post_email_task,
@@ -593,3 +593,73 @@ def delete_post(request, post_id):
     if task:
         return redirect("task_posts", task_id=task.id)
     return redirect("dashboard")
+
+
+@login_required
+def print_task(request, team_id):
+    """
+    Handle creation of a print task using a form.
+    Only workspace members can access.
+    """
+    team = get_object_or_404(Team, id=team_id)
+    workspace = team.client.workspace
+    client = team.client
+
+    if not request.user.is_superuser:
+        if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
+            raise PermissionDenied("Not allowed")
+
+    if request.method == 'POST':
+        form = PrintTaskForm(request.POST, client=client, workspace=workspace)
+        if form.is_valid():
+            copies = form.cleaned_data['number_of_copies']
+            fmt = form.cleaned_data['format']
+            address = form.cleaned_data['address']
+            due_date = form.cleaned_data['due_date']
+            task_name = f"Printing {copies} - {fmt}"
+            description = (
+                f"Number of Copies: {copies}\n"
+                f"Format: {fmt}\n"
+                f"Address: {address}\n"
+                f"Client: {client.name}\n"
+                f"Brand: {workspace.name}\n"
+                f"Phone: {client.number}"
+            )
+
+            task = Task.objects.create(
+                name=task_name,
+                description=description,
+                team=team,
+                created_by=request.user,
+                status='pending',
+                due_date=due_date,
+            )
+            task.assigned_to.set([team.team_lead])
+            task.save()
+            task_url = request.build_absolute_uri(
+                reverse('team_tasks', kwargs={'team_id': team.id})
+            )
+            context = {
+                "task_url": task_url,
+            }
+            to_emails = [user.email for user in task.assigned_to.all() if user.email]
+            send_assigned_task_email_task.delay(
+                user_id=request.user.id,
+                client_id=client.id,
+                task_id=task.id,
+                to_emails=to_emails,
+                context_data=context
+            )
+
+
+            messages.success(request, f"Print task '{task_name}' created successfully.")
+            return redirect("team_tasks", team_id=team.id)
+    else:
+        form = PrintTaskForm(client=client, workspace=workspace)
+
+    return render(request, "print_task.html", {
+        "form": form,
+        "team": team,
+        "workspace": workspace,
+        "client": client,
+    })

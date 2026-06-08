@@ -138,3 +138,46 @@ class CommentFileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['file'].required = False
+
+
+class PrintTaskForm(forms.Form):
+    """
+    Form for creating a print task.
+    """
+    FORMAT_CHOICES = (
+        ('paperback', 'Paperback'),
+        ('hardcover', 'Hardcover'),
+        ('coil', 'Coil'),
+    )
+
+    client_name = forms.CharField(label="Client Name", disabled=True, required=False)
+    brand = forms.CharField(label="Brand", disabled=True, required=False)
+    phone_number = forms.CharField(label="Phone Number", disabled=True, required=False)
+    number_of_copies = forms.IntegerField(label="Number of Copies", min_value=1)
+    format = forms.ChoiceField(label="Format", choices=FORMAT_CHOICES)
+    address = forms.CharField(label="Address", widget=forms.Textarea(attrs={'rows': 2}))
+    due_date = forms.DateField(
+        label="Due Date",
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'min': date.today().isoformat(),
+        })
+    )
+
+    def __init__(self, *args, **kwargs):
+        client = kwargs.pop('client', None)
+        workspace = kwargs.pop('workspace', None)
+        super().__init__(*args, **kwargs)
+        
+        if client:
+            self.fields['client_name'].initial = client.name
+            self.fields['phone_number'].initial = client.number
+            self.fields['address'].initial = client.address
+        if workspace:
+            self.fields['brand'].initial = workspace.name
+            
+        for field in self.fields:
+            if field in ['client_name', 'brand', 'phone_number']:
+                self.fields[field].widget.attrs.update({'class': 'form-control bg-light'})
+            else:
+                self.fields[field].widget.attrs.update({'class': 'form-control'})

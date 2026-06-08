@@ -121,7 +121,6 @@ def client_teams(request, client_id):
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).distinct().order_by("roles", "name")
 
-    tasks = teams
     context = {
         "client": client,
         "workspace": workspace,
@@ -353,7 +352,7 @@ def all_user_teams(request):
     """
     List all teams for the logged-in user across all clients and workspaces.
     """
-    if request.user.is_superuser:
+    if request.user.is_superuser or request.user.is_staff:
         teams = Team.objects.all().prefetch_related("members").annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
@@ -368,7 +367,7 @@ def all_user_teams(request):
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).order_by('name')
-        is_admin = False  # Global admin status; template handles lead check
+        is_admin = False
 
     return render(request, 'teams/all_teams.html', {
         'teams': teams,
@@ -381,7 +380,6 @@ def all_user_teams(request):
 # =========================
 
 @login_required
-@require_http_methods(["POST"])
 def delete_team(request, team_id):
     """
     Delete a team (soft delete recommended).
@@ -407,120 +405,4 @@ def delete_team(request, team_id):
 
 # =========================
 # TEAM MEMBER QUICK ACTIONS
-# =========================
-
-@login_required
-@require_http_methods(["POST"])
-def add_user_to_team(request, team_id, user_id):
-    """
-    Quick action to add a single user to a team.
-
-    Permissions:
-    - Workspace admin
-    - Team Lead
-    - Superusers
-    """
-    team = get_object_or_404(Team, id=team_id)
-    user = get_object_or_404(User, id=user_id)
-    
-    # Permission check
-    if not can_manage_team(request.user, team):
-        raise PermissionDenied("You don't have permission to add members to this team")
-
-    # Verify user is in workspace
-    if not request.user.is_superuser:
-        if not Membership.objects.filter(
-                user=user,
-                workspace=team.client.workspace
-        ).exists():
-            raise PermissionDenied("User is not a member of this workspace")
-
-    team.members.add(user)
-    messages.success(request, f"{user} added to '{team.name}'")
-
-    return redirect('client_teams', client_id=team.client.id)
-
-
-@login_required
-@require_http_methods(["POST"])
-def remove_user_from_team(request, team_id, user_id):
-    """
-    Quick action to remove a user from a team.
-
-    Permissions:
-    - Workspace admin
-    - Team Lead
-    - Superusers
-    - User removing themselves
-    """
-    team = get_object_or_404(Team, id=team_id)
-    user = get_object_or_404(User, id=user_id)
-
-    is_manager = can_manage_team(request.user, team)
-    is_self = request.user.id == user.id
-
-    # Permission check
-    if not (is_manager or is_self):
-        raise PermissionDenied("You don't have permission to remove members")
-
-    # Prevent removing last member
-    if team.members.count() <= 1:
-        messages.error(request, "Cannot remove the last member from a team")
-        return redirect('client_teams', client_id=team.client.id)
-
-    team.members.remove(user)
-
-    if is_self:
-        messages.success(request, f"You've been removed from '{team.name}'")
-    else:
-        messages.success(request, f"{user} removed from '{team.name}'")
-
-    return redirect('client_teams', client_id=team.client.id)
-
-
-# =========================
-# TEAM STATISTICS VIEW
-# =========================
-
-@login_required
-@require_http_methods(["GET"])
-def team_statistics(request, team_id):
-    """
-    Display team statistics and member information.
-
-    Permissions:
-    - Team members
-    - Workspace admins
-    - Team Lead
-    - Superusers
-    """
-    team = get_object_or_404(Team, id=team_id)
-    workspace = team.client.workspace
-
-    # Permission check
-    is_member = is_team_member(request.user, team)
-    is_admin = is_workspace_admin(request.user, workspace)
-    is_lead = (team.team_lead == request.user)
-
-    if not (is_member or is_admin or is_lead):
-        raise PermissionDenied("You don't have access to this team")
-
-    members = team.members.all()
-
-    stats = {
-        'total_members': members.count(),
-        'members_with_posts': members.filter(
-            posts__team=team
-        ).distinct().count(),
-        'members_with_comments': members.filter(
-            comment__post__team=team
-        ).distinct().count(),
-    }
-
-    return render(request, 'teams/team_statistics.html', {
-        'team': team,
-        'workspace': workspace,
-        'members': members,
-        'stats': stats,
-        'is_admin': is_admin,
-    })
+# ========================

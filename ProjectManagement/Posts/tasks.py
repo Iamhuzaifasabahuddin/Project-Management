@@ -177,6 +177,7 @@ def send_assigned_task_email_task(
             "client_name": client.name,
             "task_name": task.name,
             "task_id": task.id,
+            "task_description": task.description,
             "due_date": task.due_date,
         })
 

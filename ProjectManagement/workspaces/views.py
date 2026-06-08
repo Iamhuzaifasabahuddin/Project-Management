@@ -203,6 +203,13 @@ def create_default_teams_for_client(client, workspace):
         "editor",
         "publisher",
     ]
+    TEAM_NAMES = {
+        "marketing": "Marketing",
+        "designer": "Design",
+        "developer": "Development",
+        "editor": "Editorial",
+        "publisher": "Publishing",
+    }
     lead_email_env_map = {
         "marketing": "MARKETING_LEAD_EMAIL",
         "designer": "DESIGN_LEAD_EMAIL",
@@ -218,20 +225,17 @@ def create_default_teams_for_client(client, workspace):
         if lead_email:
             team_lead = get_team_lead_by_email(lead_email)
             if team_lead:
-                # Add lead to workspace if not already a member
                 add_user_to_workspace(team_lead, workspace, role=role_name)
             else:
                 print(f"Warning: Team lead with email {lead_email} for {role_name} not found")
 
-        # Create the team
         team = Team.objects.create(
             client=client,
-            name=f"{role_name.title()} Team",
+            name=f"{TEAM_NAMES.get(role_name)} Team",
             roles=role_name,
             team_lead=team_lead
         )
-        
-        # Add team lead as the first member if available
+
         if team_lead:
             team.members.add(team_lead)
 

@@ -55,6 +55,9 @@
 
         <!-- FOOTER -->
         <div class="d-flex flex-wrap gap-2 mt-auto align-items-center border-top pt-3">
+            <button type="button" class="btn-outline-custom" style="padding: 6px 12px; font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#taskDetailsModal{{ task.id }}">
+                <i class="bi bi-info-circle"></i> Info
+            </button>
             <a href="{% url 'create_post' task.id %}" class="btn-gold" style="padding: 6px 12px; font-size: 0.7rem;">
                 <i class="bi bi-plus-lg"></i> Post
             </a>
@@ -82,6 +85,52 @@
                 </div>
                 {% endif %}
             {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- TASK DETAILS MODAL -->
+<div class="modal fade" id="taskDetailsModal{{ task.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0 px-4 pt-4">
+                <h5 class="font-syne h4 fw-bold mb-0 text-dark">{{ task.name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-2">Description</h6>
+                    <div class="p-3 bg-light rounded text-dark" style="font-size: 0.95rem;">
+                        {{ task.description|linebreaks }}
+                    </div>
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <h6 class="text-uppercase text-muted small fw-bold mb-1">Due Date</h6>
+                        <p class="mb-0 fw-medium text-dark"><i class="bi bi-calendar3 me-2"></i>{{ task.due_date|date:"F j, Y" }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <h6 class="text-uppercase text-muted small fw-bold mb-1">Status</h6>
+                        <p class="mb-0 fw-medium text-dark"><i class="bi bi-tag me-2"></i>{{ task.get_status_display }}</p>
+                    </div>
+                </div>
+                <div>
+                    <h6 class="text-uppercase text-muted small fw-bold mb-2">Assigned To</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for user in task.assigned_to.all %}
+                            <span class="badge bg-white text-dark border px-3 py-2 rounded-pill fw-normal">
+                                <i class="bi bi-person-circle me-1 text-primary"></i>
+                                {{ user.get_full_name|default:user.username }}
+                            </span>
+                        {% empty %}
+                            <span class="text-muted small">No users assigned</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn-outline-custom w-100 py-2" data-bs-dismiss="modal">Close Details</button>
+            </div>
         </div>
     </div>
 </div>

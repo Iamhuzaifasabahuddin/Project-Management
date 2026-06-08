@@ -19,14 +19,10 @@ urlpatterns = [
     # TEAM CONTENT
     # =========================
     path('team/<int:team_id>/details/', views.team_detail, name='team_detail'),
-    path('team/<int:team_id>/statistics/', views.team_statistics, name='team_statistics'),
-
     # =========================
     # TEAM MANAGEMENT
     # =========================
     path('team/client/<int:client_id>/create/', views.create_team, name='create_team'),
     path('team/<int:team_id>/manage-members/', views.manage_team_members, name='manage_team_members'),
-    path('team/<int:team_id>/add-member/<int:user_id>/', views.add_user_to_team, name='add_user_to_team'),
-    path('team/<int:team_id>/remove-member/<int:user_id>/', views.remove_user_from_team, name='remove_user_from_team'),
     path('team/<int:team_id>/delete/', views.delete_team, name='delete_team'),
 ]
