@@ -47,24 +47,3 @@ class RegisterForm(UserCreationForm):
             'password1',
             'password2'
         ]
-
-    def clean_email(self):
-
-        ALLOWED_DOMAIN = "topsoftdigitals.pk"
-
-        email_part = self.cleaned_data.get("email", "").strip().lower()
-
-        # prevent user typing full email
-        if "@" in email_part:
-            raise forms.ValidationError(
-                "Only enter the email username, not the domain."
-            )
-
-        full_email = f"{email_part}@{ALLOWED_DOMAIN}"
-
-        if User.objects.filter(email=full_email).exists():
-            raise forms.ValidationError(
-                "This email is already registered."
-            )
-
-        return full_email
