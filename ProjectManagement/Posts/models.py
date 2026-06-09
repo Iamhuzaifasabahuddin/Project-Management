@@ -102,7 +102,7 @@ class PostFile(models.Model):
         related_name='files'  # Access via post.files.all()
     )
     file = models.FileField(
-        upload_to='client_uploads/%Y/%m/',
+        upload_to='post_uploads/%Y/%m/',
         null=True,
         blank=True
     )
