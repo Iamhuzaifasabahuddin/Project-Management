@@ -352,6 +352,8 @@ def all_user_teams(request):
     """
     List all teams for the logged-in user across all clients and workspaces.
     """
+    search_query = request.GET.get('search', '')
+    
     if request.user.is_superuser or request.user.is_staff:
         teams = Team.objects.all().prefetch_related("members").annotate(
             total_tasks=Count('tasks'),
@@ -369,9 +371,19 @@ def all_user_teams(request):
         ).order_by('name')
         is_admin = False
 
+    if search_query:
+        teams = teams.filter(
+            Q(name__icontains=search_query) |
+            Q(client__name__icontains=search_query)
+        )
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'includes/team_list_fragment.html', {'teams': teams, 'is_admin': is_admin})
+
     return render(request, 'teams/all_teams.html', {
         'teams': teams,
         'is_admin': is_admin,
+        'search_query': search_query,
     })
 
 

@@ -15,4 +15,5 @@ urlpatterns = [
     path('workspace/<int:workspace_id>/clients/list', views.client_list, name='client_list'),
     path('client/<int:client_id>', views.view_client_details, name='view_client'),
     path('workspaces/<int:workspace_id>/add client', views.create_clients, name='create_client'),
+    path('allclients/', views.all_clients, name='all_clients'),
 ]

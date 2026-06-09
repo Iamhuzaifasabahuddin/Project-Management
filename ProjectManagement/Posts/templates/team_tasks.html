@@ -43,7 +43,7 @@
 
     <div class="accordion border-0" id="taskAccordion" 
          hx-get="{% url 'team_tasks' team.id %}" 
-         hx-trigger="every 10s [!document.querySelector('.modal.show')]"
+         hx-trigger="every 15s [!document.querySelector('.modal.show')]"
          hx-swap="innerHTML">
         {% include "includes/task_list_fragment.html" %}
     </div>

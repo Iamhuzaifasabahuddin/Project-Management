@@ -41,9 +41,56 @@
 
     <div id="workspaceGrid" 
          hx-get="{% url 'dashboard' %}" 
-         hx-trigger="every 5s" 
+         hx-trigger="every 15s"
          hx-swap="innerHTML">
         {% include "includes/dashboard_workspace_list.html" %}
+    </div>
+
+    <!-- Latest Clients Section -->
+    <div class="mt-5 mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="section-title mb-1">Latest Clients</h2>
+            <p class="muted">Your most recently active clients.</p>
+        </div>
+        <a href="{% url 'all_clients' %}" class="btn-outline-custom">View All Clients</a>
+    </div>
+
+    <div class="row g-4">
+        {% for client in latest_clients %}
+        <div class="col-lg-4 col-md-6">
+            <div class="hexz-card h-100 d-flex flex-column">
+                <div class="mb-3">
+                    <div class="eyebrow" style="font-size: 0.6rem; color: var(--gold-dim);">Client ID: {{ client.id|add:"0000" }}
+                    </div>
+                    <h3 class="h5 mb-1">{{ client.name }}</h3>
+                    <p class="muted small mb-0">{{ client.email }}</p>
+                </div>
+
+                <div class="mt-auto pt-4 border-top">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="small">
+                            {% if client.paid %}
+                            <span class="badge-custom badge-status-completed">Paid</span>
+                            {% else %}
+                            <span class="badge-custom badge-status-pending">Pending</span>
+                            {% endif %}
+                        </div>
+                        <div class="fw-bold text-dark small">${{ client.amount_paid }}</div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'client_teams' client.id %}" class="btn-black btn-sm w-100">
+                            <span>Open Environment</span> <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="muted text-center py-4 bg-white border rounded">No clients found.</p>
+        </div>
+        {% endfor %}
     </div>
 
     <!-- Latest Teams Section -->

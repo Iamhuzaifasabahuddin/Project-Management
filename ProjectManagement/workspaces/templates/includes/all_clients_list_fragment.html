@@ -1,0 +1,24 @@
+<div class="row g-4" id="client-list">
+    {% for client in clients %}
+    <div class="col-lg-4 col-md-6">
+        <div class="hexz-card h-100 d-flex flex-column">
+            <div class="mb-3">
+                <div class="eyebrow" style="font-size: 0.6rem; color: var(--gold-dim);">Client ID: {{ client.id|add:"0000" }}</div>
+                <h3 class="h5 mb-1">{{ client.name }}</h3>
+                <p class="muted small mb-0">{{ client.email }}</p>
+            </div>
+            <div class="mt-auto pt-4 border-top">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'client_teams' client.id %}" class="btn-black btn-sm w-100">
+                        <span>Open Environment</span> <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <p class="muted">No clients found.</p>
+    </div>
+    {% endfor %}
+</div>

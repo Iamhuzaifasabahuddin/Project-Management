@@ -17,7 +17,8 @@ from .tasks import (
     send_comment_notification_task,
     send_assigned_task_email_task,
     send_task_completion_request_email_task,
-    send_task_status_notification_task
+    send_task_status_notification_task,
+
 )
 from workspaces.models import Client, Membership
 import base64
@@ -307,6 +308,8 @@ def all_user_tasks(request):
     """
     List all tasks for the logged-in user across all teams and clients.
     """
+    search_query = request.GET.get('search', '')
+    
     if request.user.is_superuser:
         tasks_queryset = Task.objects.all().prefetch_related('assigned_to', 'posts', 'team__client__workspace').order_by('-created_at')
     else:
@@ -317,11 +320,19 @@ def all_user_tasks(request):
             Q(team__client__workspace__membership__user=request.user, team__client__workspace__membership__role='admin')
         ).distinct().prefetch_related('assigned_to', 'posts', 'team__client__workspace').order_by('-created_at')
 
+    if search_query:
+        tasks_queryset = tasks_queryset.filter(
+            Q(name__icontains=search_query) |
+            Q(team__name__icontains=search_query) |
+            Q(team__client__name__icontains=search_query)
+        )
+
     context = {
         "pending_tasks": tasks_queryset.filter(status='pending'),
         "awaiting_tasks": tasks_queryset.filter(status='awaiting_approval'),
         "completed_tasks": tasks_queryset.filter(status='completed'),
         "is_admin": request.user.is_superuser,  # Global admin status; per-task checks could be more granular
+        "search_query": search_query,
     }
 
     return render(request, 'all_tasks.html', context)
@@ -634,7 +645,7 @@ def print_task(request, team_id):
                 status='pending',
                 due_date=due_date,
             )
-            task.assigned_to.set([team.team_lead])
+            task.assigned_to.set({team.team_lead, request.user})
             task.save()
             task_url = request.build_absolute_uri(
                 reverse('team_tasks', kwargs={'team_id': team.id})

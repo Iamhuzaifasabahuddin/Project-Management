@@ -23,6 +23,21 @@
 </div>
 
 <div class="container pb-5">
+    <!-- SEARCH FORM -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" class="d-flex gap-2"
+                  hx-get="{% url 'all_user_tasks' %}"
+                  hx-target="#task-list">
+                <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="Search tasks...">
+                <button type="submit" class="btn-black">Search</button>
+                {% if search_query %}
+                    <a href="{% url 'all_user_tasks' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
     <!-- ALERTS -->
     {% if messages %}
     {% for message in messages %}
@@ -33,7 +48,7 @@
     {% endfor %}
     {% endif %}
 
-    <div class="accordion border-0" id="taskAccordion">
+    <div id="task-list">
         {% include "includes/task_list_fragment.html" %}
     </div>
 </div>

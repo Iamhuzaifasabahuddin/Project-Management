@@ -22,6 +22,20 @@
 </div>
 
 <div class="container pb-5">
+    <!-- SEARCH FORM -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form method="GET" class="d-flex gap-2"
+                  hx-get="{% url 'all_user_teams' %}"
+                  hx-target="#team-list">
+                <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="Search teams...">
+                <button type="submit" class="btn-black">Search</button>
+                {% if search_query %}
+                    <a href="{% url 'all_user_teams' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
     <div id="teamGrid">
         {% include "includes/team_list_fragment.html" %}
     </div>

@@ -73,7 +73,7 @@
     <!-- POSTS GRID -->
     <div id="postGrid" 
          hx-get="{% url 'task_posts' task.id %}" 
-         hx-trigger="every 5s" 
+         hx-trigger="every 15s"
          hx-swap="innerHTML">
         {% include "includes/post_list_fragment.html" %}
     </div>

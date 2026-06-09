@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 
 from Posts.models import Post
@@ -30,6 +31,7 @@ def dashboard_view(request):
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).order_by('-id')[:5]
         latest_tasks = Task.objects.filter(status="pending").order_by('-created_at')[:5]
+        latest_clients = Client.objects.all().order_by('-id')[:5]
     else:
         workspaces = Workspace.objects.filter(membership__user=request.user)
         latest_teams = Team.objects.filter(members=request.user).annotate(
@@ -38,6 +40,7 @@ def dashboard_view(request):
         ).distinct().order_by('-id')[:5]
         latest_tasks = Task.objects.filter(assigned_to=request.user, status="pending").distinct().order_by(
             '-created_at')[:5]
+        latest_clients = Client.objects.filter(teams__members=request.user, is_archived=False).distinct().order_by('-id')[:5]
 
     is_admin = request.user.is_superuser or Membership.objects.filter(
         user=request.user,
@@ -48,6 +51,7 @@ def dashboard_view(request):
         "workspaces": workspaces,
         "latest_teams": latest_teams,
         "latest_tasks": latest_tasks,
+        "latest_clients": latest_clients,
         "is_admin": is_admin,
     }
 
@@ -159,9 +163,26 @@ def assign_role(request):
     return render(request, "assign_role.html", {"form": form})
 
 
-# =========================
-# CLIENTS
-# =========================
+@login_required
+def all_clients(request):
+    search_query = request.GET.get('search', '')
+    if request.user.is_superuser:
+        clients = Client.objects.all().order_by('-id')
+    else:
+        clients = Client.objects.filter(teams__members=request.user, is_archived=False).distinct().order_by('-id')
+
+    if search_query:
+        clients = clients.filter(Q(name__icontains=search_query) | Q(email__icontains=search_query))
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/all_clients_list_fragment.html", {"clients": clients})
+
+    return render(request, "all_clients.html", {
+        "clients": clients,
+        "is_admin": request.user.is_superuser or Membership.objects.filter(user=request.user, role="admin").exists(),
+        "search_query": search_query,
+    })
+
 def get_users_by_role(workspace, role):
     return User.objects.filter(membership__workspace=workspace, membership__role=role)
 
@@ -230,7 +251,7 @@ def create_default_teams_for_client(client, workspace):
                 print(f"Warning: Team lead with email {lead_email} for {role_name} not found")
 
         team = Team.objects.create(
-            client=client,
+    client=client,
             name=f"{TEAM_NAMES.get(role_name)} Team",
             roles=role_name,
             team_lead=team_lead

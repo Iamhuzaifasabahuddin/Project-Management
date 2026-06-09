@@ -34,7 +34,7 @@
 
     <div id="workspaceGrid" 
          hx-get="{% url 'workspace_list' %}" 
-         hx-trigger="every 5s" 
+         hx-trigger="every 15s"
          hx-swap="innerHTML">
         {% include "includes/workspace_list_fragment.html" %}
     </div>
