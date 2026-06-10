@@ -6,8 +6,10 @@ from allauth.account.forms import default_token_generator
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes
