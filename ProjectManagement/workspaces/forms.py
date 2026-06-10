@@ -136,7 +136,14 @@ class ClientForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        workspace = kwargs.pop('workspace', None)
         super().__init__(*args, **kwargs)
+        
+        if workspace:
+            self.fields['assigned_to'].queryset = User.objects.filter(
+                membership__workspace=workspace
+            ).distinct()
+        
         self.fields['assigned_to'].label_from_instance = self._user_label
         self.fields['assigned_to'].required = True
         self.fields['assigned_to'].help_text = 'Use CTRL key to select one or more users to assign this client'

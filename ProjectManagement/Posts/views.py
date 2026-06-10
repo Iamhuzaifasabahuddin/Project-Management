@@ -312,19 +312,27 @@ def delete_task(request, task_id):
 def all_user_tasks(request):
     """
     List all tasks for the logged-in user across all teams and clients.
+    Workspace admins see all tasks in their workspaces.
     """
     search_query = request.GET.get('search', '')
     sort_by = request.GET.get('sort', '-created_at')
     filter_status = request.GET.get('status', 'all')
     
+    # Check if user is a workspace admin of any workspace
+    admin_workspaces = Workspace.objects.filter(membership__user=request.user, membership__role="admin")
+    is_admin_of_any = admin_workspaces.exists()
+
     if request.user.is_superuser:
         tasks_queryset = Task.objects.all().select_related('team__client__workspace').prefetch_related('assigned_to', 'posts')
+    elif is_admin_of_any:
+        # Admins see all tasks in their admin workspaces
+        tasks_queryset = Task.objects.filter(team__client__workspace__in=admin_workspaces).distinct().select_related('team__client__workspace').prefetch_related('assigned_to', 'posts')
     else:
+        # Regular users see only their tasks
         tasks_queryset = Task.objects.filter(
             Q(assigned_to=request.user) |
             Q(created_by=request.user) |
-            Q(team__team_lead=request.user) |
-            Q(team__client__workspace__membership__user=request.user, team__client__workspace__membership__role='admin')
+            Q(team__team_lead=request.user)
         ).distinct().select_related('team__client__workspace').prefetch_related('assigned_to', 'posts')
 
     if search_query:
@@ -357,7 +365,7 @@ def all_user_tasks(request):
         "pending_tasks": tasks_queryset.filter(status='pending'),
         "awaiting_tasks": tasks_queryset.filter(status='awaiting_approval'),
         "completed_tasks": tasks_queryset.filter(status='completed'),
-        "is_admin": request.user.is_superuser,
+        "is_admin": request.user.is_superuser or is_admin_of_any,
         "search_query": search_query,
         "sort_by": sort_by,
         "filter_status": filter_status,

@@ -17,7 +17,7 @@ from django.views.decorators.http import require_http_methods
 from Posts.models import Task
 from workspaces.services import is_workspace_admin, is_workspace_member
 from Teams.models import Team
-from workspaces.models import Client, Membership
+from workspaces.models import Client, Membership, Workspace
 from .forms import TeamForm, TeamEditForm, TeamMembersForm
 
 @login_required
@@ -354,21 +354,31 @@ def team_list(request, client_id):
 def all_user_teams(request):
     """
     List all teams for the logged-in user across all clients and workspaces.
+    Workspace admins see all teams in their admin workspaces.
     """
     search_query = request.GET.get('search', '')
     sort_by = request.GET.get('sort', '-created_at')
     
-    if request.user.is_superuser or request.user.is_staff:
+    # Check if user is a workspace admin of any workspace
+    admin_workspaces = Workspace.objects.filter(membership__user=request.user, membership__role="admin")
+    is_admin_of_any = admin_workspaces.exists()
+
+    if request.user.is_superuser:
         teams_queryset = Team.objects.all().prefetch_related("members").annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         )
         is_admin = True
+    elif is_admin_of_any:
+        teams_queryset = Team.objects.filter(client__workspace__in=admin_workspaces).prefetch_related("members").annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
+        ).distinct()
+        is_admin = True
     else:
         teams_queryset = Team.objects.filter(
             Q(members=request.user) |
-            Q(team_lead=request.user) |
-            Q(client__workspace__membership__user=request.user, client__workspace__membership__role='admin')
+            Q(team_lead=request.user)
         ).distinct().prefetch_related("members").annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))

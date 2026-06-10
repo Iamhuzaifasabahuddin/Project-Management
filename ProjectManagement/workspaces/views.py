@@ -130,16 +130,33 @@ def dashboard_view(request):
     from Posts.models import Task
     from django.db.models import Count, Q
 
+    # Get workspaces where user is admin
+    admin_workspaces = Workspace.objects.filter(membership__user=request.user, membership__role="admin")
+
+    member_workspaces = Workspace.objects.filter(membership__user=request.user)
+
     if request.user.is_superuser:
         workspaces = Workspace.objects.all()
         latest_teams = Team.objects.all().select_related('client', 'team_lead').prefetch_related('members').annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
-        ).order_by('-id')[:5]
+        ).distinct().order_by('-id')[:5]
         latest_tasks = Task.objects.filter(status="pending").select_related('team').order_by('-created_at')[:5]
         latest_clients = Client.objects.all().order_by('-id')[:5]
+        is_admin = True
+    elif admin_workspaces.exists():
+        workspaces = member_workspaces
+        latest_teams = Team.objects.filter(client__workspace__in=admin_workspaces).select_related('client', 'team_lead').prefetch_related('members').annotate(
+            total_tasks=Count('tasks'),
+            completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
+        ).distinct().order_by('-id')[:5]
+        
+        latest_tasks = Task.objects.filter(team__client__workspace__in=admin_workspaces, status="pending").select_related('team').order_by('-created_at')[:5]
+        latest_clients = Client.objects.filter(workspace__in=admin_workspaces).order_by('-id')[:5]
+        is_admin = True
     else:
-        workspaces = Workspace.objects.filter(membership__user=request.user)
+        # Regular user sees only their own
+        workspaces = member_workspaces
         latest_teams = Team.objects.filter(members=request.user).select_related('client', 'team_lead').prefetch_related('members').annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
@@ -147,11 +164,7 @@ def dashboard_view(request):
         latest_tasks = Task.objects.filter(assigned_to=request.user, status="pending").select_related('team').distinct().order_by(
             '-created_at')[:5]
         latest_clients = Client.objects.filter(teams__members=request.user, is_archived=False).distinct().order_by('-id')[:5]
-
-    is_admin = request.user.is_superuser or Membership.objects.filter(
-        user=request.user,
-        role="admin"
-    ).exists()
+        is_admin = False
 
     context = {
         "workspaces": workspaces,
@@ -299,9 +312,17 @@ def all_clients(request):
     sort_by = request.GET.get('sort', '-created_at')
     filter_archived = request.GET.get('archived', 'active')
     view_type = request.GET.get('view', 'card')
+    
+    is_admin = request.user.is_superuser or Membership.objects.filter(
+        user=request.user, 
+        role="admin"
+    ).exists()
 
     if request.user.is_superuser:
         clients = Client.objects.all()
+    elif is_admin:
+        workspaces = Workspace.objects.filter(membership__user=request.user, membership__role="admin")
+        clients = Client.objects.filter(workspace__in=workspaces).distinct()
     else:
         clients = Client.objects.filter(teams__members=request.user).distinct()
 
@@ -313,7 +334,6 @@ def all_clients(request):
     if search_query:
         clients = clients.filter(Q(name__icontains=search_query) | Q(email__icontains=search_query))
 
-    # Sorting
     if sort_by == 'name':
         clients = clients.order_by('name')
     elif sort_by == '-name':
@@ -327,7 +347,7 @@ def all_clients(request):
 
     context = {
         "clients": clients,
-        "is_admin": request.user.is_superuser or Membership.objects.filter(user=request.user, role="admin").exists(),
+        "is_admin": is_admin,
         "search_query": search_query,
         "sort_by": sort_by,
         "filter_archived": filter_archived,
@@ -431,7 +451,7 @@ def create_clients(request, workspace_id):
         if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not a member of this workspace")
 
-    form = ClientForm(request.POST or None)
+    form = ClientForm(request.POST or None, workspace=workspace)
 
     if form.is_valid():
         client = form.save(commit=False)
@@ -522,60 +542,7 @@ def view_client_details(request, client_id):
     })
 
 
-@login_required
-def client_posts(request, client_id):
-    client = get_object_or_404(Client, id=client_id)
 
-    # Superusers can view any client's posts
-    if not request.user.is_superuser:
-        workspace = client.workspace
-        if not Membership.objects.filter(user=request.user, workspace=workspace).exists():
-            raise PermissionDenied("Not a member of this workspace")
-
-    return render(request, "task_posts.html", {
-        "client": client,
-        "posts": client.posts.all().order_by("-created_at"),
-    })
-
-
-@login_required
-def team_posts(request, team_id):
-    team = get_object_or_404(Team, id=team_id)
-
-    workspace = team.client.workspace
-
-    # 🔐 workspace membership check
-    if not Membership.objects.filter(
-            user=request.user,
-            workspace=workspace
-    ).exists():
-        raise PermissionDenied("Not a member")
-
-    # ✅ admin check
-    is_admin = Membership.objects.filter(
-        user=request.user,
-        workspace=workspace,
-        role__iexact="admin"
-    ).exists()
-
-    # 🔐 only team members OR admins can access
-    if not is_admin and request.user not in team.members.all():
-        raise PermissionDenied("Not part of this team")
-
-    posts = team.posts.select_related(
-        "author"
-    ).prefetch_related(
-        "files",
-        "comments"
-    ).order_by("-created_at")
-
-    return render(request, "task_posts.html", {
-        "team": team,
-        "client": team.client,
-        "workspace": workspace,
-        "posts": posts,
-        "is_admin": is_admin,
-    })
 
 
 @login_required
