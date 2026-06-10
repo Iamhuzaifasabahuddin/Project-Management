@@ -39,11 +39,12 @@ class Task(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='pending'
+        default='pending',
+        db_index=True
     )
 
-    due_date = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    due_date = models.DateField(blank=True, null=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
@@ -81,7 +82,7 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

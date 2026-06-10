@@ -26,19 +26,19 @@ def dashboard_view(request):
 
     if request.user.is_superuser:
         workspaces = Workspace.objects.all()
-        latest_teams = Team.objects.all().annotate(
+        latest_teams = Team.objects.all().select_related('client', 'team_lead').prefetch_related('members').annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).order_by('-id')[:5]
-        latest_tasks = Task.objects.filter(status="pending").order_by('-created_at')[:5]
+        latest_tasks = Task.objects.filter(status="pending").select_related('team').order_by('-created_at')[:5]
         latest_clients = Client.objects.all().order_by('-id')[:5]
     else:
         workspaces = Workspace.objects.filter(membership__user=request.user)
-        latest_teams = Team.objects.filter(members=request.user).annotate(
+        latest_teams = Team.objects.filter(members=request.user).select_related('client', 'team_lead').prefetch_related('members').annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).distinct().order_by('-id')[:5]
-        latest_tasks = Task.objects.filter(assigned_to=request.user, status="pending").distinct().order_by(
+        latest_tasks = Task.objects.filter(assigned_to=request.user, status="pending").select_related('team').distinct().order_by(
             '-created_at')[:5]
         latest_clients = Client.objects.filter(teams__members=request.user, is_archived=False).distinct().order_by('-id')[:5]
 

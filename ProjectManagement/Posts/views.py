@@ -58,9 +58,9 @@ def team_tasks(request, team_id):
     )
 
     if is_admin:
-        tasks_queryset = Task.objects.filter(team=team).prefetch_related('assigned_to', 'posts').order_by('-created_at')
+        tasks_queryset = Task.objects.filter(team=team).select_related('team').prefetch_related('assigned_to', 'posts').order_by('-created_at')
     else:
-        tasks_queryset = Task.objects.filter(team=team, assigned_to=request.user).prefetch_related('assigned_to', 'posts').order_by('-created_at')
+        tasks_queryset = Task.objects.filter(team=team, assigned_to=request.user).select_related('team').prefetch_related('assigned_to', 'posts').order_by('-created_at')
 
     context = {
         "team": team,
@@ -313,14 +313,14 @@ def all_user_tasks(request):
     filter_status = request.GET.get('status', 'all')
     
     if request.user.is_superuser:
-        tasks_queryset = Task.objects.all().prefetch_related('assigned_to', 'posts', 'team__client__workspace')
+        tasks_queryset = Task.objects.all().select_related('team__client__workspace').prefetch_related('assigned_to', 'posts')
     else:
         tasks_queryset = Task.objects.filter(
             Q(assigned_to=request.user) |
             Q(created_by=request.user) |
             Q(team__team_lead=request.user) |
             Q(team__client__workspace__membership__user=request.user, team__client__workspace__membership__role='admin')
-        ).distinct().prefetch_related('assigned_to', 'posts', 'team__client__workspace')
+        ).distinct().select_related('team__client__workspace').prefetch_related('assigned_to', 'posts')
 
     if search_query:
         tasks_queryset = tasks_queryset.filter(
@@ -532,7 +532,10 @@ def post_detail(request, post_id):
     Display post details and handle new comments with optional file attachments.
     Superusers can view any post.
     """
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(
+        Post.objects.select_related('author', 'task__team__client__workspace').prefetch_related('files'),
+        id=post_id
+    )
 
     team = post.task.team if post.task else None
 
@@ -543,7 +546,7 @@ def post_detail(request, post_id):
         if not is_workspace_member(request.user, team.client.workspace):
             raise PermissionDenied("Not allowed")
 
-    comments = Comment.objects.filter(post=post).order_by("-created_at")
+    comments = Comment.objects.filter(post=post).select_related('author').prefetch_related('files').order_by("-created_at")
 
     form = CommentForm(request.POST or None, request.FILES or None)
 

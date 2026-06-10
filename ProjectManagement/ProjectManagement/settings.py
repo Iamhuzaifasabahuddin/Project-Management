@@ -124,7 +124,8 @@ WSGI_APPLICATION = 'ProjectManagement.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         default=env('DATABASE_URL'),
-        conn_max_age=600
+        conn_max_age=60,
+        conn_health_checks=True
     )
 }
 
@@ -185,7 +186,7 @@ STORAGES = {
     },
 }
 
-# WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_MANIFEST_STRICT = False
 
 
 # =========================
