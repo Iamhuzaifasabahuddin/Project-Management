@@ -19,27 +19,7 @@ from .forms import (
 )
 
 
-# =========================
-# EMAIL HELPER
-# =========================
-
-def send_custom_email(user, subject, template, context):
-    html_content = render_to_string(template, context)
-
-    email = EmailMultiAlternatives(
-        subject=subject,
-        body="Please use an HTML-compatible email viewer.",
-        from_email=settings.EMAIL_HOST_USER,
-        to=[user.email],
-    )
-
-    email.attach_alternative(html_content, "text/html")
-    email.send()
-
-
-from django.http import JsonResponse
-from django.contrib.auth.models import User
-
+from .tasks import send_verification_email_task
 
 # =========================
 # AJAX VALIDATION
@@ -89,8 +69,8 @@ def register_view(request):
                 f"/activate/{uid}/{token}/"
             )
 
-            send_custom_email(
-                user=user,
+            send_verification_email_task.delay(
+                user_id=user.id,
                 subject="Verify your account",
                 template="emails/verify_account.html",
                 context={

@@ -261,6 +261,8 @@ CELERY_TASK_ROUTES = {
     'Posts.tasks.send_task_status_notification_task': {'queue': 'email'},
     'Posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
     'Posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
+    'accounts.tasks.send_verification_email_task': {'queue': 'email'},
+
 }
 # CELERY_WORKER_CANCEL_LONG_RUNNING_TASKS_ON_CONNECTION_LOSS = True
 # Task rate limiting using kombubu
