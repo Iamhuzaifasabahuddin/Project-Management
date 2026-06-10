@@ -17,6 +17,111 @@ from workspaces.services import is_workspace_admin, is_workspace_member
 
 
 # =========================
+# ADMIN HUB (STATISTICS)
+# =========================
+
+from django.db.models import Sum, Count, Q
+from django.utils import timezone
+from datetime import timedelta
+
+@login_required
+def admin_hub(request):
+    """
+    Centralized hub for administrative statistics across the entire application.
+    Restricted to superusers and workspace admins.
+    """
+    # Permission Check
+    is_admin = request.user.is_superuser or Membership.objects.filter(
+        user=request.user,
+        role="admin"
+    ).exists()
+
+    if not is_admin:
+        raise PermissionDenied("You do not have permission to view the Admin Hub.")
+
+    from Posts.models import Task, Post, Comment
+    
+    # User Stats
+    total_users = User.objects.count()
+    active_users_last_30 = User.objects.filter(last_login__gte=timezone.now() - timedelta(days=30)).count()
+
+    # Workspace & Team Stats
+    total_workspaces = Workspace.objects.count()
+    total_teams = Team.objects.count()
+
+    # Client Stats
+    clients_qs = Client.objects.all()
+    total_clients = clients_qs.count()
+    active_clients = clients_qs.filter(is_archived=False).count()
+    archived_clients = clients_qs.filter(is_archived=True).count()
+
+    # Financial Stats
+    financials = clients_qs.aggregate(
+        total_revenue=Sum('amount_paid'),
+        total_contract_value=Sum('total_amount')
+    )
+    total_revenue = financials['total_revenue'] or 0
+    total_contract_value = financials['total_contract_value'] or 0
+    total_outstanding = total_contract_value - total_revenue
+
+    # Task Stats
+    tasks_qs = Task.objects.all()
+    total_tasks = tasks_qs.count()
+    task_stats = tasks_qs.aggregate(
+        pending=Count('id', filter=Q(status='pending')),
+        awaiting_approval=Count('id', filter=Q(status='awaiting_approval')),
+        completed=Count('id', filter=Q(status='completed'))
+    )
+    
+    overdue_tasks = tasks_qs.filter(
+        due_date__lt=timezone.localdate()
+    ).exclude(status='completed').count()
+
+    # Engagement Stats
+    total_posts = Post.objects.count()
+    total_comments = Comment.objects.count()
+
+    context = {
+        "stats": {
+            "users": {
+                "total": total_users,
+                "active_30d": active_users_last_30,
+            },
+            "workspaces": {
+                "total": total_workspaces,
+            },
+            "teams": {
+                "total": total_teams,
+            },
+            "clients": {
+                "total": total_clients,
+                "active": active_clients,
+                "archived": archived_clients,
+            },
+            "financials": {
+                "revenue": total_revenue,
+                "contract_value": total_contract_value,
+                "outstanding": total_outstanding,
+            },
+            "tasks": {
+                "total": total_tasks,
+                "pending": task_stats['pending'],
+                "awaiting_approval": task_stats['awaiting_approval'],
+                "completed": task_stats['completed'],
+                "overdue": overdue_tasks,
+            },
+            "engagement": {
+                "posts": total_posts,
+                "comments": total_comments,
+            }
+        },
+        "is_admin": True,
+    }
+
+    return render(request, "admin_hub.html", context)
+
+
+# =========================
 # DASHBOARD
 # =========================
 @login_required

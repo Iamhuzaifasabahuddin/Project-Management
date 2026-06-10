@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block title %}Admin Hub - Statistics{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+        height: 100%;
+        background: #fff;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 1rem;
+    }
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 0.25rem;
+    }
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    .bg-soft-primary { background-color: #e7f1ff; color: #0d6efd; }
+    .bg-soft-success { background-color: #e1f7e3; color: #198754; }
+    .bg-soft-warning { background-color: #fff3cd; color: #ffc107; }
+    .bg-soft-danger { background-color: #f8d7da; color: #dc3545; }
+    .bg-soft-info { background-color: #cff4fc; color: #0dcaf0; }
+    .bg-soft-purple { background-color: #f3e5f5; color: #9c27b0; }
+
+    .hub-header {
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #eee;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 pb-5">
+    <div class="hub-header d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-bold mb-1">Admin Hub</h1>
+            <p class="text-muted mb-0">Live system-wide statistics and performance metrics.</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-soft-primary px-3 py-2 rounded-pill">
+                <i class="bi bi-clock-history me-1"></i> Last updated: {% now "H:i" %}
+            </span>
+        </div>
+    </div>
+
+    <!-- Financial Row -->
+    <h3 class="fw-bold mb-4 mt-2">Financial Overview</h3>
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-success">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div class="stat-value">${{ stats.financials.revenue|floatformat:2|intcomma }}</div>
+                <div class="stat-label">Total Revenue Paid</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-info">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <div class="stat-value">${{ stats.financials.contract_value|floatformat:2|intcomma }}</div>
+                <div class="stat-label">Total Contract Value</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="stat-value">${{ stats.financials.outstanding|floatformat:2|intcomma }}</div>
+                <div class="stat-label">Outstanding Balance</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Operational Row -->
+    <h3 class="fw-bold mb-4">Operations & Growth</h3>
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-primary">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="stat-value">{{ stats.users.total }}</div>
+                <div class="stat-label">Total Registered Users</div>
+                <div class="mt-2 small text-muted">
+                    <span class="text-success fw-bold">{{ stats.users.active_30d }}</span> active in last 30d
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-purple">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div class="stat-value">{{ stats.workspaces.total }}</div>
+                <div class="stat-label">Active Workspaces</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-info">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <div class="stat-value">{{ stats.clients.total }}</div>
+                <div class="stat-label">Total Clients</div>
+                <div class="mt-2 small text-muted">
+                    {{ stats.clients.active }} Active / {{ stats.clients.archived }} Archived
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-primary">
+                    <i class="bi bi-diagram-3"></i>
+                </div>
+                <div class="stat-value">{{ stats.teams.total }}</div>
+                <div class="stat-label">Project Teams</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Row -->
+    <h3 class="fw-bold mb-4">Task Performance</h3>
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-warning">
+                    <i class="bi bi-list-task"></i>
+                </div>
+                <div class="stat-value">{{ stats.tasks.total }}</div>
+                <div class="stat-label">Total Tasks Created</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-danger">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-value">{{ stats.tasks.overdue }}</div>
+                <div class="stat-label">Overdue Tasks</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-info">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div class="stat-value">{{ stats.tasks.pending }}</div>
+                <div class="stat-label">Pending / In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-4">
+                <div class="stat-icon bg-soft-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-value">{{ stats.tasks.completed }}</div>
+                <div class="stat-label">Successfully Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Engagement Row -->
+    <h3 class="fw-bold mb-4">Platform Engagement</h3>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card stat-card p-4">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-soft-primary mb-0 me-3">
+                        <i class="bi bi-sticky"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">{{ stats.engagement.posts }}</div>
+                        <div class="stat-label">Total Updates / Posts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card stat-card p-4">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon bg-soft-info mb-0 me-3">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value">{{ stats.engagement.comments }}</div>
+                        <div class="stat-label">Total Comments</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

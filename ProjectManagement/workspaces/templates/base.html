@@ -40,6 +40,18 @@
         </a>
 
         <div class="d-flex align-items-center gap-4">
+            {% if is_system_admin %}
+            <a href="{% url 'admin_hub' %}" class="nav-link-custom d-none d-md-block text-info fw-bold">
+                <i class="bi bi-speedometer2 me-1"></i> Admin Stats
+            </a>
+            {% endif %}
+
+            {% if is_system_admin %}
+            <a href="/admin" class="nav-link-custom d-none d-md-block text-danger fw-bold">
+                <i class="bi bi-speedometer2 me-1"></i> Admin Hub
+            </a>
+            {% endif %}
+            
             <a href="{% url 'workspace_list' %}" class="nav-link-custom d-none d-md-block">
                 Workspaces
             </a>
