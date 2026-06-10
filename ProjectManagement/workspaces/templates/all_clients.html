@@ -13,6 +13,11 @@
                 <h1>All Clients<span>.</span></h1>
             </div>
             <div class="d-flex flex-wrap gap-2">
+                {% if is_admin %}
+                <a href="{% url 'export_archived_clients' %}" class="btn-gold">
+                    <i class="bi bi-download"></i> Download Archived
+                </a>
+                {% endif %}
                 <a href="{% url 'dashboard' %}" class="btn-black">
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
@@ -47,6 +52,13 @@
                         <option value="active" {% if filter_archived == 'active' %}selected{% endif %}>Active Only</option>
                         <option value="archived" {% if filter_archived == 'archived' %}selected{% endif %}>Archived Only</option>
                         <option value="all" {% if filter_archived == 'all' %}selected{% endif %}>All Clients</option>
+                    </select>
+                </div>
+
+                <div style="min-width: 120px;">
+                    <select name="view" class="form-select">
+                        <option value="card" {% if view_type == 'card' %}selected{% endif %}>Card View</option>
+                        <option value="list" {% if view_type == 'list' %}selected{% endif %}>List View</option>
                     </select>
                 </div>
 

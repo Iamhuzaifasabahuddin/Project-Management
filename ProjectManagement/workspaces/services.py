@@ -1,3 +1,7 @@
+import datetime
+
+from django.utils import timezone
+
 from workspaces.models import Membership
 
 def is_workspace_admin(user, workspace):
@@ -43,6 +47,7 @@ def auto_archive_client_if_done(client):
 
     if not has_pending:
         client.is_archived = True
+        client.archived_at = timezone.localdate()
         client.save()
         return True
         

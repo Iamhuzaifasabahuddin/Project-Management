@@ -31,6 +31,21 @@
 </div>
 
 <div class="container pb-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-center justify-content-end"
+                  hx-get="{% url 'team_tasks' team.id %}"
+                  hx-target="#taskAccordion"
+                  hx-trigger="change from:select">
+                <div style="min-width: 120px;">
+                    <select name="view" class="form-select">
+                        <option value="card" {% if view_type == 'card' %}selected{% endif %}>Card View</option>
+                        <option value="list" {% if view_type == 'list' %}selected{% endif %}>List View</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
     <!-- ALERTS -->
     {% if messages %}
     {% for message in messages %}
@@ -41,8 +56,8 @@
     {% endfor %}
     {% endif %}
 
-    <div class="accordion border-0" id="taskAccordion" 
-         hx-get="{% url 'team_tasks' team.id %}" 
+    <div id="taskAccordion" 
+         hx-get="{% url 'team_tasks' team.id %}?view={{ view_type }}" 
          hx-trigger="every 15s [!document.querySelector('.modal.show')]"
          hx-swap="innerHTML">
         {% include "includes/task_list_fragment.html" %}

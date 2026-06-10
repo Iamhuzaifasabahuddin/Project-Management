@@ -1,3 +1,58 @@
+{% if view_type == 'list' %}
+<div class="table-responsive bg-white rounded shadow-sm">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="bg-light">
+            <tr>
+                <th class="px-4 py-3">Team Name</th>
+                <th class="py-3">Client</th>
+                <th class="py-3">Status</th>
+                <th class="py-3">Lead</th>
+                <th class="px-4 py-3 text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for team in teams %}
+            <tr>
+                <td class="px-4">
+                    <a href="{% url 'team_tasks' team.id %}" class="fw-bold text-dark text-decoration-none hover-gold">
+                        {{ team.name }}
+                    </a>
+                </td>
+                <td>{{ team.client.name }}</td>
+                <td>
+                    {% if team.total_tasks == 0 %}
+                        <span class="badge bg-light text-muted">No Tasks</span>
+                    {% elif team.total_tasks == team.completed_tasks %}
+                        <span class="badge bg-success">Completed</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Pending ({{ team.completed_tasks }}/{{ team.total_tasks }})</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if team.team_lead %}
+                        {{ team.team_lead.username|capfirst }}
+                    {% else %}
+                        <span class="text-muted small">None</span>
+                    {% endif %}
+                </td>
+                <td class="px-4 text-end">
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'team_tasks' team.id %}" class="btn btn-sm btn-dark">Tasks</a>
+                        {% if is_admin or request.user == team.team_lead or request.user.is_superuser %}
+                        <a href="{% url 'manage_team_members' team.id %}" class="btn btn-sm btn-outline-dark">Members</a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center py-5 muted">No teams found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
 <div class="row g-4" id="team-list">
     {% for team in teams %}
     <div class="col-lg-6">
@@ -9,7 +64,7 @@
                             {{ team.name }}
                         </a>
                     </h3>
-                    <div class="muted">Team collaboration channel</div>
+                    <div class="muted"><span class="eyebrow mb-2">{{ team.client.name }}</span> collaboration channel</div>
                 </div>
                 <div class="text-end">
                     <div class="eyebrow" style="font-size: 0.6rem;">Status / Role</div>
@@ -83,3 +138,4 @@
     </div>
     {% endfor %}
 </div>
+{% endif %}

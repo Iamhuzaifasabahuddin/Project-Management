@@ -121,11 +121,14 @@ def client_teams(request, client_id):
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).distinct().order_by("roles", "name")
 
+    view_type = request.GET.get('view', 'card')
+
     context = {
         "client": client,
         "workspace": workspace,
         "teams": teams,
         "is_admin": is_admin,
+        "view_type": view_type,
     }
 
     if request.headers.get('HX-Request'):
@@ -390,14 +393,17 @@ def all_user_teams(request):
     else:
         teams_queryset = teams_queryset.order_by('-id')
 
+    view_type = request.GET.get('view', 'card')
+
     if request.headers.get('HX-Request'):
-        return render(request, 'includes/team_list_fragment.html', {'teams': teams_queryset, 'is_admin': is_admin})
+        return render(request, 'includes/team_list_fragment.html', {'teams': teams_queryset, 'is_admin': is_admin, 'view_type': view_type})
 
     return render(request, 'teams/all_teams.html', {
         'teams': teams_queryset,
         'is_admin': is_admin,
         'search_query': search_query,
         'sort_by': sort_by,
+        'view_type': view_type,
     })
 
 

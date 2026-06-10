@@ -62,6 +62,8 @@ def team_tasks(request, team_id):
     else:
         tasks_queryset = Task.objects.filter(team=team, assigned_to=request.user).select_related('team').prefetch_related('assigned_to', 'posts').order_by('-created_at')
 
+    view_type = request.GET.get('view', 'card')
+
     context = {
         "team": team,
         "workspace": workspace,
@@ -70,6 +72,7 @@ def team_tasks(request, team_id):
         "awaiting_tasks": tasks_queryset.filter(status='awaiting_approval'),
         "completed_tasks": tasks_queryset.filter(status='completed'),
         "is_admin": is_admin,
+        "view_type": view_type,
     }
 
     if request.headers.get('HX-Request'):
@@ -107,6 +110,7 @@ def create_task(request, team_id):
         # Reactivate client if it was archived
         if client.is_archived:
             client.is_archived = False
+            client.archived_at = None
             client.save()
 
         messages.success(request, f"Task '{task.name}' created successfully.")
@@ -257,6 +261,7 @@ def task_decline(request, task_id):
     # Reactivate client if it was archived
     if team.client.is_archived:
         team.client.is_archived = False
+        team.client.archived_at = None
         team.client.save()
 
     # Notify assignees
@@ -346,6 +351,8 @@ def all_user_tasks(request):
     else:
         tasks_queryset = tasks_queryset.order_by('-created_at')
 
+    view_type = request.GET.get('view', 'card')
+
     context = {
         "pending_tasks": tasks_queryset.filter(status='pending'),
         "awaiting_tasks": tasks_queryset.filter(status='awaiting_approval'),
@@ -354,6 +361,7 @@ def all_user_tasks(request):
         "search_query": search_query,
         "sort_by": sort_by,
         "filter_status": filter_status,
+        "view_type": view_type,
     }
 
     if request.headers.get('HX-Request'):

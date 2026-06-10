@@ -30,8 +30,23 @@
 </div>
 
 <div class="container pb-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-center justify-content-end"
+                  hx-get="{% url 'client_teams' client.id %}"
+                  hx-target="#teamGrid"
+                  hx-trigger="change from:select">
+                <div style="min-width: 120px;">
+                    <select name="view" class="form-select">
+                        <option value="card" {% if view_type == 'card' %}selected{% endif %}>Card View</option>
+                        <option value="list" {% if view_type == 'list' %}selected{% endif %}>List View</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
     <div id="teamGrid" 
-         hx-get="{% url 'client_teams' client.id %}" 
+         hx-get="{% url 'client_teams' client.id %}?view={{ view_type }}" 
          hx-trigger="every 15s"
          hx-swap="innerHTML">
         {% include "includes/team_list_fragment.html" %}

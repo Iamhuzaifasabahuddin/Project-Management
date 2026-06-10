@@ -49,6 +49,7 @@ class Client(models.Model):
     is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    archived_at = models.DateField(null=True, blank=True)
 
 
     def __str__(self):

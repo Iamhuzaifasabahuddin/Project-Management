@@ -43,6 +43,13 @@
                     </select>
                 </div>
 
+                <div style="min-width: 120px;">
+                    <select name="view" class="form-select">
+                        <option value="card" {% if view_type == 'card' %}selected{% endif %}>Card View</option>
+                        <option value="list" {% if view_type == 'list' %}selected{% endif %}>List View</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn-black">Search</button>
                 {% if search_query or sort_by != '-created' %}
                     <a href="{% url 'all_user_teams' %}" class="btn btn-outline-secondary">Clear</a>

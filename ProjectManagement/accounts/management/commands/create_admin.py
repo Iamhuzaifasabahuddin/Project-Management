@@ -13,11 +13,15 @@ class Command(BaseCommand):
         superusers = [
             {
                 "username": "Hexz",
+                "first_name": "Huzaifa",
+                "last_name": "Sabahuddin",
                 "email": os.environ.get("SUPERUSER_EMAIL"),
                 "password": os.environ.get("SUPERUSER_PASSWORD"),
             },
             {
                 "username": "Farman",
+                "first_name": "Farman",
+                "last_name": "Ali",
                 "email": os.environ.get("SUPERUSER_EMAIL_2"),
                 "password": os.environ.get("SUPERUSER_PASSWORD_2"),
             },
@@ -36,6 +40,8 @@ class Command(BaseCommand):
 
             User.objects.create_superuser(
                 username=username,
+                first_name=user_data["first_name"],
+                last_name=user_data["last_name"],
                 email=user_data["email"],
                 password=user_data["password"],
             )

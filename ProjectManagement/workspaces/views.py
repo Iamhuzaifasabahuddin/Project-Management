@@ -163,24 +163,46 @@ def assign_role(request):
     return render(request, "assign_role.html", {"form": form})
 
 
+import csv
+from django.http import HttpResponse
+
+@login_required
+def export_archived_clients(request):
+    if not request.user.is_superuser and not Membership.objects.filter(user=request.user, role="admin").exists():
+        raise PermissionDenied("Only admins can export clients")
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="archived_clients.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['ID', 'Name', 'Email', 'Address', 'Number', 'Archived At'])
+
+    clients = Client.objects.filter(is_archived=True)
+    if not request.user.is_superuser:
+        clients = clients.filter(workspace__membership__user=request.user, workspace__membership__role='admin').distinct()
+
+    for client in clients:
+        writer.writerow([client.id, client.name, client.email, client.address, client.number, client.archived_at])
+
+    return response
+
+
 @login_required
 def all_clients(request):
     search_query = request.GET.get('search', '')
     sort_by = request.GET.get('sort', '-created_at')
     filter_archived = request.GET.get('archived', 'active')
+    view_type = request.GET.get('view', 'card')
 
     if request.user.is_superuser:
         clients = Client.objects.all()
     else:
-        # Non-superusers see clients they are part of through teams
         clients = Client.objects.filter(teams__members=request.user).distinct()
 
-    # Filtering by archived status
     if filter_archived == 'active':
         clients = clients.filter(is_archived=False)
     elif filter_archived == 'archived':
         clients = clients.filter(is_archived=True)
-    # if 'all', no filter applied
 
     if search_query:
         clients = clients.filter(Q(name__icontains=search_query) | Q(email__icontains=search_query))
@@ -197,16 +219,19 @@ def all_clients(request):
     else:
         clients = clients.order_by('-id')
 
-    if request.headers.get('HX-Request'):
-        return render(request, "includes/all_clients_list_fragment.html", {"clients": clients})
-
-    return render(request, "all_clients.html", {
+    context = {
         "clients": clients,
         "is_admin": request.user.is_superuser or Membership.objects.filter(user=request.user, role="admin").exists(),
         "search_query": search_query,
         "sort_by": sort_by,
         "filter_archived": filter_archived,
-    })
+        "view_type": view_type,
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/all_clients_list_fragment.html", context)
+
+    return render(request, "all_clients.html", context)
 
 def get_users_by_role(workspace, role):
     return User.objects.filter(membership__workspace=workspace, membership__role=role)
