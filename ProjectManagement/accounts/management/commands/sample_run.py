@@ -12,7 +12,7 @@ class Command(BaseCommand):
             {"username": "marc_bm", "email": "marc.spector@bookmarketeers.net", "password": "test12345"},
             {"username": "marc_wc", "email": "marc.spector@writersclique.net", "password": "test12345"},
             {"username": "marc_aw", "email": "marc.spector@aurorawriters.com", "password": "test12345"},
-            {"username": "huzaifa", "email": "huzaifa.sabah@topsoftdigitals.pk", "password": "test12345"},
+            # {"username": "huzaifa", "email": "huzaifa.sabah@topsoftdigitals.pk", "password": "test12345"},
         ]
 
         created_count = 0

@@ -1,5 +1,6 @@
 import os
-
+from dotenv import load_dotenv
+load_dotenv(".env")
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -406,7 +407,7 @@ def create_default_teams_for_client(client, workspace):
                 print(f"Warning: Team lead with email {lead_email} for {role_name} not found")
 
         team = Team.objects.create(
-    client=client,
+            client=client,
             name=f"{TEAM_NAMES.get(role_name)} Team",
             roles=role_name,
             team_lead=team_lead
@@ -414,6 +415,12 @@ def create_default_teams_for_client(client, workspace):
 
         if team_lead:
             team.members.add(team_lead)
+        assigned_members = client.assigned_to.filter(
+            membership__workspace=workspace,
+            membership__role__in=[role_name, 'project manager']
+        )
+        if assigned_members.exists():
+            team.members.add(*assigned_members)
 
 
 @login_required
@@ -430,7 +437,7 @@ def create_clients(request, workspace_id):
         client = form.save(commit=False)
         client.workspace = workspace
         client.save()
-        # form.save_m2m()
+        form.save_m2m()
         create_default_teams_for_client(client, workspace)
         return redirect("client_details", workspace_id=workspace.id)
 

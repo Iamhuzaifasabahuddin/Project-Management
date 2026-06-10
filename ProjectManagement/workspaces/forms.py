@@ -73,7 +73,7 @@ class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ['name', 'address', 'number', 'email', 'total_amount', 'amount_paid', 'payment_date', 'paid_type'
-                  ,'paid', 'notes']
+                  ,'paid', 'notes', 'assigned_to']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -125,21 +125,21 @@ class ClientForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Enter notes',
                 'autocomplete': 'off',
-            })
-            # 'assigned_to': Select2MultipleWidget(attrs={
-            #     'class': 'form-control',
-            #     'data-placeholder': 'Search and select users...',
-            #     'data-allow-clear': 'true',
-            #     'data-minimum-input-length': 0,
-            #     'data-close-on-select': False,
-            # }),
+            }),
+            'assigned_to': Select2MultipleWidget(attrs={
+                'class': 'form-control',
+                'data-placeholder': 'Search and select users...',
+                'data-allow-clear': 'true',
+                'data-minimum-input-length': 0,
+                'data-close-on-select': False,
+            }),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.fields['assigned_to'].label_from_instance = self._user_label
-        # self.fields['assigned_to'].required = False
-        # self.fields['assigned_to'].help_text = 'Select one or more users to assign this client'
+        self.fields['assigned_to'].label_from_instance = self._user_label
+        self.fields['assigned_to'].required = True
+        self.fields['assigned_to'].help_text = 'Use CTRL key to select one or more users to assign this client'
         self.fields['notes'].required = False
         self.fields['payment_date'].required = True
         self.fields['amount_paid'].help_text = 'Amount the client has paid so far'

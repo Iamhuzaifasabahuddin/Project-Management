@@ -99,7 +99,7 @@ def create_task(request, team_id):
         if not is_admin and request.user not in team.members.all():
             raise PermissionDenied("Not a team member")
 
-    form = TaskForm(request.POST or None, team=team)
+    form = TaskForm(request.POST or None, team=team, user=request.user)
     if form.is_valid():
         task = form.save(commit=False)
         task.team = team

@@ -42,9 +42,13 @@ class TaskForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         team = kwargs.pop('team', None)
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if team:
-            self.fields['assigned_to'].queryset = team.members.all()
+            qs = team.members.all()
+            if user:
+                qs = qs.exclude(id=user.id)
+            self.fields['assigned_to'].queryset = qs
         for field in self.fields:
             self.fields[field].required = True
 

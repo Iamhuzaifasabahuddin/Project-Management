@@ -43,6 +43,50 @@
         {% include "includes/dashboard_workspace_list.html" %}
     </div>
 
+        <!-- Latest Tasks Section -->
+    <div class="mt-5 mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="section-title mb-1">Latest Tasks</h2>
+            <p class="muted">Your most recent assigned tasks.</p>
+        </div>
+        <a href="{% url 'all_user_tasks' %}" class="btn-outline-custom">View All Tasks</a>
+    </div>
+
+    <div class="row g-4">
+        {% for task in latest_tasks %}
+        <div class="col-md-4">
+            <div class="hexz-card">
+                <div class="mb-4">
+                    <h3 class="h5 font-syne fw-bold mb-2">{{ task.name }}</h3>
+                    <div class="mb-3">
+                        <span class="badge-custom
+                            {% if task.status == 'completed' %}badge-status-completed
+                            {% elif task.status == 'pending' %}badge-status-pending
+                            {% else %}badge-status-awaiting{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </div>
+                    <div class="muted d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-people"></i> Team: {{ task.team.name }}
+                    </div>
+                    <div class="muted d-flex align-items-center gap-2">
+                        <i class="bi bi-calendar-event"></i> Due: {{ task.due_date|default:"N/A" }}
+                    </div>
+                </div>
+                <div class="mt-auto">
+                    <a href="{% url 'team_tasks' task.team.id %}" class="btn-black w-100 justify-content-center">
+                        View Task Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <p class="muted text-center py-4 bg-white border rounded">No tasks found.</p>
+        </div>
+        {% endfor %}
+    </div>
+
     <!-- Latest Clients Section -->
     <div class="mt-5 mb-4 d-flex justify-content-between align-items-center">
         <div>
@@ -168,48 +212,6 @@
         {% endfor %}
     </div>
 
-    <!-- Latest Tasks Section -->
-    <div class="mt-5 mb-4 d-flex justify-content-between align-items-center">
-        <div>
-            <h2 class="section-title mb-1">Latest Tasks</h2>
-            <p class="muted">Your most recent assigned tasks.</p>
-        </div>
-        <a href="{% url 'all_user_tasks' %}" class="btn-outline-custom">View All Tasks</a>
-    </div>
 
-    <div class="row g-4">
-        {% for task in latest_tasks %}
-        <div class="col-md-4">
-            <div class="hexz-card">
-                <div class="mb-4">
-                    <h3 class="h5 font-syne fw-bold mb-2">{{ task.name }}</h3>
-                    <div class="mb-3">
-                        <span class="badge-custom 
-                            {% if task.status == 'completed' %}badge-status-completed
-                            {% elif task.status == 'pending' %}badge-status-pending
-                            {% else %}badge-status-awaiting{% endif %}">
-                            {{ task.get_status_display }}
-                        </span>
-                    </div>
-                    <div class="muted d-flex align-items-center gap-2 mb-1">
-                        <i class="bi bi-people"></i> Team: {{ task.team.name }}
-                    </div>
-                    <div class="muted d-flex align-items-center gap-2">
-                        <i class="bi bi-calendar-event"></i> Due: {{ task.due_date|default:"N/A" }}
-                    </div>
-                </div>
-                <div class="mt-auto">
-                    <a href="{% url 'team_tasks' task.team.id %}" class="btn-black w-100 justify-content-center">
-                        View Task Details
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12">
-            <p class="muted text-center py-4 bg-white border rounded">No tasks found.</p>
-        </div>
-        {% endfor %}
-    </div>
 </main>
 {% endblock %}
