@@ -139,9 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const modalForm = document.getElementById("modalForm");
     if (modalForm) {
-        modalForm.addEventListener("input", (event) => {
+        modalForm.addEventListener("submit", (event) => {
             event.preventDefault();
-            event.stopPropagation();
             validateResetEmail(true);
         });
     }

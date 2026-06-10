@@ -109,6 +109,40 @@ def activate_account(request, uidb64, token):
     return render(request, "accounts/activation_failed.html")
 
 
+def resend_verification_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        user = User.objects.filter(email=email).first()
+
+        if user:
+            if not user.is_active:
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+
+                activation_link = request.build_absolute_uri(
+                    f"/activate/{uid}/{token}/"
+                )
+
+                send_verification_email_task.delay(
+                    user_id=user.id,
+                    subject="Verify your account",
+                    template="emails/verify_account.html",
+                    context={
+                        "name": user.first_name,
+                        "activation_link": activation_link,
+                    },
+                )
+                messages.success(request, "Verification link sent! Check your email.")
+                return redirect("login")
+            else:
+                messages.info(request, "This account is already active.")
+                return redirect("login")
+        else:
+            messages.error(request, "No account found with this email.")
+
+    return render(request, "accounts/resend_verification.html")
+
+
 def login_view(request):
     error = None
 
