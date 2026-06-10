@@ -23,41 +23,42 @@
 
 <div class="container pb-5">
     <div class="row mb-4">
-        <div class="col-md-6">
-            <form method="GET" class="d-flex gap-2"
-                              hx-get="{% url 'all_clients' %}"
-                              hx-target="#client-list">
-                            <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="Search clients...">
-                            <button type="submit" class="btn-black">Search</button>
-                            {% if search_query %}
-                                <a href="{% url 'all_clients' %}" class="btn btn-outline-secondary">Clear</a>
-                            {% endif %}
-                        </form>
+        <div class="col-md-12">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-center"
+                  hx-get="{% url 'all_clients' %}"
+                  hx-target="#client-list-container"
+                  hx-trigger="change from:select, submit">
+                
+                <div class="flex-grow-1">
+                    <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="Search clients...">
+                </div>
+
+                <div style="min-width: 150px;">
+                    <select name="sort" class="form-select">
+                        <option value="-created" {% if sort_by == '-created' %}selected{% endif %}>Newest First</option>
+                        <option value="created" {% if sort_by == 'created' %}selected{% endif %}>Oldest First</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="-name" {% if sort_by == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                    </select>
+                </div>
+
+                <div style="min-width: 150px;">
+                    <select name="archived" class="form-select">
+                        <option value="active" {% if filter_archived == 'active' %}selected{% endif %}>Active Only</option>
+                        <option value="archived" {% if filter_archived == 'archived' %}selected{% endif %}>Archived Only</option>
+                        <option value="all" {% if filter_archived == 'all' %}selected{% endif %}>All Clients</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-black">Search</button>
+                {% if search_query or sort_by != '-created' or filter_archived != 'active' %}
+                    <a href="{% url 'all_clients' %}" class="btn btn-outline-secondary">Clear</a>
+                {% endif %}
+            </form>
         </div>
     </div>
-    <div class="row g-4" id="client-list">
-        {% for client in clients %}
-        <div class="col-lg-4 col-md-6">
-            <div class="hexz-card h-100 d-flex flex-column">
-                <div class="mb-3">
-                    <div class="eyebrow" style="font-size: 0.6rem; color: var(--gold-dim);">Client ID: {{ client.id|add:"0000" }}</div>
-                    <h3 class="h5 mb-1">{{ client.name }}</h3>
-                    <p class="muted small mb-0">{{ client.email }}</p>
-                </div>
-                <div class="mt-auto pt-4 border-top">
-                    <div class="d-flex gap-2">
-                        <a href="{% url 'client_teams' client.id %}" class="btn-black btn-sm w-100">
-                            <span>Open Environment</span> <i class="bi bi-arrow-right ms-1"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12 text-center py-5">
-            <p class="muted">No clients found.</p>
-        </div>
-        {% endfor %}
+    <div id="client-list-container">
+        {% include "includes/all_clients_list_fragment.html" %}
     </div>
 </div>
 {% endblock %}

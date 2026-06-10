@@ -22,15 +22,29 @@
 </div>
 
 <div class="container pb-5">
-    <!-- SEARCH FORM -->
+    <!-- SEARCH & FILTER FORM -->
     <div class="row mb-4">
-        <div class="col-md-6">
-            <form method="GET" class="d-flex gap-2"
+        <div class="col-md-12">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-center"
                   hx-get="{% url 'all_user_teams' %}"
-                  hx-target="#team-list">
-                <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="Search teams...">
+                  hx-target="#teamGrid"
+                  hx-trigger="change from:select, submit">
+                
+                <div class="flex-grow-1">
+                    <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="Search teams...">
+                </div>
+
+                <div style="min-width: 150px;">
+                    <select name="sort" class="form-select">
+                        <option value="-created" {% if sort_by == '-created' %}selected{% endif %}>Newest First</option>
+                        <option value="created" {% if sort_by == 'created' %}selected{% endif %}>Oldest First</option>
+                        <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                        <option value="-name" {% if sort_by == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                    </select>
+                </div>
+
                 <button type="submit" class="btn-black">Search</button>
-                {% if search_query %}
+                {% if search_query or sort_by != '-created' %}
                     <a href="{% url 'all_user_teams' %}" class="btn btn-outline-secondary">Clear</a>
                 {% endif %}
             </form>

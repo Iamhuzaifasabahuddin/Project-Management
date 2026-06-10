@@ -166,13 +166,36 @@ def assign_role(request):
 @login_required
 def all_clients(request):
     search_query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort', '-created_at')
+    filter_archived = request.GET.get('archived', 'active')
+
     if request.user.is_superuser:
-        clients = Client.objects.all().order_by('-id')
+        clients = Client.objects.all()
     else:
-        clients = Client.objects.filter(teams__members=request.user, is_archived=False).distinct().order_by('-id')
+        # Non-superusers see clients they are part of through teams
+        clients = Client.objects.filter(teams__members=request.user).distinct()
+
+    # Filtering by archived status
+    if filter_archived == 'active':
+        clients = clients.filter(is_archived=False)
+    elif filter_archived == 'archived':
+        clients = clients.filter(is_archived=True)
+    # if 'all', no filter applied
 
     if search_query:
         clients = clients.filter(Q(name__icontains=search_query) | Q(email__icontains=search_query))
+
+    # Sorting
+    if sort_by == 'name':
+        clients = clients.order_by('name')
+    elif sort_by == '-name':
+        clients = clients.order_by('-name')
+    elif sort_by == 'created':
+        clients = clients.order_by('created_at')
+    elif sort_by == '-created':
+        clients = clients.order_by('-created_at')
+    else:
+        clients = clients.order_by('-id')
 
     if request.headers.get('HX-Request'):
         return render(request, "includes/all_clients_list_fragment.html", {"clients": clients})
@@ -181,6 +204,8 @@ def all_clients(request):
         "clients": clients,
         "is_admin": request.user.is_superuser or Membership.objects.filter(user=request.user, role="admin").exists(),
         "search_query": search_query,
+        "sort_by": sort_by,
+        "filter_archived": filter_archived,
     })
 
 def get_users_by_role(workspace, role):

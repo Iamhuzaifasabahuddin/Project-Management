@@ -309,16 +309,18 @@ def all_user_tasks(request):
     List all tasks for the logged-in user across all teams and clients.
     """
     search_query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort', '-created_at')
+    filter_status = request.GET.get('status', 'all')
     
     if request.user.is_superuser:
-        tasks_queryset = Task.objects.all().prefetch_related('assigned_to', 'posts', 'team__client__workspace').order_by('-created_at')
+        tasks_queryset = Task.objects.all().prefetch_related('assigned_to', 'posts', 'team__client__workspace')
     else:
         tasks_queryset = Task.objects.filter(
             Q(assigned_to=request.user) |
             Q(created_by=request.user) |
             Q(team__team_lead=request.user) |
             Q(team__client__workspace__membership__user=request.user, team__client__workspace__membership__role='admin')
-        ).distinct().prefetch_related('assigned_to', 'posts', 'team__client__workspace').order_by('-created_at')
+        ).distinct().prefetch_related('assigned_to', 'posts', 'team__client__workspace')
 
     if search_query:
         tasks_queryset = tasks_queryset.filter(
@@ -327,13 +329,35 @@ def all_user_tasks(request):
             Q(team__client__name__icontains=search_query)
         )
 
+    if filter_status != 'all':
+        tasks_queryset = tasks_queryset.filter(status=filter_status)
+
+    # Sorting
+    if sort_by == 'name':
+        tasks_queryset = tasks_queryset.order_by('name')
+    elif sort_by == '-name':
+        tasks_queryset = tasks_queryset.order_by('-name')
+    elif sort_by == 'due_date':
+        tasks_queryset = tasks_queryset.order_by('due_date')
+    elif sort_by == '-due_date':
+        tasks_queryset = tasks_queryset.order_by('-due_date')
+    elif sort_by == 'created':
+        tasks_queryset = tasks_queryset.order_by('created_at')
+    else:
+        tasks_queryset = tasks_queryset.order_by('-created_at')
+
     context = {
         "pending_tasks": tasks_queryset.filter(status='pending'),
         "awaiting_tasks": tasks_queryset.filter(status='awaiting_approval'),
         "completed_tasks": tasks_queryset.filter(status='completed'),
-        "is_admin": request.user.is_superuser,  # Global admin status; per-task checks could be more granular
+        "is_admin": request.user.is_superuser,
         "search_query": search_query,
+        "sort_by": sort_by,
+        "filter_status": filter_status,
     }
+
+    if request.headers.get('HX-Request'):
+        return render(request, "includes/task_list_fragment.html", context)
 
     return render(request, 'all_tasks.html', context)
 

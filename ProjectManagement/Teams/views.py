@@ -353,37 +353,51 @@ def all_user_teams(request):
     List all teams for the logged-in user across all clients and workspaces.
     """
     search_query = request.GET.get('search', '')
+    sort_by = request.GET.get('sort', '-created_at')
     
     if request.user.is_superuser or request.user.is_staff:
-        teams = Team.objects.all().prefetch_related("members").annotate(
+        teams_queryset = Team.objects.all().prefetch_related("members").annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
-        ).order_by('name')
+        )
         is_admin = True
     else:
-        teams = Team.objects.filter(
+        teams_queryset = Team.objects.filter(
             Q(members=request.user) |
             Q(team_lead=request.user) |
             Q(client__workspace__membership__user=request.user, client__workspace__membership__role='admin')
         ).distinct().prefetch_related("members").annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
-        ).order_by('name')
+        )
         is_admin = False
 
     if search_query:
-        teams = teams.filter(
+        teams_queryset = teams_queryset.filter(
             Q(name__icontains=search_query) |
             Q(client__name__icontains=search_query)
         )
 
+    # Sorting
+    if sort_by == 'name':
+        teams_queryset = teams_queryset.order_by('name')
+    elif sort_by == '-name':
+        teams_queryset = teams_queryset.order_by('-name')
+    elif sort_by == 'created':
+        teams_queryset = teams_queryset.order_by('created_at')
+    elif sort_by == '-created':
+        teams_queryset = teams_queryset.order_by('-created_at')
+    else:
+        teams_queryset = teams_queryset.order_by('-id')
+
     if request.headers.get('HX-Request'):
-        return render(request, 'includes/team_list_fragment.html', {'teams': teams, 'is_admin': is_admin})
+        return render(request, 'includes/team_list_fragment.html', {'teams': teams_queryset, 'is_admin': is_admin})
 
     return render(request, 'teams/all_teams.html', {
-        'teams': teams,
+        'teams': teams_queryset,
         'is_admin': is_admin,
         'search_query': search_query,
+        'sort_by': sort_by,
     })
 
 

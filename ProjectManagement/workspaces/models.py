@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 # Create your models here.
 
@@ -46,6 +47,8 @@ class Client(models.Model):
     )
     notes = models.TextField(null=True, blank=True)
     is_archived = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
     def __str__(self):
