@@ -256,13 +256,13 @@ CELERY_RESULT_EXPIRES = 3600
 
 # Task routing for different workers
 CELERY_TASK_ROUTES = {
-    'Posts.tasks.send_password_reset_email_task': {'queue': 'email'},
     'Posts.tasks.send_assigned_task_email_task': {'queue': 'email'},
     'Posts.tasks.send_post_email_task': {'queue': 'email'},
     'Posts.tasks.send_task_completion_request_email_task': {'queue': 'email'},
     'Posts.tasks.send_task_status_notification_task': {'queue': 'email'},
     'Posts.tasks.send_slack_post_notification_task': {'queue': 'slack'},
     'Posts.tasks.upload_files_to_slack_task': {'queue': 'slack'},
+    'accounts.tasks.send_password_reset_email_task': {'queue': 'email'},
     'accounts.tasks.send_verification_email_task': {'queue': 'email'},
 
 }

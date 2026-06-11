@@ -6,7 +6,7 @@ from django.contrib.auth.forms import PasswordResetForm as BasePasswordResetForm
 from django.conf import settings
 
 from .models import User
-from Posts.tasks import send_password_reset_email_task
+from .tasks import send_password_reset_email_task
 
 class CustomPasswordResetForm(BasePasswordResetForm):
     def send_mail(self, subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):

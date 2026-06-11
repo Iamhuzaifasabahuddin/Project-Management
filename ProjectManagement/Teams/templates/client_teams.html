@@ -4,6 +4,15 @@
 
 {% block title %}Client Teams - {{ client.name }}{% endblock %}
 
+{% block breadcrumbs %}
+<a href="{% url 'dashboard' %}">Dashboard</a> / 
+<a href="{% url 'workspace_list' %}">Workspaces</a> / 
+<a href="{% url 'workspace_detail' workspace.id %}">{{ workspace.name }}</a> / 
+<a href="{% url 'client_details' workspace.id %}">Clients</a> / 
+<a href="{% url 'view_client' client.id %}">{{ client.name }}</a> / 
+<span>Teams</span>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div class="container">

@@ -32,47 +32,51 @@
 <body>
 
 {% if request.user.is_authenticated %}
-<nav class="navbar navbar-custom px-4 py-2 sticky-top">
-    <div class="container-fluid">
-        <a href="{% url 'dashboard' %}" class="brand-badge">
-            <div class="hex-icon">H</div>
-            <span class="brand-name">HEXZ CONNECT</span>
-        </a>
+    {% include 'includes/sidebar.html' %}
+    <div class="main-content">
+{% endif %}
+        
+        <nav class="breadcrumb">
+            {% block breadcrumbs %}{% endblock %}
+        </nav>
+        
+        <main>
+            {% block content %}{% endblock %}
+        </main>
 
-        <div class="d-flex align-items-center gap-4">
-            {% if is_system_admin %}
-            <a href="{% url 'admin_hub' %}" class="nav-link-custom d-none d-md-block text-info fw-bold">
-                <i class="bi bi-speedometer2 me-1"></i> Admin Stats
-            </a>
-            {% endif %}
-
-            {% if is_system_admin %}
-            <a href="/admin" class="nav-link-custom d-none d-md-block text-danger fw-bold">
-                <i class="bi bi-speedometer2 me-1"></i> Admin Hub
-            </a>
-            {% endif %}
-            
-            <a href="{% url 'workspace_list' %}" class="nav-link-custom d-none d-md-block">
-                Workspaces
-            </a>
-            
-            <a href="{% url 'dashboard' %}" class="nav-link-custom d-none d-md-block">
-                Dashboard
-            </a>
-
-            <div class="vr mx-2 bg-secondary d-none d-md-block" style="height: 20px; opacity: 0.3;"></div>
-
-            <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-danger">
-                Logout
-            </a>
-        </div>
+{% if request.user.is_authenticated %}
     </div>
-</nav>
 {% endif %}
 
-<main>
-    {% block content %}{% endblock %}
-</main>
+<!-- Toast Container -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="toast align-items-center text-white 
+                {% if 'success' in message.tags %}bg-success
+                {% elif 'error' in message.tags or 'danger' in message.tags %}bg-danger
+                {% elif 'warning' in message.tags %}bg-warning
+                {% else %}bg-info{% endif %} border-0" 
+                role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {% if 'success' in message.tags %}
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                        {% elif 'error' in message.tags or 'danger' in message.tags %}
+                            <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                        {% elif 'warning' in message.tags %}
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
 
 <!-- Bootstrap JS -->
 {% bootstrap_javascript %}
@@ -91,6 +95,16 @@
             width: '100%',
             allowClear: true,
         });
+
+        // Initialize Toasts
+        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+        var toastList = toastElList.map(function (toastEl) {
+            return new bootstrap.Toast(toastEl, {
+                autohide: true,
+                delay: 5000
+            })
+        })
+        toastList.forEach(toast => toast.show())
     });
 </script>
 

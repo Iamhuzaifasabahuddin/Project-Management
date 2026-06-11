@@ -7,22 +7,21 @@ These views demonstrate how to integrate the new Team forms
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import render, redirect, get_object_or_404
 from django.db import transaction
 from django.db.models import Count, Q
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_http_methods
 
 from Posts.models import Task
-from workspaces.services import is_workspace_admin, is_workspace_member
 from Teams.models import Team
-from workspaces.models import Client, Membership, Workspace
-from .forms import TeamForm, TeamEditForm, TeamMembersForm
+from workspaces.models import Client, Workspace
+from workspaces.services import is_workspace_admin, is_workspace_member
+from .forms import TeamForm, TeamMembersForm
+
 
 @login_required
 def team_posts(request, task_id):
-
     task = get_object_or_404(Task, id=task_id)
 
     workspace = task.team.client.workspace
@@ -72,9 +71,9 @@ def team_posts(request, task_id):
         "is_admin": is_admin,
     })
 
+
 @login_required
 def client_teams(request, client_id):
-
     client = get_object_or_404(Client, id=client_id)
     workspace = client.workspace
 
@@ -92,9 +91,9 @@ def client_teams(request, client_id):
     # ADMIN CHECK
     # =========================================
     is_admin = (
-        request.user.is_superuser
-        or
-        is_workspace_admin(request.user, workspace)
+            request.user.is_superuser
+            or
+            is_workspace_admin(request.user, workspace)
     )
 
     # =========================================
@@ -144,12 +143,12 @@ def can_manage_team(user, team):
     """
     if user.is_superuser:
         return True
-    
+
     workspace = team.client.workspace
     is_admin = is_workspace_admin(user, workspace)
-    
+
     is_lead = team.team_lead == user
-    
+
     return is_admin or is_lead
 
 
@@ -181,16 +180,16 @@ def create_team(request, client_id):
     form = TeamForm(request.POST or None, workspace=workspace)
 
     if form.is_valid():
-            team = form.save(commit=False)
-            team.client = client
-            team.save()
-            form.save_m2m()
+        team = form.save(commit=False)
+        team.client = client
+        team.save()
+        form.save_m2m()
 
-            messages.success(
-                request,
-                f"Team '{team.name}' created successfully with {team.members.count()} members"
-            )
-            return redirect('client_teams', client_id=client.id)
+        messages.success(
+            request,
+            f"Team '{team.name}' created successfully with {team.members.count()} members"
+        )
+        return redirect('client_teams', client_id=client.id)
 
     return render(request, 'teams/create_team.html', {
         'form': form,
@@ -324,7 +323,6 @@ def team_list(request, client_id):
         if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not a member of this workspace")
 
-
     if request.user.is_superuser or is_admin:
         teams = Team.objects.filter(client=client)
     else:
@@ -340,7 +338,6 @@ def team_list(request, client_id):
             client__workspace__membership__role__iexact='admin'
         )
         teams = teams.distinct()
-
 
     return render(request, 'teams/team_list.html', {
         'teams': teams,
@@ -358,7 +355,7 @@ def all_user_teams(request):
     """
     search_query = request.GET.get('search', '')
     sort_by = request.GET.get('sort', '-created_at')
-    
+
     # Check if user is a workspace admin of any workspace
     admin_workspaces = Workspace.objects.filter(membership__user=request.user, membership__role="admin")
     is_admin_of_any = admin_workspaces.exists()
@@ -370,7 +367,8 @@ def all_user_teams(request):
         )
         is_admin = True
     elif is_admin_of_any:
-        teams_queryset = Team.objects.filter(client__workspace__in=admin_workspaces).prefetch_related("members").annotate(
+        teams_queryset = Team.objects.filter(client__workspace__in=admin_workspaces).prefetch_related(
+            "members").annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).distinct()
@@ -406,7 +404,8 @@ def all_user_teams(request):
     view_type = request.GET.get('view', 'card')
 
     if request.headers.get('HX-Request'):
-        return render(request, 'includes/team_list_fragment.html', {'teams': teams_queryset, 'is_admin': is_admin, 'view_type': view_type})
+        return render(request, 'includes/team_list_fragment.html',
+                      {'teams': teams_queryset, 'is_admin': is_admin, 'view_type': view_type})
 
     return render(request, 'teams/all_teams.html', {
         'teams': teams_queryset,
@@ -443,7 +442,6 @@ def delete_team(request, team_id):
 
     messages.success(request, f"Team '{team_name}' deleted successfully")
     return redirect('client_teams', client_id=client.id)
-
 
 # =========================
 # TEAM MEMBER QUICK ACTIONS

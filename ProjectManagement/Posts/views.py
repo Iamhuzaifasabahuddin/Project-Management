@@ -1,30 +1,26 @@
-from django.conf import settings
+import base64
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db import transaction
 from django.urls import reverse
 
 from Teams.models import Team
+from workspaces.models import Membership, Workspace
+from workspaces.services import is_workspace_admin, is_workspace_member
 from .forms import CommentForm, PostForm, TaskForm, PrintTaskForm
 from .models import Post, Comment, PostFile, CommentFile, Task
 from .tasks import (
     send_post_email_task,
-    send_slack_post_notification_task,
-    upload_files_to_slack_task,
     send_comment_notification_task,
     send_assigned_task_email_task,
     send_task_completion_request_email_task,
     send_task_status_notification_task,
 
 )
-from workspaces.models import Client, Membership
-import base64
-
-
-from workspaces.services import is_workspace_admin, is_workspace_member
 
 
 # =========================
@@ -58,9 +54,12 @@ def team_tasks(request, team_id):
     )
 
     if is_admin:
-        tasks_queryset = Task.objects.filter(team=team).select_related('team').prefetch_related('assigned_to', 'posts').order_by('-created_at')
+        tasks_queryset = Task.objects.filter(team=team).select_related('team').prefetch_related('assigned_to',
+                                                                                                'posts').order_by(
+            '-created_at')
     else:
-        tasks_queryset = Task.objects.filter(team=team, assigned_to=request.user).select_related('team').prefetch_related('assigned_to', 'posts').order_by('-created_at')
+        tasks_queryset = Task.objects.filter(team=team, assigned_to=request.user).select_related(
+            'team').prefetch_related('assigned_to', 'posts').order_by('-created_at')
 
     view_type = request.GET.get('view', 'card')
 
@@ -137,6 +136,7 @@ def create_task(request, team_id):
         "client": team.client
     })
 
+
 @login_required
 def task_completion_request(request, task_id):
     """
@@ -151,7 +151,7 @@ def task_completion_request(request, task_id):
     if not request.user.is_superuser:
         is_assigned = request.user in task.assigned_to.all()
         is_admin = (
-            request.user == team.team_lead or is_workspace_admin(request.user, workspace)
+                request.user == team.team_lead or is_workspace_admin(request.user, workspace)
         )
         if not (is_assigned or is_admin):
             raise PermissionDenied("Not assigned to this task")
@@ -168,19 +168,19 @@ def task_completion_request(request, task_id):
     admin_emails = {m.user.email for m in admin_memberships if m.user.email}
     if team.team_lead and team.team_lead.email:
         admin_emails.add(team.team_lead.email)
-    
+
     to_emails = list(admin_emails)
 
     if to_emails:
         approve_url = request.build_absolute_uri(reverse('task_approve', kwargs={'task_id': task.id}))
         decline_url = request.build_absolute_uri(reverse('task_decline', kwargs={'task_id': task.id}))
-        
+
         context = {
             "approve_url": approve_url,
             "decline_url": decline_url,
             "task_url": request.build_absolute_uri(reverse('team_tasks', kwargs={'team_id': team.id})),
         }
-        
+
         send_task_completion_request_email_task.delay(
             user_id=request.user.id,
             task_id=task.id,
@@ -204,9 +204,9 @@ def task_approve(request, task_id):
 
     # Permission check
     is_admin = (
-        request.user.is_superuser or
-        request.user == team.team_lead or
-        is_workspace_admin(request.user, workspace)
+            request.user.is_superuser or
+            request.user == team.team_lead or
+            is_workspace_admin(request.user, workspace)
     )
     if not is_admin:
         raise PermissionDenied("Only admins or team leads can approve tasks.")
@@ -248,9 +248,9 @@ def task_decline(request, task_id):
 
     # Permission check
     is_admin = (
-        request.user.is_superuser or
-        request.user == team.team_lead or
-        is_workspace_admin(request.user, workspace)
+            request.user.is_superuser or
+            request.user == team.team_lead or
+            is_workspace_admin(request.user, workspace)
     )
     if not is_admin:
         raise PermissionDenied("Only admins or team leads can decline tasks.")
@@ -281,6 +281,7 @@ def task_decline(request, task_id):
     messages.warning(request, f"Completion request for '{task.name}' declined.")
     return redirect("team_tasks", team_id=team.id)
 
+
 @login_required
 def delete_task(request, task_id):
     """
@@ -307,7 +308,6 @@ def delete_task(request, task_id):
     return redirect("team_tasks", team_id=team_id)
 
 
-
 @login_required
 def all_user_tasks(request):
     """
@@ -317,16 +317,18 @@ def all_user_tasks(request):
     search_query = request.GET.get('search', '')
     sort_by = request.GET.get('sort', '-created_at')
     filter_status = request.GET.get('status', 'all')
-    
+
     # Check if user is a workspace admin of any workspace
     admin_workspaces = Workspace.objects.filter(membership__user=request.user, membership__role="admin")
     is_admin_of_any = admin_workspaces.exists()
 
     if request.user.is_superuser:
-        tasks_queryset = Task.objects.all().select_related('team__client__workspace').prefetch_related('assigned_to', 'posts')
+        tasks_queryset = Task.objects.all().select_related('team__client__workspace').prefetch_related('assigned_to',
+                                                                                                       'posts')
     elif is_admin_of_any:
         # Admins see all tasks in their admin workspaces
-        tasks_queryset = Task.objects.filter(team__client__workspace__in=admin_workspaces).distinct().select_related('team__client__workspace').prefetch_related('assigned_to', 'posts')
+        tasks_queryset = Task.objects.filter(team__client__workspace__in=admin_workspaces).distinct().select_related(
+            'team__client__workspace').prefetch_related('assigned_to', 'posts')
     else:
         # Regular users see only their tasks
         tasks_queryset = Task.objects.filter(
@@ -395,7 +397,6 @@ def task_posts(request, task_id):
     if not request.user.is_superuser or not is_workspace_admin(request.user, workspace):
         if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not allowed")
-
 
     posts = Post.objects.filter(task=task).select_related(
         'author',
@@ -562,7 +563,8 @@ def post_detail(request, post_id):
         if not is_workspace_member(request.user, team.client.workspace):
             raise PermissionDenied("Not allowed")
 
-    comments = Comment.objects.filter(post=post).select_related('author').prefetch_related('files').order_by("-created_at")
+    comments = Comment.objects.filter(post=post).select_related('author').prefetch_related('files').order_by(
+        "-created_at")
 
     form = CommentForm(request.POST or None, request.FILES or None)
 
@@ -704,7 +706,6 @@ def print_task(request, team_id):
                 to_emails=to_emails,
                 context_data=context
             )
-
 
             messages.success(request, f"Print task '{task_name}' created successfully.")
             return redirect("team_tasks", team_id=team.id)

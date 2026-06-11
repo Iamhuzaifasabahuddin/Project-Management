@@ -4,6 +4,13 @@
 
 {% block title %}{{ workspace.name }} - Hexz Connect{% endblock %}
 
+{% block breadcrumbs %}
+<a href="{% url 'dashboard' %}">Dashboard</a> / 
+<a href="{% url 'workspace_list' %}">Workspaces</a> / 
+<a href="{% url 'workspace_detail' workspace.id %}">{{ workspace.name }}</a> / 
+<span>Clients</span>
+{% endblock %}
+
 {% block content %}
 <header class="page-header">
     <div class="container">

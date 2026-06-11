@@ -4,6 +4,10 @@
 
 {% block title %}Dashboard - Hexz Connect{% endblock %}
 
+{% block breadcrumbs %}
+    <span>Dashboard</span>
+{% endblock %}
+
 {% block content %}
 <header class="page-header">
     <div class="container">
@@ -39,8 +43,18 @@
     <div id="workspaceGrid" 
          hx-get="{% url 'dashboard' %}" 
          hx-trigger="every 15s"
-         hx-swap="innerHTML">
+         hx-swap="innerHTML"
+         hx-indicator="#workspace-indicator">
         {% include "includes/dashboard_workspace_list.html" %}
+    </div>
+
+    <!-- Skeleton Loader (Hidden by default, shown during HTMX request) -->
+    <div id="workspace-indicator" class="htmx-indicator">
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4"><div class="skeleton skeleton-card"></div></div>
+            <div class="col-md-6 col-lg-4"><div class="skeleton skeleton-card"></div></div>
+            <div class="col-md-6 col-lg-4"><div class="skeleton skeleton-card"></div></div>
+        </div>
     </div>
 
         <!-- Latest Tasks Section -->

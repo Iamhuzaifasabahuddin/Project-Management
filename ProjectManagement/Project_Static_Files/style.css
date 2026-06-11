@@ -308,3 +308,74 @@ h1, h2, h3, h4, h5, h6, .font-syne {
 .form-control.is-valid:focus, .was-validated .form-control:valid:focus {
     box-shadow: none;
 }
+
+/* ── Skeleton Loaders ── */
+.skeleton {
+    background: #eee;
+    background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+    border-radius: 4px;
+    background-size: 200% 100%;
+    animation: 1.5s shine linear infinite;
+}
+
+@keyframes shine {
+    to {
+        background-position-x: -200%;
+    }
+}
+
+.skeleton-card {
+    height: 160px;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: block;
+}
+.htmx-request.htmx-indicator {
+    display: block;
+}
+
+/* ── Sidebar ── */
+#sidebar {
+    width: 250px;
+    background: var(--black);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 2rem;
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+.main-content {
+    margin-left: 250px;
+    padding: 2rem;
+}
+.sidebar-link {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    padding: 0.75rem 0;
+    display: block;
+    transition: 0.2s;
+}
+.sidebar-link:hover { color: var(--gold); }
+
+/* ── Breadcrumbs ── */
+.breadcrumb {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1rem;
+}
+.breadcrumb a {
+    color: var(--gold-dim);
+    text-decoration: none;
+}
+
+

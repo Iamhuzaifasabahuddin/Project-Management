@@ -1,12 +1,13 @@
 import os
+
 from dotenv import load_dotenv
+
 load_dotenv(".env")
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 
 from Posts.models import Post
@@ -18,12 +19,27 @@ from workspaces.services import is_workspace_admin, is_workspace_member
 
 
 # =========================
+# LANDING PAGE
+# =========================
+
+def landing_page(request):
+    """
+    Public landing page for unauthenticated users.
+    Redirects to dashboard if user is already logged in.
+    """
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    return render(request, "landing.html")
+
+
+# =========================
 # ADMIN HUB (STATISTICS)
 # =========================
 
 from django.db.models import Sum, Count, Q
 from django.utils import timezone
 from datetime import timedelta
+
 
 @login_required
 def admin_hub(request):
@@ -41,7 +57,7 @@ def admin_hub(request):
         raise PermissionDenied("You do not have permission to view the Admin Hub.")
 
     from Posts.models import Task, Post, Comment
-    
+
     # User Stats
     total_users = User.objects.count()
     active_users_last_30 = User.objects.filter(last_login__gte=timezone.now() - timedelta(days=30)).count()
@@ -73,7 +89,7 @@ def admin_hub(request):
         awaiting_approval=Count('id', filter=Q(status='awaiting_approval')),
         completed=Count('id', filter=Q(status='completed'))
     )
-    
+
     overdue_tasks = tasks_qs.filter(
         due_date__lt=timezone.localdate()
     ).exclude(status='completed').count()
@@ -146,24 +162,30 @@ def dashboard_view(request):
         is_admin = True
     elif admin_workspaces.exists():
         workspaces = member_workspaces
-        latest_teams = Team.objects.filter(client__workspace__in=admin_workspaces).select_related('client', 'team_lead').prefetch_related('members').annotate(
+        latest_teams = Team.objects.filter(client__workspace__in=admin_workspaces).select_related('client',
+                                                                                                  'team_lead').prefetch_related(
+            'members').annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).distinct().order_by('-id')[:5]
-        
-        latest_tasks = Task.objects.filter(team__client__workspace__in=admin_workspaces, status="pending").select_related('team').order_by('-created_at')[:5]
+
+        latest_tasks = Task.objects.filter(team__client__workspace__in=admin_workspaces,
+                                           status="pending").select_related('team').order_by('-created_at')[:5]
         latest_clients = Client.objects.filter(workspace__in=admin_workspaces).order_by('-id')[:5]
         is_admin = True
     else:
         # Regular user sees only their own
         workspaces = member_workspaces
-        latest_teams = Team.objects.filter(members=request.user).select_related('client', 'team_lead').prefetch_related('members').annotate(
+        latest_teams = Team.objects.filter(members=request.user).select_related('client', 'team_lead').prefetch_related(
+            'members').annotate(
             total_tasks=Count('tasks'),
             completed_tasks=Count('tasks', filter=Q(tasks__status='completed'))
         ).distinct().order_by('-id')[:5]
-        latest_tasks = Task.objects.filter(assigned_to=request.user, status="pending").select_related('team').distinct().order_by(
+        latest_tasks = Task.objects.filter(assigned_to=request.user, status="pending").select_related(
+            'team').distinct().order_by(
             '-created_at')[:5]
-        latest_clients = Client.objects.filter(teams__members=request.user, is_archived=False).distinct().order_by('-id')[:5]
+        latest_clients = Client.objects.filter(teams__members=request.user, is_archived=False).distinct().order_by(
+            '-id')[:5]
         is_admin = False
 
     context = {
@@ -285,6 +307,7 @@ def assign_role(request):
 import csv
 from django.http import HttpResponse
 
+
 @login_required
 def export_archived_clients(request):
     if not request.user.is_superuser and not Membership.objects.filter(user=request.user, role="admin").exists():
@@ -298,7 +321,8 @@ def export_archived_clients(request):
 
     clients = Client.objects.filter(is_archived=True)
     if not request.user.is_superuser:
-        clients = clients.filter(workspace__membership__user=request.user, workspace__membership__role='admin').distinct()
+        clients = clients.filter(workspace__membership__user=request.user,
+                                 workspace__membership__role='admin').distinct()
 
     for client in clients:
         writer.writerow([client.id, client.name, client.email, client.address, client.number, client.archived_at])
@@ -312,9 +336,9 @@ def all_clients(request):
     sort_by = request.GET.get('sort', '-created_at')
     filter_archived = request.GET.get('archived', 'active')
     view_type = request.GET.get('view', 'card')
-    
+
     is_admin = request.user.is_superuser or Membership.objects.filter(
-        user=request.user, 
+        user=request.user,
         role="admin"
     ).exists()
 
@@ -359,8 +383,10 @@ def all_clients(request):
 
     return render(request, "all_clients.html", context)
 
+
 def get_users_by_role(workspace, role):
     return User.objects.filter(membership__workspace=workspace, membership__role=role)
+
 
 def get_team_lead_by_email(email):
     """Get a user by email, returns None if not found"""
@@ -371,6 +397,7 @@ def get_team_lead_by_email(email):
     except User.DoesNotExist:
         return None
 
+
 def add_user_to_workspace(user, workspace, role):
     """Add a user to workspace if not already a member. Returns the membership."""
     membership, created = Membership.objects.get_or_create(
@@ -379,6 +406,7 @@ def add_user_to_workspace(user, workspace, role):
         defaults={'role': role}
     )
     return membership, created
+
 
 def create_default_teams_for_client(client, workspace):
     """
@@ -459,6 +487,7 @@ def create_clients(request, workspace_id):
         client.save()
         form.save_m2m()
         create_default_teams_for_client(client, workspace)
+        messages.success(request, f"Client '{client.name}' created successfully.")
         return redirect("client_details", workspace_id=workspace.id)
 
     return render(request, "create_client.html", {
@@ -540,9 +569,6 @@ def view_client_details(request, client_id):
     return render(request, "view_client_details.html", {
         "client": client,
     })
-
-
-
 
 
 @login_required

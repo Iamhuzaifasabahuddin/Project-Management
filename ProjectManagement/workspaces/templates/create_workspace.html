@@ -4,6 +4,12 @@
 
 {% block title %}Create Workspace{% endblock %}
 
+{% block breadcrumbs %}
+<a href="{% url 'dashboard' %}">Dashboard</a> / 
+<a href="{% url 'workspace_list' %}">Workspaces</a> / 
+<span>New Workspace</span>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
     <div class="container">

@@ -4,7 +4,6 @@
 
 {% block title %}Workspace Content - Hexz Connect{% endblock %}
 
-{% block content %}
 <header class="page-header">
     <div class="container">
         <div class="row align-items-end">
@@ -121,32 +120,6 @@
         </div>
     </div>
 </div>
-
-{% if messages %}
-<div class="toast-container position-fixed bottom-0 end-0 p-3">
-    {% for message in messages %}
-    <div class="toast show border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header bg-black text-white py-2">
-            <div class="hex-icon me-2" style="width: 20px; height: 20px; font-size: 8px;">H</div>
-            <strong class="me-auto small font-syne">HEXZ NOTIFICATION</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
-        </div>
-        <div class="toast-body bg-white py-3">
-            {{ message }}
-        </div>
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const toastList = document.querySelectorAll('.toast');
-        toastList.forEach(toastEl => {
-            new bootstrap.Toast(toastEl, { delay: 5000 }).show();
-        });
-    });
-</script>
 
 <style>
     .hover-gold:hover { color: var(--gold-dim) !important; }

@@ -4,6 +4,16 @@
 
 {% block title %}Tasks - {{ team.name }}{% endblock %}
 
+{% block breadcrumbs %}
+<a href="{% url 'dashboard' %}">Dashboard</a> / 
+<a href="{% url 'workspace_list' %}">Workspaces</a> / 
+<a href="{% url 'workspace_detail' workspace.id %}">{{ workspace.name }}</a> / 
+<a href="{% url 'client_details' workspace.id %}">Clients</a> / 
+<a href="{% url 'view_client' client.id %}">{{ client.name }}</a> / 
+<a href="{% url 'client_teams' client.id %}">Teams</a> / 
+<span>{{ team.name }} Tasks</span>
+{% endblock %}
+
 {% block content %}
 <!-- HEADER -->
 <div class="page-header">
@@ -44,18 +54,8 @@
             </form>
         </div>
     </div>
-    <!-- ALERTS -->
-    {% if messages %}
-    {% for message in messages %}
-    <div class="alert alert-{{ message.tag }} alert-dismissible fade show border-0 shadow-sm mb-4">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-    {% endfor %}
-    {% endif %}
-
     <div id="taskAccordion" 
-         hx-get="{% url 'team_tasks' team.id %}?view={{ view_type }}" 
+         hx-get="{% url 'team_tasks' team.id %}" 
          hx-trigger="every 15s [!document.querySelector('.modal.show')]"
          hx-swap="innerHTML">
         {% include "includes/task_list_fragment.html" %}
