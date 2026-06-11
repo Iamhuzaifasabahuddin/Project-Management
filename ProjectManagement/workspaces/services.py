@@ -34,7 +34,6 @@ def auto_archive_client_if_done(client):
     """
     from Posts.models import Task
     
-    # Check if the client actually has tasks (to avoid archiving empty clients immediately)
     has_tasks = Task.objects.filter(team__client=client).exists()
     
     if not has_tasks:

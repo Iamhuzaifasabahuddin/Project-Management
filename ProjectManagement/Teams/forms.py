@@ -55,11 +55,12 @@ class TeamForm(forms.ModelForm):
             }),
         }
 
-    def __init__(self, *args, workspace=None, **kwargs):
+    def __init__(self, *args, workspace=None, client=None,**kwargs):
         super().__init__(*args, **kwargs)
 
         # Store workspace for use in clean methods
         self.workspace = workspace
+        self.client = client
 
         # Ensure all fields are required
         self.fields['name'].required = True
@@ -82,13 +83,11 @@ class TeamForm(forms.ModelForm):
         })
 
         # Filter users by workspace if provided
-        if workspace:
-            workspace_user_ids = Membership.objects.filter(
-                workspace=workspace
-            ).values_list('user_id', flat=True).distinct()
+        if client:
+            client_assigned_to = client.assigned_to.values_list('id', flat=True).distinct()
 
             users_qs = User.objects.filter(
-                id__in=workspace_user_ids
+                id__in=client_assigned_to
             ).order_by('first_name', 'last_name', 'username')
 
             self.fields['team_lead'].queryset = users_qs
@@ -198,12 +197,11 @@ class TeamMembersForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.team = team
         self.workspace = workspace
+        client = team.client
 
-        if workspace:
-            workspace_user_ids = Membership.objects.filter(
-                workspace=workspace
-            ).values_list('user_id', flat=True).distinct()
-            qs = User.objects.filter(id__in=workspace_user_ids)
+        if client:
+            client_assigned_to_ids = client.assigned_to.values_list('id', flat=True).distinct()
+            qs = User.objects.filter(id__in=client_assigned_to_ids)
         else:
             qs = User.objects.all()
 

@@ -177,7 +177,7 @@ def create_team(request, client_id):
     if not is_workspace_admin(request.user, workspace):
         raise PermissionDenied("Only workspace admins can create teams")
 
-    form = TeamForm(request.POST or None, workspace=workspace)
+    form = TeamForm(request.POST or None, workspace=workspace, client=client)
 
     if form.is_valid():
         team = form.save(commit=False)
