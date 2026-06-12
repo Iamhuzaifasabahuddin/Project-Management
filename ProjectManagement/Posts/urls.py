@@ -15,5 +15,4 @@ urlpatterns = [
     path('task/<int:task_id>/complete/request', views.task_completion_request, name='task_completion_request'),
     path('task/<int:task_id>/approve/', views.task_approve, name='task_approve'),
     path('task/<int:task_id>/decline/', views.task_decline, name='task_decline'),
-    path('s3/presigned-url/', views.get_presigned_url, name='get_presigned_url'),
 ]
