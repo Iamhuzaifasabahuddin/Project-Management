@@ -318,7 +318,7 @@ def export_archived_clients(request):
     response['Content-Disposition'] = 'attachment; filename="archived_clients.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['ID', 'Name', 'Email', 'Address', 'Number', 'Archived At'])
+    writer.writerow(['ID', 'Name', 'Email', 'Address', 'Number', 'Creation Date', 'Archived At'])
 
     clients = Client.objects.filter(is_archived=True)
     if not request.user.is_superuser:
@@ -326,7 +326,7 @@ def export_archived_clients(request):
                                  workspace__membership__role='admin').distinct()
 
     for client in clients:
-        writer.writerow([client.id, client.name, client.email, client.address, client.number, client.archived_at])
+        writer.writerow([client.id, client.name, client.email, client.address, client.number, client.creation_date, client.archived_at])
 
     return response
 

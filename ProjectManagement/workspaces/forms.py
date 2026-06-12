@@ -72,7 +72,7 @@ class RoleAssignForm(forms.Form):
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ['name', 'join_date', 'notes', 'assigned_to']
+        fields = ['name', 'creation_date', 'notes', 'assigned_to']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -122,7 +122,7 @@ class ClientEditForm(forms.ModelForm):
     class Meta:
         model = Client
         fields = ['name', 'address', 'number', 'email', 'total_amount', 'amount_paid', 'payment_date', 'paid_type'
-                  ,'paid', 'join_date', 'notes', 'assigned_to']
+                  ,'paid', 'creation_date', 'notes', 'assigned_to']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',

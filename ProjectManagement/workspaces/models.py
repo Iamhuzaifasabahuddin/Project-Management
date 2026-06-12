@@ -41,7 +41,7 @@ class Client(models.Model):
     payment_date = models.DateField(null=True, blank=True)
     total_amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True, default=0)
 
-    join_date = models.DateField(null=True, blank=True)
+    creation_date = models.DateField(null=True, blank=True)
     assigned_to = models.ManyToManyField(
         User,
         related_name="clients"
