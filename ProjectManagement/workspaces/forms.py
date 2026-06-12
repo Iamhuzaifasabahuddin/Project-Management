@@ -79,7 +79,7 @@ class ClientForm(forms.ModelForm):
                 'placeholder': 'Enter client name',
                 'autocomplete': 'off',
             }),
-            'join_date': forms.DateInput(attrs={
+            'creation_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date',
             }),
@@ -170,7 +170,7 @@ class ClientEditForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date',
             }),
-            'join_date': forms.DateInput(attrs={
+            'creation_date': forms.DateInput(attrs={
                 'class': 'form-control',
                 'type': 'date',
             }),
