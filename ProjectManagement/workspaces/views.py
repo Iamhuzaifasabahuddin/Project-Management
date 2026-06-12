@@ -14,7 +14,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from Posts.models import Post
 from Teams.forms import TeamForm
 from Teams.models import Team
-from workspaces.forms import WorkspaceForm, RoleAssignForm, ClientForm
+from workspaces.forms import WorkspaceForm, RoleAssignForm, ClientForm, ClientEditForm
 from workspaces.models import Workspace, Membership, Client
 from workspaces.services import is_workspace_admin, is_workspace_member, sync_client_teams
 from Posts.tasks import send_client_assigned_notification_task
@@ -487,7 +487,7 @@ def edit_client(request, client_id):
     if not request.user.is_superuser and not is_workspace_admin(request.user, workspace):
         raise PermissionDenied("Only workspace admins can edit clients")
 
-    form = ClientForm(request.POST or None, instance=client, workspace=workspace)
+    form = ClientEditForm(request.POST or None, instance=client, workspace=workspace)
 
     if form.is_valid():
         client = form.save(commit=False)

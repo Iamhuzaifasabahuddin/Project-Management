@@ -30,17 +30,18 @@ class Client(models.Model):
     )
 
     name = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
-    number = models.CharField(max_length=20)
-    email = models.EmailField()
+    address = models.CharField(max_length=255, null=True, blank=True)
+    number = models.CharField(max_length=20, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
 
     paid = models.BooleanField(default=False)
-    amount_paid = models.DecimalField(decimal_places=2, max_digits=20)
-    paid_type = models.CharField(choices=Payment_method, max_length=20)
+    amount_paid = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True, default=0)
+    paid_type = models.CharField(choices=Payment_method, max_length=20, null=True, blank=True)
 
     payment_date = models.DateField(null=True, blank=True)
-    total_amount = models.DecimalField(decimal_places=2, max_digits=20)
+    total_amount = models.DecimalField(decimal_places=2, max_digits=20, null=True, blank=True, default=0)
 
+    join_date = models.DateField(null=True, blank=True)
     assigned_to = models.ManyToManyField(
         User,
         related_name="clients"

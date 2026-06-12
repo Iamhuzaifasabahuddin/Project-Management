@@ -72,8 +72,57 @@ class RoleAssignForm(forms.Form):
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
+        fields = ['name', 'join_date', 'notes', 'assigned_to']
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter client name',
+                'autocomplete': 'off',
+            }),
+            'join_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter notes',
+                'autocomplete': 'off',
+            }),
+            'assigned_to': Select2MultipleWidget(attrs={
+                'class': 'form-control',
+                'data-placeholder': 'Search and select users...',
+                'data-allow-clear': 'true',
+                'data-minimum-input-length': 0,
+                'data-close-on-select': False,
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        workspace = kwargs.pop('workspace', None)
+        super().__init__(*args, **kwargs)
+        
+        if workspace:
+            self.fields['assigned_to'].queryset = User.objects.filter(
+                membership__workspace=workspace
+            ).distinct()
+        
+        self.fields['assigned_to'].label_from_instance = self._user_label
+        self.fields['assigned_to'].required = True
+        self.fields['assigned_to'].help_text = 'Use CTRL key to select one or more users to assign this client'
+        self.fields['notes'].required = False
+
+    @staticmethod
+    def _user_label(user):
+        """Display user's full name or username"""
+        full_name = user.get_full_name()
+        return full_name if full_name.strip() else user.username
+
+
+class ClientEditForm(forms.ModelForm):
+    class Meta:
+        model = Client
         fields = ['name', 'address', 'number', 'email', 'total_amount', 'amount_paid', 'payment_date', 'paid_type'
-                  ,'paid', 'notes', 'assigned_to']
+                  ,'paid', 'join_date', 'notes', 'assigned_to']
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -121,6 +170,10 @@ class ClientForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date',
             }),
+            'join_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+            }),
             'notes': forms.Textarea(attrs={
                 'class': 'form-control',
                 'placeholder': 'Enter notes',
@@ -148,7 +201,7 @@ class ClientForm(forms.ModelForm):
         self.fields['assigned_to'].required = True
         self.fields['assigned_to'].help_text = 'Use CTRL key to select one or more users to assign this client'
         self.fields['notes'].required = False
-        self.fields['payment_date'].required = True
+        self.fields['payment_date'].required = False
         self.fields['amount_paid'].help_text = 'Amount the client has paid so far'
         self.fields['total_amount'].help_text = 'Total amount owed by the client'
 
@@ -164,28 +217,13 @@ class ClientForm(forms.ModelForm):
         full_name = user.get_full_name()
         return full_name if full_name.strip() else user.username
 
-    # def clean_name(self):
-    #     """Validate that client name doesn't already exist"""
-    #     name = self.cleaned_data['name'].strip()
-    #
-    #     query = Client.objects.filter(name__iexact=name)
-    #     if self.instance.pk:
-    #         query = query.exclude(pk=self.instance.pk)
-    #
-    #     if query.exists():
-    #         raise forms.ValidationError(
-    #             f"A client with the name '{name}' already exists."
-    #         )
-    #
-    #     return name
-
     def clean_email(self):
         """Validate that email doesn't already exist"""
         email = self.cleaned_data.get('email')
 
         if not email:
             return email
-        query = Client.objects.filter(email__iexact=email)
+        query = Client.objects.filter(email__icontains=email)
         if self.instance.pk:
             query = query.exclude(pk=self.instance.pk)
 

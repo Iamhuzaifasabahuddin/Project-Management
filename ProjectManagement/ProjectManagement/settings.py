@@ -257,6 +257,7 @@ CELERY_RESULT_EXPIRES = 3600
 # Task routing for different workers
 CELERY_TASK_ROUTES = {
     'Posts.tasks.send_assigned_task_email_task': {'queue': 'email'},
+    'Posts.tasks.send_client_assigned_notification_task': {'queue': 'email'},
     'Posts.tasks.send_post_email_task': {'queue': 'email'},
     'Posts.tasks.send_task_completion_request_email_task': {'queue': 'email'},
     'Posts.tasks.send_task_status_notification_task': {'queue': 'email'},
