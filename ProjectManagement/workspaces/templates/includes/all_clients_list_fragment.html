@@ -6,6 +6,7 @@
                 <th class="px-4 py-3">Client Name</th>
                 <th class="py-3">Email</th>
                 <th class="py-3">Status</th>
+                <th class="py-3">Created Date</th>
                 <th class="px-4 py-3 text-end">Action</th>
             </tr>
         </thead>
@@ -23,6 +24,9 @@
                     {% else %}
                     <span class="badge bg-success">Active</span>
                     {% endif %}
+                </td>
+                <td>
+                    {{ client.creation_date|default:"N/A" }}
                 </td>
                 <td class="px-4 text-end">
                     <a href="{% url 'client_teams' client.id %}" class="btn btn-sm btn-dark">

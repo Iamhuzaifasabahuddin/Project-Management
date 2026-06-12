@@ -54,9 +54,16 @@
                     <div class="fw-bold text-dark">{{ client.number }}</div>
                 </div>
 
-                <div>
+                <div class="mb-3">
                     <div class="field-label" style="color: var(--gold-dim);">Business Address</div>
-                    <div class="fw-bold text-dark">{{ client.address }}</div>
+                    <div class="fw-bold text-dark">{{ client.address|default:"Not provided" }}</div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="field-label" style="color: var(--gold-dim);">Created Date</div>
+                        <div class="fw-bold text-dark">{{ client.creation_date|default:"N/A" }}</div>
+                    </div>
                 </div>
             </div>
 

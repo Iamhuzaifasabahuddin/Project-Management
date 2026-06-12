@@ -15,7 +15,7 @@
                 </div>
                 <h3 class="mb-1 h5"><a href="{% url 'view_client' client.id %}"
                                     style="text-decoration: none; color: var(--black)" class="client-link">{{ client.name }}</a></h3>
-                <p class="muted small mb-0 text-truncate">{{ client.email }}</p>
+                <p class="muted small mb-0 text-truncate">{{ client.email|default:"N/A" }}</p>
             </div>
 
             <div class="mt-auto pt-4 border-top">
@@ -87,6 +87,12 @@
                                 <div>
                                     <div class="muted small">Notes</div>
                                     <div class="fw-bold text-dark">{{ client.notes|default:"N/A" }}</div>
+                                </div>
+                                <div class="row g-3 mt-2 pt-2 border-top">
+                                    <div class="col-6">
+                                        <div class="muted small">Created Date</div>
+                                        <div class="fw-bold text-dark">{{ client.creation_date|default:"N/A" }}</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -216,6 +222,12 @@
                                             <div class="muted small">Notes</div>
                                             <div class="fw-bold text-dark">{{ client.notes|default:"N/A" }}</div>
                                         </div>
+                                        <div class="row g-3 mt-2 pt-2 border-top">
+                                    <div class="col-6">
+                                        <div class="muted small">Created Date</div>
+                                        <div class="fw-bold text-dark">{{ client.creation_date|default:"N/A" }}</div>
+                                    </div>
+                                </div>
                                     </div>
                                 </div>
                             </div>
