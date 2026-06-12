@@ -265,7 +265,7 @@ def workspace_detail(request, workspace_id):
         if not is_workspace_member(request.user, workspace):
             raise PermissionDenied("Not a member")
 
-    posts = Post.objects.filter(client__workspace=workspace).order_by("-created_at")
+    posts = Post.objects.filter(task__team__client__workspace=workspace).order_by("-created_at")
 
     return render(request, "workspace_detail.html", {
         "workspace": workspace,

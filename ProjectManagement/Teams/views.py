@@ -268,83 +268,8 @@ def manage_team_members(request, team_id):
     })
 
 
-# =========================
-# TEAM DETAIL/LIST VIEWS
-# =========================
-
-@login_required
-@require_http_methods(["GET"])
-def team_detail(request, team_id):
-    """
-    Display team details including members and info.
-
-    Permissions:
-    - Team members
-    - Workspace admins
-    - Team Lead
-    - Superusers
-    """
-    team = get_object_or_404(Team, id=team_id)
-    workspace = team.client.workspace
-
-    # Permission check
-    is_member = is_team_member(request.user, team)
-    is_admin = is_workspace_admin(request.user, workspace)
-    is_lead = (team.team_lead == request.user)
-
-    if not (is_member or is_admin or is_lead):
-        raise PermissionDenied("You don't have access to this team")
-
-    return render(request, 'teams/team_detail.html', {
-        'team': team,
-        'workspace': workspace,
-        'members': team.members.all().order_by('first_name', 'last_name'),
-        'is_admin': is_admin,
-        'is_lead': is_lead,
-        'can_edit': is_admin or is_lead,
-    })
 
 
-@login_required
-def team_list(request, client_id):
-    """
-    List all teams for a client.
-
-    Permissions:
-    - Workspace members
-    - Superusers
-    """
-    client = get_object_or_404(Client, id=client_id)
-    workspace = client.workspace
-    is_admin = is_workspace_admin(request.user, workspace)
-
-    # Permission check
-    if not request.user.is_superuser or not is_admin:
-        if not is_workspace_member(request.user, workspace):
-            raise PermissionDenied("Not a member of this workspace")
-
-    if request.user.is_superuser or is_admin:
-        teams = Team.objects.filter(client=client)
-    else:
-        teams = Team.objects.filter(
-            client=client,
-            members=request.user
-        ) | Team.objects.filter(
-            client=client,
-            team_lead=request.user
-        ) | Team.objects.filter(
-            client=client,
-            client__workspace__membership__user=request.user,
-            client__workspace__membership__role__iexact='admin'
-        )
-        teams = teams.distinct()
-
-    return render(request, 'teams/team_list.html', {
-        'teams': teams,
-        'client': client,
-        'workspace': workspace,
-        'is_admin': is_admin,
-    })
 
 
 @login_required

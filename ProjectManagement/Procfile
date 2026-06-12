@@ -1,3 +1,3 @@
 web: python manage.py collectstatic --noinput && gunicorn ProjectManagement.wsgi:application --bind 0.0.0.0:$PORT --workers 4 --threads 4 --worker-class gthread --timeout 120 --log-level info --no-sendfile
 release: python manage.py makemigrations && python manage.py migrate
-worker: celery -A ProjectManagement worker --pool=threads --concurrency=4 -l info -Q celery,email,slack
+worker: celery -A ProjectManagement worker --pool=gevent --concurrency=100 -l info -Q celery,email

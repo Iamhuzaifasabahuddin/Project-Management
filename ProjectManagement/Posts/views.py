@@ -452,7 +452,6 @@ def create_post(request, task_id):
 
         uploaded_files = request.FILES.getlist('files')
         file_ids = []
-        file_data = []
 
         for uploaded_file in uploaded_files:
             post_file = PostFile.objects.create(
@@ -461,14 +460,6 @@ def create_post(request, task_id):
             )
             file_ids.append(post_file.id)
 
-            uploaded_file.seek(0)
-            file_content = uploaded_file.read()
-
-            file_data.append({
-                'name': uploaded_file.name,
-                'content': base64.b64encode(file_content).decode('utf-8'),
-                'content_type': uploaded_file.content_type
-            })
         post_url = request.build_absolute_uri(
             reverse('post_detail', kwargs={'post_id': post.id})
         )

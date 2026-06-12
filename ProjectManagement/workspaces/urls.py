@@ -12,7 +12,6 @@ urlpatterns = [
     path('roles/assign/', views.assign_role, name='assign_role'),
     path('workspaces/<int:workspace_id>/', views.workspace_detail, name='workspace_detail'),
     path('workspace/<int:workspace_id>/clients', views.client_detail, name='client_details'),
-    # path('clients/<int:client_id>/posts', views.client_posts, name='client_posts'),
     path('workspace/<int:workspace_id>/clients/list', views.client_list, name='client_list'),
     path('client/<int:client_id>', views.view_client_details, name='view_client'),
     path('client/<int:client_id>/edit', views.edit_client, name='edit_client'),
