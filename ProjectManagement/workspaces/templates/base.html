@@ -32,6 +32,9 @@
 <body>
 
 {% if request.user.is_authenticated %}
+    <button class="hamburger" style="display: none; position: fixed; top: 1rem; left: 1rem; z-index: 1001; background: var(--black); color: var(--gold); border: none; padding: 0.5rem; border-radius: 4px;">
+        <i class="bi bi-list"></i>
+    </button>
     {% include 'includes/sidebar.html' %}
     <div class="main-content">
 {% endif %}
@@ -46,6 +49,11 @@
 
 {% if request.user.is_authenticated %}
     </div>
+    <script>
+        document.querySelector('.hamburger').addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
+        });
+    </script>
 {% endif %}
 
 <!-- Toast Container -->

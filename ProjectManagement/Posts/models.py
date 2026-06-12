@@ -111,6 +111,11 @@ class PostFile(models.Model):
 
     def __str__(self):
         return f"{self.post.title} - {self.file.name}"
+    
+    @property
+    def filename(self):
+        import os
+        return os.path.basename(self.file.name)
 
     class Meta:
         ordering = ['-uploaded_at']

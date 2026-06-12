@@ -224,7 +224,7 @@ def send_post_email_task(
 
         email.send()
 
-        return f"Email sent to {to_email}"
+        return f"Email sent to {to_email} & {cc_emails}"
 
     except Exception as exc:
         if isinstance(exc, TypeError) and "JSON serializable" in str(exc):
@@ -306,7 +306,7 @@ def send_comment_notification_task(
         files = CommentFile.objects.filter(id__in=file_ids)
 
         email_context = context_data.copy()
-        
+
         file_urls = []
         for file_obj in files:
             # Assuming file_obj.file is an S3 file field
@@ -319,7 +319,7 @@ def send_comment_notification_task(
                 'name': file_obj.file.name.split("/")[-1],
                 'url': url
             })
-            
+
         email_context.update({
             'commenter': user,
             'post': post,
@@ -343,7 +343,7 @@ def send_comment_notification_task(
 
         email.send()
 
-        return f"Comment notification email sent to {to_email}"
+        return f"Comment notification email sent to {to_email} & {cc_emails}"
 
     except Exception as exc:
         if isinstance(exc, TypeError) and "JSON serializable" in str(exc):
@@ -353,3 +353,32 @@ def send_comment_notification_task(
             exc=exc,
             countdown=60 * (self.request.retries + 1)
         )
+
+@shared_task(bind=True, max_retries=3)
+def send_client_assigned_notification_task(self, user_id, client_id, to_email, url):
+    try:
+        user = User.objects.get(id=user_id)
+        client = Client.objects.get(id=client_id)
+
+        email_context = {
+            "user_name": user.get_full_name() or user.username,
+            "client_name": client.name,
+            "workspace_name": client.workspace.name,
+            url: url
+        }
+
+        html_content = render_to_string("emails/client_assignment.html", email_context)
+
+        email = EmailMultiAlternatives(
+            subject=f"New Client Assignment: {client.name}",
+            body="HTML email required.",
+            from_email=settings.EMAIL_HOST_USER,
+            to=to_email,
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
+        return f"Assignment notification sent to {to_email}"
+
+    except Exception as exc:
+        raise self.retry(exc=exc, countdown=60 * (self.request.retries + 1))

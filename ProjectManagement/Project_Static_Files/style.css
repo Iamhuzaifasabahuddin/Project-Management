@@ -353,11 +353,37 @@ h1, h2, h3, h4, h5, h6, .font-syne {
     display: flex;
     flex-direction: column;
     z-index: 1000;
+    transition: transform 0.3s ease;
 }
+
+/* Mobile Sidebar (Hidden by default) */
+@media (max-width: 991px) {
+    #sidebar {
+        transform: translateX(-100%);
+    }
+    #sidebar.active {
+        transform: translateX(0);
+    }
+    .main-content {
+        margin-left: 0 !important;
+        padding-top: 4rem; /* Increased top padding */
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    .hamburger {
+        display: block !important;
+    }
+    .breadcrumb {
+        margin-top: 1rem; /* Added margin to breadcrumb on mobile */
+    }
+}
+
 .main-content {
     margin-left: 250px;
     padding: 2rem;
+    transition: margin-left 0.3s ease;
 }
+
 .sidebar-link {
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
@@ -378,4 +404,17 @@ h1, h2, h3, h4, h5, h6, .font-syne {
     text-decoration: none;
 }
 
+.client-link {
+    text-decoration: none;
+    color: var(--black);
+    transition: color 0.2s ease;
+}
+
+.client-link:hover {
+    color: #0d6efd; /* Bootstrap blue */
+}
+
+.client-link:focus {
+    color: #0d6efd;
+}
 

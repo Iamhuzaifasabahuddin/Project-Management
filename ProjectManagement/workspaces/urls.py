@@ -15,6 +15,7 @@ urlpatterns = [
     # path('clients/<int:client_id>/posts', views.client_posts, name='client_posts'),
     path('workspace/<int:workspace_id>/clients/list', views.client_list, name='client_list'),
     path('client/<int:client_id>', views.view_client_details, name='view_client'),
+    path('client/<int:client_id>/edit', views.edit_client, name='edit_client'),
     path('workspaces/<int:workspace_id>/add client', views.create_clients, name='create_client'),
     path('allclients/', views.all_clients, name='all_clients'),
     path('clients/export-archived/', views.export_archived_clients, name='export_archived_clients'),

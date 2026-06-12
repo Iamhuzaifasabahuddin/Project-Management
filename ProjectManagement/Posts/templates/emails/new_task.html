@@ -1,14 +1,25 @@
-<h2>New Task Assigned</h2>
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body style="font-family: 'DM Sans', sans-serif; color: #0a0a0a; line-height: 1.6; background: #f7f6f2; margin: 0; padding: 20px;">
+    <div class="container" style="max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border: 1.5px solid #e0ddd6; border-radius: 4px;">
+        <h2 style="font-family: 'Syne', sans-serif; font-weight: 700; color: #0a0a0a; margin-top: 0;">New Task Assigned</h2>
 
-<p><strong>Assigner:</strong> {{ author_name }}</p>
-<p><strong>Client:</strong> {{ client_name }}</p>
-<p><strong>Brand:</strong> {{ workspace_name }}</p>
-<p><strong>Title:</strong> {{ task_name }}</p>
-<p><strong>Due Date:</strong> {{ due_date }}</p>
-<p><strong>Content:</strong> {{ task_description }}</p>
+        <p><strong>Assigner:</strong> {{ author_name }}</p>
+        <p><strong>Client:</strong> {{ client_name }}</p>
+        <p><strong>Brand:</strong> {{ workspace_name }}</p>
+        <p><strong>Title:</strong> {{ task_name }}</p>
+        <p><strong>Due Date:</strong> {{ due_date }}</p>
+        <p><strong>Content:</strong> {{ task_description }}</p>
 
-<p>
-    <a href="{{ task_url }}">
-        View Update
-    </a>
-</p>
+        <br>
+
+        <p>
+            <a href="{{ task_url }}" target="_blank" style="background: #FFD700; color: #0a0a0a; padding: 10px 20px; border-radius: 4px; display: inline-block; text-decoration: none; font-weight: 600;">
+                View Update
+            </a>
+        </p>
+    </div>
+</body>
+</html>

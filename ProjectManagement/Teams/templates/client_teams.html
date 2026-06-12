@@ -40,8 +40,8 @@
 
 <div class="container pb-5">
     <div class="row mb-4">
-        <div class="col-md-12">
-            <form method="GET" class="d-flex flex-wrap gap-2 align-items-center justify-content-end"
+        <div class="col-12">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-center justify-content-center justify-content-md-end"
                   hx-get="{% url 'client_teams' client.id %}"
                   hx-target="#teamGrid"
                   hx-trigger="change from:select">
@@ -55,7 +55,8 @@
         </div>
     </div>
     <div id="teamGrid" 
-         hx-get="{% url 'client_teams' client.id %}?view={{ view_type }}" 
+         hx-get="{% url 'client_teams' client.id %}"
+         hx-include="[name='view']"
          hx-trigger="every 15s"
          hx-swap="innerHTML">
         {% include "includes/team_list_fragment.html" %}

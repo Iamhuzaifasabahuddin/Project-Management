@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body style="font-family: 'DM Sans', sans-serif; color: #0a0a0a; line-height: 1.6; background: #f7f6f2; margin: 0; padding: 20px;">
+    <div class="container" style="max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border: 1.5px solid #e0ddd6; border-radius: 4px;">
+        <h2 style="font-family: 'Syne', sans-serif; font-weight: 700; color: #0a0a0a; margin-top: 0;">New Client Assignment</h2>
+        
+        <p>Hello <strong>{{ user_name }}</strong>,</p>
+
+        <p>
+            You have been assigned to a new client:
+            <span style="color: #c9a800; font-weight: 600;">{{ client_name }}</span>
+            in the workspace
+            <span style="color: #c9a800; font-weight: 600;">{{ workspace_name }}</span>.
+        </p>
+
+        <p>
+            Please log in to your dashboard to view the client details and associated teams.
+        </p>
+
+        <hr style="border: 0; border-top: 1px solid #e0ddd6; margin: 20px 0;">
+
+        <p>
+            <a href="{{ url }}" target="_blank" style="background: #FFD700; color: #0a0a0a; padding: 10px 20px; border-radius: 4px; display: inline-block; text-decoration: none; font-weight: 600;">
+                Check Client
+            </a>
+        </p>
+
+        <p style="font-size: 14px; color: #666;">
+            This is an automated notification from the Project Management System.
+        </p>
+    </div>
+</body>
+</html>

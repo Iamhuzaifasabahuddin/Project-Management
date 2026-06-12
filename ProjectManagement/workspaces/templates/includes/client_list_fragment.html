@@ -1,20 +1,21 @@
 <!-- ACTIVE CLIENTS -->
-<div class="mb-4 d-flex justify-content-between align-items-center">
-    <div>
+<div class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+    <div class="mb-3 mb-md-0">
         <h4 class="section-title mb-1">Active Clients</h4>
         <p class="text-muted small">Access specific client teams and project data.</p>
     </div>
 </div>
 
-<div class="row g-4 mb-5">
+<div class="row g-3 g-md-4 mb-5">
     {% for client in active_clients %}
-    <div class="col-lg-4 col-md-6">
+    <div class="col-12 col-md-6 col-lg-4">
         <div class="hexz-card h-100 d-flex flex-column">
             <div class="mb-3">
                 <div class="eyebrow" style="font-size: 0.6rem; color: var(--gold-dim);">Client ID: {{ client.id|add:"0000" }}
                 </div>
-                <h3 class="mb-1">{{ client.name }}</h3>
-                <p class="muted small mb-0">{{ client.email }}</p>
+                <h3 class="mb-1 h5"><a href="{% url 'view_client' client.id %}"
+                                    style="text-decoration: none; color: var(--black)" class="client-link">{{ client.name }}</a></h3>
+                <p class="muted small mb-0 text-truncate">{{ client.email }}</p>
             </div>
 
             <div class="mt-auto pt-4 border-top">
@@ -29,19 +30,31 @@
                     <div class="fw-bold text-dark small">${{ client.amount_paid }}</div>
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn-outline-custom btn-sm flex-grow-1" data-bs-toggle="modal"
+                <div class="d-grid gap-2">
+                    <button type="button"
+                            class="btn-outline-custom btn-sm"
+                            data-bs-toggle="modal"
                             data-bs-target="#clientModalActive{{ client.id }}">
                         <i class="bi bi-search me-1"></i> Preview
                     </button>
-                    <a href="{% url 'client_teams' client.id %}" class="btn-black btn-sm flex-grow-1">
-                        <span>Open</span> <i class="bi bi-arrow-right ms-1"></i>
+
+                    <a href="{% url 'client_teams' client.id %}"
+                       class="btn-black btn-sm">
+                        <span>Open</span>
+                        <i class="bi bi-arrow-right ms-1"></i>
                     </a>
+
+                    {% if is_admin %}
+                    <a href="{% url 'edit_client' client.id %}"
+                       class="btn-outline-custom btn-sm">
+                        <i class="bi bi-pencil-square me-1"></i> Edit Client
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
-
+    
     <!-- MODAL -->
     <div class="modal fade" id="clientModalActive{{ client.id }}" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -132,16 +145,16 @@
         <h4 class="section-title mb-1">Archived Clients</h4>
         <p class="text-muted small">Completed projects and inactive client environments.</p>
     </div>
-    <div class="row g-4">
+    <div class="row g-3 g-md-4">
         {% for client in archived_clients %}
-        <div class="col-lg-4 col-md-6 archived-card">
+        <div class="col-12 col-md-6 col-lg-4 archived-card">
             <div class="hexz-card h-100 d-flex flex-column bg-light border-dashed">
                 <div class="mb-3">
                     <div class="eyebrow" style="font-size: 0.6rem; color: #6c757d;">ARCHIVED</div>
                     <div class="eyebrow" style="font-size: 0.6rem; color: #6c757d;">Client ID: {{ client.id|add:"0000" }}
-                </div>
-                    <h3 class="mb-1 text-muted">{{ client.name }}</h3>
-                    <p class="muted small mb-0">{{ client.email }}</p>
+                    </div>
+                    <h3 class="mb-1 text-muted h5">{{ client.name }}</h3>
+                    <p class="muted small mb-0 text-truncate">{{ client.email }}</p>
                 </div>
 
                 <div class="mt-auto pt-4 border-top">
@@ -150,14 +163,20 @@
                         <div class="fw-bold text-muted small">${{ client.amount_paid }}</div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn-outline-custom btn-sm flex-grow-1" data-bs-toggle="modal"
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn-outline-custom btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#clientModalArchived{{ client.id }}">
                             <i class="bi bi-search me-1"></i> Preview
                         </button>
-                        <a href="{% url 'client_teams' client.id %}" class="btn-outline-custom btn-sm flex-grow-1">
+                        <a href="{% url 'client_teams' client.id %}" class="btn-outline-custom btn-sm">
                             <span>View Archive</span>
                         </a>
+                        {% if is_admin %}
+                        <a href="{% url 'edit_client' client.id %}"
+                           class="btn-outline-custom btn-sm">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Client
+                        </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

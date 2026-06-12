@@ -51,3 +51,39 @@ def auto_archive_client_if_done(client):
         return True
         
     return False
+
+def sync_client_teams(client):
+    """
+    Syncs team memberships for a client based on 'assigned_to' users
+    and their roles in the workspace.
+    """
+    from Teams.models import Team
+    from django.contrib.auth.models import User
+    
+    workspace = client.workspace
+    workspace_admins = User.objects.filter(
+        membership__workspace=workspace,
+        membership__role="admin",
+    )
+    
+    for team in client.teams.all():
+        role_name = team.roles
+        if not role_name:
+            continue
+            
+        assigned_members = client.assigned_to.filter(
+            membership__workspace=workspace,
+            membership__role__in=[role_name, 'project manager']
+        )
+        
+        # Ensure team lead is included
+        if team.team_lead:
+            team.members.add(team.team_lead)
+            
+        # Ensure admins are included
+        if workspace_admins.exists():
+            team.members.add(*workspace_admins)
+            
+        # Add assigned members based on role
+        if assigned_members.exists():
+            team.members.add(*assigned_members)

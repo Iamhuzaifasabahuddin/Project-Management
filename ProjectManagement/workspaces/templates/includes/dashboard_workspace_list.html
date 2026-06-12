@@ -1,7 +1,7 @@
-<div class="row g-4">
+<div class="row g-3 g-md-4">
     {% for w in workspaces %}
-    <div class="col-md-6 col-lg-4">
-        <a href="{% url 'client_details' w.id %}" class="hexz-card">
+    <div class="col-12 col-md-6 col-lg-4">
+        <a href="{% url 'client_details' w.id %}" class="hexz-card h-100 d-flex flex-column">
             <div class="mb-4">
                 <div class="eyebrow">Environment ID: {{ w.id|add:"0000" }}</div>
                 <h3 class="h5 font-syne fw-bold mb-0">{{ w.name }}</h3>

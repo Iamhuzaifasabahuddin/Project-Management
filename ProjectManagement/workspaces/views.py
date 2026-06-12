@@ -1,5 +1,6 @@
 import os
 
+from django.urls import reverse
 from dotenv import load_dotenv
 
 load_dotenv(".env")
@@ -15,8 +16,8 @@ from Teams.forms import TeamForm
 from Teams.models import Team
 from workspaces.forms import WorkspaceForm, RoleAssignForm, ClientForm
 from workspaces.models import Workspace, Membership, Client
-from workspaces.services import is_workspace_admin, is_workspace_member
-
+from workspaces.services import is_workspace_admin, is_workspace_member, sync_client_teams
+from Posts.tasks import send_client_assigned_notification_task
 
 # =========================
 # LANDING PAGE
@@ -443,6 +444,10 @@ def create_default_teams_for_client(client, workspace):
         "publisher": "PUBLISHING_LEAD_EMAIL",
     }
 
+    workspace_admins = User.objects.filter(
+        membership__workspace=workspace,
+        membership__role="admin",
+    )
     for role_name in TEAM_ROLES:
         lead_email = os.getenv(lead_email_env_map.get(role_name))
         team_lead = None
@@ -467,8 +472,35 @@ def create_default_teams_for_client(client, workspace):
             membership__workspace=workspace,
             membership__role__in=[role_name, 'project manager']
         )
+        if workspace_admins.exists():
+            team.members.add(*workspace_admins)
         if assigned_members.exists():
             team.members.add(*assigned_members)
+
+
+@login_required
+def edit_client(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    workspace = client.workspace
+    
+
+    if not request.user.is_superuser and not is_workspace_admin(request.user, workspace):
+        raise PermissionDenied("Only workspace admins can edit clients")
+
+    form = ClientForm(request.POST or None, instance=client, workspace=workspace)
+
+    if form.is_valid():
+        client = form.save(commit=False)
+        form.save_m2m()
+        sync_client_teams(client)
+        messages.success(request, f"Client '{client.name}' updated successfully.")
+        return redirect("view_client", client_id=client.id)
+
+    return render(request, "edit_client.html", {
+        "form": form,
+        "client": client,
+        "workspace": workspace,
+    })
 
 
 @login_required
@@ -487,6 +519,18 @@ def create_clients(request, workspace_id):
         client.save()
         form.save_m2m()
         create_default_teams_for_client(client, workspace)
+
+        client_url = request.build_absolute_uri(
+            reverse('client_details', kwargs={'workspace_id': workspace.id})
+        )
+        to_emails = [user.email for user in client.assigned_to.all() if user.email]
+        send_client_assigned_notification_task.delay(
+                user_id=request.user.id,
+                client_id=client.id,
+                to_email=to_emails,
+            url=client_url
+            )
+            
         messages.success(request, f"Client '{client.name}' created successfully.")
         return redirect("client_details", workspace_id=workspace.id)
 
@@ -568,6 +612,7 @@ def view_client_details(request, client_id):
 
     return render(request, "view_client_details.html", {
         "client": client,
+        "is_admin": is_workspace_admin(request.user, client.workspace) or request.user.is_superuser,
     })
 
 
